@@ -30,7 +30,7 @@ namespace Client_WPF
             advancedTcpClient.Connect("test.biannetwork.top", 911);
             advancedTcpClient.BeginReceive();
             advancedTcpClient.DataReceived += ((client, data) => {
-                this.logs.Dispatcher.BeginInvoke(new Action(() => { logs.Text = $"{Encoding.UTF8.GetString(data.ReceivedData)}{Environment.NewLine}" + logs.Text; }));
+                this.logs.Dispatcher.BeginInvoke(() => { logs.Text = $"{Encoding.UTF8.GetString(data.ReceivedData)}{Environment.NewLine}" + logs.Text; });
             });
             button.IsEnabled = true;
         }
