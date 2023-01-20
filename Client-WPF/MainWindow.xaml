@@ -7,6 +7,29 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="0.2*"/>
+        </Grid.RowDefinitions>
+        <Border CornerRadius="25" Background="Wheat" Margin="20">
+            <TextBlock Margin="15" Text="a">
 
+            </TextBlock>
+            
+        </Border>
+        <Border Grid.Row="1" CornerRadius="25" Margin="10">
+            <TextBox Background="Yellow"></TextBox>
+            
+        </Border>
+        <Border Grid.Column="1"
+                    CornerRadius="25" Background="Wheat" Margin="20" >
+            <TextBlock Margin="15" Text="a">
+
+            </TextBlock>
+        </Border>
     </Grid>
 </Window>
