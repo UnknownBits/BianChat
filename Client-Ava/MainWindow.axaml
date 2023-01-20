@@ -4,11 +4,32 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:ui="using:FluentAvalonia.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+		Width="800" Height="450"
         x:Class="Client_Ava.MainWindow"
         Title="Client_Ava">
-	<SplitView DisplayMode="Inline" IsPaneOpen="True">
+	<SplitView DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250" Background="White">
 		<SplitView.Pane>
-			<TextBlock>114514</TextBlock>
+			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+						Orientation="Vertical" Margin="0 0 0 40">
+				<TextBlock FontWeight="Bold" FontSize="35"
+						   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
+				<StackPanel Orientation="Vertical" Margin="0 20 0 0" Width="170">
+					<TextBlock FontSize="20">用户名</TextBlock>
+					<TextBox FontSize="20" Margin="0 10 0 0"/>
+
+					<TextBlock FontSize="20" Margin="0 10 0 0">服务器</TextBlock>
+					<ui:ComboBox Margin="0 10 0 0" SelectedIndex="1"
+								 VerticalContentAlignment="Center">
+						<ui:ComboBox.Items>
+							<ui:ComboBoxItem Content="本地服" Tag="127.0.0.1"/>
+							<ui:ComboBoxItem Content="测试服" IsSelected="True"
+										  Tag="test.biannetwork.top"/>
+						</ui:ComboBox.Items>
+					</ui:ComboBox>
+					<ui:Button Margin="0 20 0 0" HorizontalAlignment="Right"
+							   Content="连接" Classes="accent"/>
+				</StackPanel>
+			</StackPanel>
 		</SplitView.Pane>
 		<SplitView.Content>
 			<TextBlock>这是普通中学的化学实验室</TextBlock>
