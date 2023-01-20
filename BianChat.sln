@@ -3,11 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Server-Console", "Server-Console\Server-Console.csproj", "{4A535055-E8B6-48A6-B7D9-5EDC52CC3844}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server-Console", "Server-Console\Server-Console.csproj", "{4A535055-E8B6-48A6-B7D9-5EDC52CC3844}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client-Console", "Client-Console\Client-Console.csproj", "{7A9C2957-1FBC-4205-9385-3DC276903D0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client-Console", "Client-Console\Client-Console.csproj", "{7A9C2957-1FBC-4205-9385-3DC276903D0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client-WPF", "Client-WPF\Client-WPF.csproj", "{DB92EFDA-C492-4255-A4D9-925810D1B277}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client-WPF", "Client-WPF\Client-WPF.csproj", "{DB92EFDA-C492-4255-A4D9-925810D1B277}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client-Ava", "Client-Ava\Client-Ava.csproj", "{2B3113B0-CDA0-431A-A158-0E4782998587}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{DB92EFDA-C492-4255-A4D9-925810D1B277}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB92EFDA-C492-4255-A4D9-925810D1B277}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB92EFDA-C492-4255-A4D9-925810D1B277}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B3113B0-CDA0-431A-A158-0E4782998587}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B3113B0-CDA0-431A-A158-0E4782998587}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B3113B0-CDA0-431A-A158-0E4782998587}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B3113B0-CDA0-431A-A158-0E4782998587}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
