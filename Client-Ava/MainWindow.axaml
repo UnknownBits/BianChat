@@ -6,8 +6,8 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 		Width="800" Height="450"
         x:Class="Client_Ava.MainWindow"
-        Title="Client_Ava">
-	<SplitView DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250" Background="White">
+        Title="Client_Ava" CanResize="False">
+	<SplitView DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250">
 		<SplitView.Pane>
 			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
 						Orientation="Vertical" Margin="0 0 0 40">
