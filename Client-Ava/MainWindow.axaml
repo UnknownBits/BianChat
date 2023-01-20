@@ -2,8 +2,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Client_Ava.MainWindow"
         Title="Client_Ava">
-
+	<SplitView DisplayMode="Inline" IsPaneOpen="True">
+		<SplitView.Pane>
+			<TextBlock>114514</TextBlock>
+		</SplitView.Pane>
+		<SplitView.Content>
+			<TextBlock>这是普通中学的化学实验室</TextBlock>
+		</SplitView.Content>
+	</SplitView>
 </Window>
