@@ -3,6 +3,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System;
+using Avalonia.Interactivity;
+using FluentAvalonia.UI.Controls;
 
 namespace Client_Ava
 {
@@ -11,6 +13,18 @@ namespace Client_Ava
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = "提示",
+                Content = "功能没做好呢",
+                CloseButtonText = "确认",
+                DefaultButton = ContentDialogButton.Close
+            };
+            dialog.ShowAsync();
         }
     }
 
@@ -45,9 +59,10 @@ namespace Client_Ava
             client = new TcpClient();
         }
 
-        public void Connect(string ip, int port)
+        public void Connect(string ip)
         {
-            client.Connect(ip, port);
+            int idx = ip.LastIndexOf(':');
+            client.Connect(ip[..(idx - 1)], int.Parse(ip[(idx + 1)..]));
             Connected = true;
         }
 
