@@ -80,7 +80,7 @@ namespace Server_Console
             public void ClientService()
             {
                 String data = null;
-                byte[] bytes = new byte[1026];
+                byte[] bytes = new byte[512];
                 //如果Socket不是空，则连接数加1  
                 if (service != null)
                 {
@@ -98,7 +98,7 @@ namespace Server_Console
                         {
                             socket.Send(bytes);
                         }
-                        bytes = new byte[1026];
+                        bytes = new byte[512];
                     }
                 }
                 catch (Exception e)

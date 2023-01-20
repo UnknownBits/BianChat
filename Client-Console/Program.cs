@@ -24,9 +24,6 @@ namespace Client_Console
                 if (a != null)
                 {
                     advancedTcpClient.Send(a);
-                    advancedTcpClient.EndReceive();
-                    advancedTcpClient.Connect("127.0.0.1", 911);
-                    advancedTcpClient.BeginReceive();
                 }
                 else
                 {

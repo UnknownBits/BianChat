@@ -13,23 +13,27 @@
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="0.2*"/>
+            <RowDefinition Height="0.3*"/>
         </Grid.RowDefinitions>
         <Border CornerRadius="25" Background="Wheat" Margin="20">
-            <TextBlock Margin="15" Text="a">
+            <TextBlock x:Name="logs" Margin="15">
 
             </TextBlock>
             
         </Border>
         <Border Grid.Row="1" CornerRadius="25" Margin="10">
-            <TextBox Background="Yellow"></TextBox>
+            <TextBox x:Name="text" Background="Yellow"></TextBox>
             
         </Border>
         <Border Grid.Column="1"
                     CornerRadius="25" Background="Wheat" Margin="20" >
-            <TextBlock Margin="15" Text="a">
-
-            </TextBlock>
+            <Grid>
+                <TextBlock x:Name="List" Margin="15"/>
+            </Grid>
         </Border>
+        <Border Grid.Column="2" Grid.Row="2"
+                    CornerRadius="25" Background="Wheat" Margin="10" >
+            <Button x:Name="button" Content="发送" Click="Button_Click" IsEnabled="False"/>
+        </Border>    
     </Grid>
 </Window>
