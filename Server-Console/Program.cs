@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Server_Console
 {
-    class Threadtcpserver
+    public class Threadtcpserver
     {
 
         /* 本程序中采用了多线程技术，可以应付多客户的需求。首先，程序的主线程也就是程序的入口即Main（）函数， 
@@ -30,8 +30,8 @@ namespace Server_Console
         ///       负责消息服务的ClientThread类。然后，把ClientThread类 的ClientService方  
         //法委托给线程，并启动线程。   
         /// </summary>  
-        private Socket server;
-        public Threadtcpserver()
+        private static Socket server;
+        static void Main(string[] args)
         {
             //初始化IP地址  
             IPAddress local = IPAddress.Any; //.Parse("127.0.0.1");
@@ -111,19 +111,6 @@ namespace Server_Console
                 clients.Remove(service);
                 Console.WriteLine("客户关闭连接：{0}个连接数", connections);
             }
-
-
-            /// <summary>  
-            /// Main函数十分简单，生成和一个Threadtcpserver实例，然后构造函数就会一步一步地  
-            /// 展开，开始执行具体的业务逻辑。  
-            /// </summary>  
-            /// <param name="args"></param>  
-            static void Main(string[] args)
-            {
-                Threadtcpserver instance = new Threadtcpserver();
-            }
-
-
         }
     }
 

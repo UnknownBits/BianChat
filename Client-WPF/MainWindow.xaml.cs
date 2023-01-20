@@ -27,10 +27,10 @@ namespace Client_WPF
         public MainWindow()
         {
             InitializeComponent();
-            advancedTcpClient.Connect("127.0.0.1", 911);
+            advancedTcpClient.Connect("test.biannetwork.top", 911);
             advancedTcpClient.BeginReceive();
             advancedTcpClient.DataReceived += ((client, data) => {
-                this.logs.Dispatcher.BeginInvoke(new Action(() => { logs.Text = $"接收到信息：{Encoding.UTF8.GetString(data.ReceivedData)}\n" + logs.Text; }));
+                this.logs.Dispatcher.BeginInvoke(new Action(() => { logs.Text = $"{Encoding.UTF8.GetString(data.ReceivedData)}{Environment.NewLine}" + logs.Text; }));
             });
             button.IsEnabled = true;
         }
@@ -39,12 +39,12 @@ namespace Client_WPF
         {
             if (text.Text != "")
             {
-                advancedTcpClient.Send(text.Text);
+                advancedTcpClient.Send($"{Name.Text} 说：{text.Text}");
                 text.Text = null;
             }
             else
             {
-                logs.Text = "不能发送空字符\n" + logs.Text;
+                logs.Text = $"不能发送空字符{Environment.NewLine}" + logs.Text;
             }
         }
     }

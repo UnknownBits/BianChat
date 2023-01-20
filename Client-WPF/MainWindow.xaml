@@ -16,9 +16,9 @@
             <RowDefinition Height="0.3*"/>
         </Grid.RowDefinitions>
         <Border CornerRadius="25" Background="Wheat" Margin="20">
-            <TextBlock x:Name="logs" Margin="15">
-
-            </TextBlock>
+            <TextBox x:Name="logs" Margin="15">
+                彼岸工作室 说：请更改您右下方的用户ID
+            </TextBox>
             
         </Border>
         <Border Grid.Row="1" CornerRadius="25" Margin="10">
@@ -31,9 +31,17 @@
                 <TextBlock x:Name="List" Margin="15"/>
             </Grid>
         </Border>
-        <Border Grid.Column="2" Grid.Row="2"
-                    CornerRadius="25" Background="Wheat" Margin="10" >
-            <Button x:Name="button" Content="发送" Click="Button_Click" IsEnabled="False"/>
-        </Border>    
+        <Border Grid.Row="2"
+                    CornerRadius="25" Background="Wheat" Margin="10" VerticalAlignment="Bottom" HorizontalAlignment="Right" >
+            <Button x:Name="button" Content="发送" Click="Button_Click" IsEnabled="False" IsDefault="True"/>
+        </Border>
+        <Border Grid.Column="1" Grid.Row="1"
+                    CornerRadius="25" Background="Wheat" Margin="5" >
+            <Grid>
+                <Label Content="Name" Margin="29,28,-29,-46"/>
+                <TextBox x:Name="Name" Text="Guest" Margin="103,28,10,36"/>
+
+            </Grid>
+        </Border>
     </Grid>
 </Window>
