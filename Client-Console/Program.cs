@@ -84,7 +84,8 @@ namespace Client_Console
                                 obj.ToString();
                                 if(client.Client != null)
                                 {
-                                    client.Client.Receive(buffer);
+                                    int size = client.Client.Receive(buffer);
+                                    Array.Resize(ref buffer, size);
                                 }
                                 else {
                                     Connected = false;
