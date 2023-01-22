@@ -8,6 +8,10 @@ using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
 using System.Collections.ObjectModel;
 using Avalonia.Layout;
+using System.Threading.Tasks;
+using Avalonia.Animation;
+using Avalonia.Styling;
+using Client_Ava.Pages;
 
 namespace Client_Ava
 {
@@ -15,34 +19,53 @@ namespace Client_Ava
     {
         private ObservableCollection<string> ChatList = new ObservableCollection<string>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
+        private LoginPage LoginPage = new LoginPage();
 
         public MainWindow()
         {
             InitializeComponent();
+
+            LoginPage.MainWindow = this;
+            Login.Content = LoginPage;
         }
 
-        private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
+        public void Connect(string username, string ip)
         {
-            if (UserName.Text == "" || UserName.Text.Length == 0 || UserName.Text.Length >= 12)
+            if (string.IsNullOrEmpty(username) || username.Length >= 12)
             {
                 ContentDialog dialog = new ContentDialog
                 {
                     Title = "提示",
-                    Content = "用户名不为空或大于12字符",
+                    Content = "用户名不可为空或大于 12 字符",
                     CloseButtonText = "确认",
                     DefaultButton = ContentDialogButton.Close
                 };
                 dialog.ShowAsync();
-                return;
             }
             else
             {
-                Login.IsVisible = false;
+                double opacity = 0;
+                Animation animation = new Animation
+                {
+                    Duration = TimeSpan.FromSeconds(0.5),
+                    PlaybackDirection = PlaybackDirection.Normal,
+                    FillMode = FillMode.Both
+                };
+                var kf = new KeyFrame
+                {
+                    Cue = new Cue(1.0)
+                };
+                kf.Setters.Add(new Setter
+                {
+                    Property = OpacityProperty,
+                    Value = opacity
+                });
+                animation.Children.Add(kf);
+                Login.IsEnabled = false;
+                animation.RunAsync(Login, null);
                 ChatList.Clear();
                 ChatListBox.Items = ChatList;
 
-                FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
-                string ip = item.Tag as string;
                 Client.Connect(ip);
                 Client.BeginReceive();
                 Client.DataReceived += (s,e) =>
@@ -51,7 +74,26 @@ namespace Client_Ava
                     ChatList.Add(message);
                 };
             }
+        }
 
+        private void SendButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrEmpty(SendTextBox.Text) || SendTextBox.Text.Length >= 240)
+            {
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "提示",
+                    Content = "发送消息不可为空或超过 240 个字",
+                    CloseButtonText = "确认",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                dialog.ShowAsync();
+            }
+            else
+            {
+                Client.Send($"{LoginPage.Username.Text} 说：{SendTextBox.Text}");
+                SendTextBox.Text = "";
+            }
         }
     }
 
@@ -87,6 +129,7 @@ namespace Client_Ava
         public void Connect(string ip)
         {
             client?.Close();
+            Task.Delay(10).Wait();
             client = new TcpClient();
             int idx = ip.LastIndexOf(':');
             string ip1 = ip[..(idx)];
