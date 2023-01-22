@@ -38,6 +38,10 @@ namespace Server_Console_Tcp
                     {
                         byte[] buffer = new byte[512];
                         int size = client.Client.Receive(buffer);
+                        if (size <= 0)
+                        {
+                            throw new Exception();
+                        }
                         Array.Resize(ref buffer, size);
 
                         Console.WriteLine($"收到数据：{Encoding.UTF8.GetString(buffer)}");
