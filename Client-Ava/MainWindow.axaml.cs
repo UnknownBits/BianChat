@@ -23,19 +23,35 @@ namespace Client_Ava
 
         private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
         {
-            
-            ChatList.Clear();
-            ChatListBox.Items = ChatList;
-
-            FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
-            string ip = item.Tag as string;
-            Client.Connect(ip);
-            Client.BeginReceive();
-            Client.DataReceived += (s,e) =>
+            if (UserName.Text == "" || UserName.Text.Length == 0 || UserName.Text.Length >= 12)
             {
-                string message = Encoding.UTF8.GetString(e.ReceivedData,0,e.size);
-                ChatList.Add(message);
-            };
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "提示",
+                    Content = "用户名不为空或大于12字符",
+                    CloseButtonText = "确认",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                dialog.ShowAsync();
+                return;
+            }
+            else
+            {
+                Login.IsVisible = false;
+                ChatList.Clear();
+                ChatListBox.Items = ChatList;
+
+                FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+                string ip = item.Tag as string;
+                Client.Connect(ip);
+                Client.BeginReceive();
+                Client.DataReceived += (s,e) =>
+                {
+                    string message = Encoding.UTF8.GetString(e.ReceivedData,0,e.size);
+                    ChatList.Add(message);
+                };
+            }
+
         }
     }
 
