@@ -16,7 +16,11 @@ namespace Server_Console_Tcp
             Console.WriteLine("等待客户端连接...");
             listener.BeginAcceptTcpClient(AcceptCallback, listener);
 
-            Console.ReadLine();
+            string input = null;
+            while (input != "exit")
+            {
+                input = Console.ReadLine();
+            }
         }
 
         private static void AcceptCallback(IAsyncResult ar)
@@ -34,6 +38,10 @@ namespace Server_Console_Tcp
                     {
                         byte[] buffer = new byte[512];
                         int size = client.Client.Receive(buffer);
+                        if (size <= 0)
+                        {
+                            throw new Exception();
+                        }
                         Array.Resize(ref buffer, size);
 
                         Console.WriteLine($"收到数据：{Encoding.UTF8.GetString(buffer)}");
