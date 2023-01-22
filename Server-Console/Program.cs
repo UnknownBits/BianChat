@@ -92,7 +92,6 @@ namespace Server_Console
                 {
                     while ((i = service.Receive(bytes)) != 0)
                     {
-                        Array.Resize(ref bytes, i);
                         data = System.Text.Encoding.UTF8.GetString(bytes, 0, i);
                         Console.WriteLine("收到的数据：{0} " + ((System.Net.IPEndPoint)service.RemoteEndPoint).Address, data);
                         foreach (Socket socket in clients)
