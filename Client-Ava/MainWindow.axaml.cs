@@ -23,6 +23,7 @@ namespace Client_Ava
 
         private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
         {
+            
             ChatList.Clear();
             ChatListBox.Items = ChatList;
 

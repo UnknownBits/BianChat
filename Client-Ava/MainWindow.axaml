@@ -10,7 +10,7 @@
         Title="Client_Ava" CanResize="False">
 	<SplitView DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250">
 		<SplitView.Pane>
-			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+			<StackPanel x:Name="Login" HorizontalAlignment="Center" VerticalAlignment="Center"
 						Orientation="Vertical" Margin="0 0 0 40">
 				<TextBlock FontWeight="Bold" FontSize="35"
 						   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
