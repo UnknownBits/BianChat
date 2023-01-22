@@ -1,17 +1,16 @@
-using System.Drawing;
+using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Styling;
+using Client_Ava.Pages;
+using FluentAvalonia.UI.Controls;
+using System;
+using System.Collections.ObjectModel;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
-using System;
-using Avalonia.Interactivity;
-using FluentAvalonia.UI.Controls;
-using System.Collections.ObjectModel;
-using Avalonia.Layout;
 using System.Threading.Tasks;
-using Avalonia.Animation;
-using Avalonia.Styling;
-using Client_Ava.Pages;
+
 
 namespace Client_Ava
 {
@@ -61,16 +60,20 @@ namespace Client_Ava
                     Value = opacity
                 });
                 animation.Children.Add(kf);
+
                 Login.IsEnabled = false;
                 animation.RunAsync(Login, null);
                 ChatList.Clear();
                 ChatListBox.Items = ChatList;
+                SendTextBox.IsEnabled = true;
+                accent_button.IsEnabled = true;
+                accent_button.IsDefault = true;
 
                 Client.Connect(ip);
                 Client.BeginReceive();
-                Client.DataReceived += (s,e) =>
+                Client.DataReceived += (s, e) =>
                 {
-                    string message = Encoding.UTF8.GetString(e.ReceivedData,0,e.size);
+                    string message = Encoding.UTF8.GetString(e.ReceivedData, 0, e.size);
                     ChatList.Add(message);
                 };
             }
@@ -161,7 +164,7 @@ namespace Client_Ava
                                 break;
                             }
                             DataReceived(
-                                client,new DataReceivedEventArgs { ReceivedData = buffer,size = size });
+                                client, new DataReceivedEventArgs { ReceivedData = buffer, size = size });
                         }
                         catch
                         {

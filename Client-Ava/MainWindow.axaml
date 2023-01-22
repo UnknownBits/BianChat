@@ -17,8 +17,8 @@
 						VerticalAlignment="Bottom">
 				<ListBox x:Name="ChatListBox" Margin="0 0 0 5"/>
 				<StackPanel Orientation="Horizontal">
-					<TextBox x:Name="SendTextBox" Margin="10 0 0 10" Width="460"/>
-					<Button Margin="15 0 0 10" Classes="accent"
+					<TextBox x:Name="SendTextBox" Margin="10 0 0 10" Width="460" IsEnabled="False" FontFamily="得意黑	"/>
+					<Button Margin="15 0 0 10" Classes="accent" IsEnabled="False" x:Name="accent_button"
 							Click="SendButton_Clicked">发送</Button>
 				</StackPanel>
 			</StackPanel>
