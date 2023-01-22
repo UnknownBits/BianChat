@@ -16,7 +16,11 @@ namespace Server_Console_Tcp
             Console.WriteLine("等待客户端连接...");
             listener.BeginAcceptTcpClient(AcceptCallback, listener);
 
-            Console.ReadLine();
+            string input = null;
+            while (input != "exit")
+            {
+                input = Console.ReadLine();
+            }
         }
 
         private static void AcceptCallback(IAsyncResult ar)
