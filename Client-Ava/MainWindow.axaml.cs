@@ -5,11 +5,16 @@ using System.Threading;
 using System;
 using Avalonia.Interactivity;
 using FluentAvalonia.UI.Controls;
+using System.Collections.ObjectModel;
+using Avalonia.Layout;
 
 namespace Client_Ava
 {
     public partial class MainWindow : Window
     {
+        private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
+        private AdvancedTcpClient Client = new AdvancedTcpClient();
+
         public MainWindow()
         {
             InitializeComponent();
@@ -17,14 +22,18 @@ namespace Client_Ava
 
         private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
         {
-            ContentDialog dialog = new ContentDialog
+            ChatList.Clear();
+            ChatListBox.Items = ChatList;
+
+            FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+            string ip = item.Tag as string;
+            Client.Connect(ip);
+            Client.BeginReceive();
+            Client.DataReceived += (s, e) =>
             {
-                Title = "提示",
-                Content = "功能没做好呢",
-                CloseButtonText = "确认",
-                DefaultButton = ContentDialogButton.Close
+                string message = Encoding.UTF8.GetString(e.ReceivedData);
+                ChatList.Add(new ListBoxItem { HorizontalContentAlignment = HorizontalAlignment.Left, Content = message });
             };
-            dialog.ShowAsync();
         }
     }
 
@@ -33,7 +42,7 @@ namespace Client_Ava
         // EventArgs
         public class DataReceivedEventArgs : EventArgs
         {
-            public byte[] ReceivedData { get; set; } = new byte[0];
+            public byte[] ReceivedData { get; set; }
         }
 
         // TCP 客户端
@@ -54,15 +63,16 @@ namespace Client_Ava
         /// </summary>
         public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
 
-        public AdvancedTcpClient()
-        {
-            client = new TcpClient();
-        }
+        public AdvancedTcpClient() { }
 
         public void Connect(string ip)
         {
+            client?.Close();
+            client = new TcpClient();
             int idx = ip.LastIndexOf(':');
-            client.Connect(ip[..(idx - 1)], int.Parse(ip[(idx + 1)..]));
+            string ip1 = ip[..(idx)];
+            int port = int.Parse(ip[(idx + 1)..]);
+            client.Connect(ip1, port);
             Connected = true;
         }
 
@@ -122,6 +132,11 @@ namespace Client_Ava
             return false;
         }
 
+        public void Disconnect()
+        {
+            client?.Close();
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -129,7 +144,7 @@ namespace Client_Ava
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    client.Close();
+                    Disconnect();
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
