@@ -27,7 +27,7 @@ namespace Client_WPF
         public MainWindow()
         {
             InitializeComponent();
-            advancedTcpClient.Connect("test.biannetwork.top", 911);
+            advancedTcpClient.Connect("127.0.0.1", 911);
             advancedTcpClient.BeginReceive();
             advancedTcpClient.DataReceived += ((client, data) => {
                 this.logs.Dispatcher.BeginInvoke(() => { logs.Text = $"{Encoding.UTF8.GetString(data.ReceivedData)}{Environment.NewLine}" + logs.Text; });
@@ -100,7 +100,8 @@ namespace Client_WPF
                             obj.ToString();
                             if (client.Client != null)
                             {
-                                client.Client.Receive(buffer);
+                                int size = client.Client.Receive(buffer);
+                                Array.Resize(ref buffer, size);
                             }
                             else
                             {

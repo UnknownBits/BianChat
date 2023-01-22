@@ -90,7 +90,8 @@ namespace Client_Ava
                             byte[] buffer = new byte[512];
                             if (client.Client != null)
                             {
-                                client.Client.Receive(buffer);
+                                int size = client.Client.Receive(buffer);
+                                Array.Resize(ref buffer, size);
                             }
                             else
                             {
