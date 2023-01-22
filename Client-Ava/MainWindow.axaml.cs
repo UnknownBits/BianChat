@@ -1,3 +1,4 @@
+using System.Drawing;
 using Avalonia.Controls;
 using System.Net.Sockets;
 using System.Text;
@@ -29,9 +30,9 @@ namespace Client_Ava
             string ip = item.Tag as string;
             Client.Connect(ip);
             Client.BeginReceive();
-            Client.DataReceived += (s, e) =>
+            Client.DataReceived += (s,e) =>
             {
-                string message = Encoding.UTF8.GetString(e.ReceivedData);
+                string message = Encoding.UTF8.GetString(e.ReceivedData,0,e.size);
                 ChatList.Add(message);
             };
         }
@@ -43,6 +44,7 @@ namespace Client_Ava
         public class DataReceivedEventArgs : EventArgs
         {
             public byte[] ReceivedData { get; set; }
+            public int size { get; set; }
         }
 
         // TCP 客户端
@@ -87,11 +89,11 @@ namespace Client_Ava
                         try
                         {
                             // 接收
+                            int size = 0;
                             byte[] buffer = new byte[512];
                             if (client.Client != null)
                             {
-                                int size = client.Client.Receive(buffer);
-                                Array.Resize(ref buffer, size);
+                                size = client.Client.Receive(buffer);
                             }
                             else
                             {
@@ -99,7 +101,7 @@ namespace Client_Ava
                                 break;
                             }
                             DataReceived(
-                                client, new DataReceivedEventArgs { ReceivedData = buffer });
+                                client,new DataReceivedEventArgs { ReceivedData = buffer,size = size });
                         }
                         catch
                         {

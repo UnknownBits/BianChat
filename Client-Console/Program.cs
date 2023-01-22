@@ -12,7 +12,7 @@ namespace Client_Console
         static void Main(string[] args)
         {
             AdvancedTcpClient advancedTcpClient = new AdvancedTcpClient();
-            advancedTcpClient.Connect("test.biannetwork.top", 911);
+            advancedTcpClient.Connect("127.0.0.1", 911);
             advancedTcpClient.BeginReceive();
             advancedTcpClient.DataReceived += ((client, data) => {
                 Console.WriteLine($"接收到信息：{Encoding.UTF8.GetString(data.ReceivedData)}");
