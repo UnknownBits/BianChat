@@ -12,7 +12,7 @@ namespace Client_Ava
 {
     public partial class MainWindow : Window
     {
-        private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
+        private ObservableCollection<string> ChatList = new ObservableCollection<string>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
 
         public MainWindow()
@@ -32,7 +32,7 @@ namespace Client_Ava
             Client.DataReceived += (s, e) =>
             {
                 string message = Encoding.UTF8.GetString(e.ReceivedData);
-                ChatList.Add(new ListBoxItem { HorizontalContentAlignment = HorizontalAlignment.Left, Content = message });
+                ChatList.Add(message);
             };
         }
     }
