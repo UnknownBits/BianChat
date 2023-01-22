@@ -19,7 +19,7 @@
 				<ui:ComboBox.Items>
 					<ui:ComboBoxItem Content="本地服" Tag="127.0.0.1:911"/>
 					<ui:ComboBoxItem Content="测试服" IsSelected="True"
-								  Tag="test.biannetwork.top:911"/>
+								  Tag="test.biannetwork.top:911 "/>
 				</ui:ComboBox.Items>
 			</ui:ComboBox>
 			<ui:Button Margin="0 20 0 0" HorizontalAlignment="Right"
