@@ -145,20 +145,21 @@ namespace Client_Ava
                 Task.Run(() =>
                 {
                     Task.Delay(500).Wait();
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        ChatList.Clear();
-                        ChatListBox.Items = ChatList;
-                        SendTextBox.IsEnabled = true;
-                        SendButton.IsEnabled = true;
-                        InfoPage.Notices.Clear();
-                    }).Wait();
 
                     try
                     {
                         Client.Connect(ip);
                         Client.BeginReceive();
                         Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text)).ToArray());
+
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ChatList.Clear();
+                            ChatListBox.Items = ChatList;
+                            SendTextBox.IsEnabled = true;
+                            SendButton.IsEnabled = true;
+                            InfoPage.Notices.Clear();
+                        }).Wait();
                     }
                     catch
                     {
