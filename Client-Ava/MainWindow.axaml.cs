@@ -2,10 +2,12 @@ using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using Client_Ava.Pages;
 using FluentAvalonia.UI.Controls;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
@@ -16,16 +18,111 @@ namespace Client_Ava
 {
     public partial class MainWindow : Window
     {
-        private ObservableCollection<string> ChatList = new ObservableCollection<string>();
+        private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
-        private LoginPage LoginPage = new LoginPage();
+        private LoginPage LoginPage;
+        private InfoPage InfoPage = new InfoPage();
 
         public MainWindow()
         {
             InitializeComponent();
 
+            LoginPage = (LoginPage)Login.Content;
             LoginPage.MainWindow = this;
-            Login.Content = LoginPage;
+            InfoPage.MainWindow = this;
+            Client.DataReceived += DataReceivedCallback;
+            Client.Disconnected += (s, e) =>
+            {
+                Task.Run(() =>
+                {
+                    if (e.Exception != null)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ContentDialog dialog = new ContentDialog
+                            {
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close,
+                                Title = "错误",
+                                Content = $@"连接异常终止。
+错误信息：{e.Exception.Message}"
+                            };
+                            dialog.ShowAsync();
+                        });
+                        Task.Delay(200).Wait();
+                    }
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        SendTextBox.IsEnabled = false;
+                        SendButton.IsEnabled = false;
+                        ChatList.Clear();
+                        Login.IsHitTestVisible = false;
+                        OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                    });
+                    Task.Delay(300).Wait();
+
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        Login.Content = LoginPage;
+                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                        Login.IsHitTestVisible = true;
+                    });
+                });
+            };
+        }
+
+        private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
+        {
+            Animation animation = new Animation
+            {
+                Duration = duration,
+                PlaybackDirection = PlaybackDirection.Normal,
+                FillMode = FillMode.Both
+            };
+            var kf = new KeyFrame
+            {
+                Cue = new Cue(1.0)
+            };
+            kf.Setters.Add(new Setter
+            {
+                Property = OpacityProperty,
+                Value = opacity
+            });
+            animation.Children.Add(kf);
+            animation.RunAsync(Login, null);
+        }
+
+        private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
+        {
+            Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                switch (args.ReceivedData[0])
+                {
+                    // 公告
+                    case 0:
+                        string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
+                        InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
+                        break;
+
+                    // 消息
+                    case 1:
+                        string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
+                        ChatList.Add(new ListBoxItem
+                        {
+                            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                            Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
+                            IsHitTestVisible = false
+                        });
+                        break;
+
+                    // 时间戳
+                    case 2:
+                        long timestamp = BitConverter.ToInt64(args.ReceivedData, 1);
+                        long ping = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timestamp;
+                        InfoPage.PingText.Text = $"延迟：{ping} ms";
+                        break;
+                }
+            });
         }
 
         public void Connect(string username, string ip)
@@ -43,50 +140,77 @@ namespace Client_Ava
             }
             else
             {
-                double opacity = 0;
-                Animation animation = new Animation
+                Login.IsHitTestVisible = false;
+                OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                Task.Run(() =>
                 {
-                    Duration = TimeSpan.FromSeconds(0.5),
-                    PlaybackDirection = PlaybackDirection.Normal,
-                    FillMode = FillMode.Both
-                };
-                var kf = new KeyFrame
-                {
-                    Cue = new Cue(1.0)
-                };
-                kf.Setters.Add(new Setter
-                {
-                    Property = OpacityProperty,
-                    Value = opacity
+                    Task.Delay(500).Wait();
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        ChatList.Clear();
+                        ChatListBox.Items = ChatList;
+                        SendTextBox.IsEnabled = true;
+                        SendButton.IsEnabled = true;
+                        InfoPage.Notices.Clear();
+                    }).Wait();
+
+                    try
+                    {
+                        Client.Connect(ip);
+                        Client.BeginReceive();
+                        Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text)).ToArray());
+                    }
+                    catch
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ContentDialog dialog = new ContentDialog
+                            {
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close,
+                                Content = "无法连接到服务器",
+                                Title = "错误"
+                            };
+                            dialog.ShowAsync();
+
+                            SendTextBox.IsEnabled = false;
+                            SendButton.IsEnabled = false;
+                            OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                            Login.IsHitTestVisible = true;
+                        });
+                        return;
+                    }
+
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
+                        var selectedItem = (FluentAvalonia.UI.Controls.ComboBoxItem)LoginPage.ServerSelectionComboBox.SelectedItem;
+                        InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
+                        Login.Content = InfoPage;
+
+                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                        Login.IsHitTestVisible = true;
+                    });
                 });
-                animation.Children.Add(kf);
+            }
+        }
 
-                Login.IsEnabled = false;
-                animation.RunAsync(Login, null);
-                ChatList.Clear();
-                ChatListBox.Items = ChatList;
-                SendTextBox.IsEnabled = true;
-                accent_button.IsEnabled = true;
-                accent_button.IsDefault = true;
-
-                Client.Connect(ip);
-                Client.BeginReceive();
-                Client.DataReceived += (s, e) =>
-                {
-                    string message = Encoding.UTF8.GetString(e.ReceivedData, 0, e.size);
-                    ChatList.Add(message);
-                };
+        public void Disconnect()
+        {
+            if (Client.Connected)
+            {
+                Client.Disconnect();
             }
         }
 
         private void SendButton_Clicked(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(SendTextBox.Text) || SendTextBox.Text.Length >= 240)
+            if (string.IsNullOrEmpty(SendTextBox.Text) || SendTextBox.Text.Length >= 2048)
             {
                 ContentDialog dialog = new ContentDialog
                 {
                     Title = "提示",
-                    Content = "发送消息不可为空或超过 240 个字",
+                    Content = "发送消息不可为空或超过 2048 个字",
                     CloseButtonText = "确认",
                     DefaultButton = ContentDialogButton.Close
                 };
@@ -95,6 +219,11 @@ namespace Client_Ava
             else
             {
                 Client.Send($"{LoginPage.Username.Text} 说：{SendTextBox.Text}");
+                ChatList.Add(new ListBoxItem
+                {
+                    HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Content = new TextBlock { Text = $"你说：{SendTextBox.Text}", TextWrapping = Avalonia.Media.TextWrapping.Wrap }
+                });
                 SendTextBox.Text = "";
             }
         }
@@ -106,7 +235,11 @@ namespace Client_Ava
         public class DataReceivedEventArgs : EventArgs
         {
             public byte[] ReceivedData { get; set; }
-            public int size { get; set; }
+        }
+
+        public class DisconnectedEventArgs : EventArgs
+        {
+            public Exception Exception { get; init; }
         }
 
         // TCP 客户端
@@ -127,6 +260,8 @@ namespace Client_Ava
         /// </summary>
         public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
 
+        public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
+
         public AdvancedTcpClient() { }
 
         public void Connect(string ip)
@@ -135,7 +270,7 @@ namespace Client_Ava
             Task.Delay(10).Wait();
             client = new TcpClient();
             int idx = ip.LastIndexOf(':');
-            string ip1 = ip[..(idx)];
+            string ip1 = ip[..idx];
             int port = int.Parse(ip[(idx + 1)..]);
             client.Connect(ip1, port);
             Connected = true;
@@ -153,23 +288,32 @@ namespace Client_Ava
                         {
                             // 接收
                             int size = 0;
-                            byte[] buffer = new byte[512];
+                            byte[] buffer = new byte[8193];
                             if (client.Client != null)
                             {
                                 size = client.Client.Receive(buffer);
+                                Array.Resize(ref buffer, size);
                             }
                             else
                             {
                                 Connected = false;
                                 break;
                             }
+                            if (size <= 0)
+                            {
+                                throw new SocketException(10054);
+                            }
                             DataReceived(
-                                client, new DataReceivedEventArgs { ReceivedData = buffer, size = size });
+                                client, new DataReceivedEventArgs { ReceivedData = buffer });
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            client.Close();
-                            Connected = false;
+                            if (Connected)
+                            {
+                                Connected = false;
+                                client.Close();
+                                Disconnected(this, new DisconnectedEventArgs { Exception = ex });
+                            }
                             break;
                         }
                     }
@@ -181,11 +325,16 @@ namespace Client_Ava
 
         public bool Send(string message)
         {
+            return SendBytes(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes(message)).ToArray());
+        }
+
+        public bool SendBytes(byte[] data)
+        {
             if (Connected)
             {
                 try
                 {
-                    client.Client.Send(Encoding.UTF8.GetBytes(message));
+                    client.Client.Send(data);
                     return true;
                 }
                 catch
@@ -200,7 +349,12 @@ namespace Client_Ava
 
         public void Disconnect()
         {
-            client?.Close();
+            if (Connected)
+            {
+                Connected = false;
+                client?.Close();
+                Disconnected(this, new DisconnectedEventArgs());
+            }
         }
 
         protected virtual void Dispose(bool disposing)

@@ -8,18 +8,26 @@
 		Width="800" Height="450"
         x:Class="Client_Ava.MainWindow"
         Title="Client_Ava" CanResize="False">
-	<SplitView DisplayMode="Inline" IsPaneOpen="True" OpenPaneLength="250">
+	<SplitView DisplayMode="Inline" IsPaneOpen="True"
+			   OpenPaneLength="250">
 		<SplitView.Pane>
-			<ui:Frame x:Name="Login"/>
+			<ui:Frame x:Name="Login" SourcePageType="{x:Type pages:LoginPage}"/>
 		</SplitView.Pane>
 		<SplitView.Content>
 			<StackPanel HorizontalAlignment="Left"
 						VerticalAlignment="Bottom">
-				<ListBox x:Name="ChatListBox" Margin="0 0 0 5"/>
+				<ListBox x:Name="ChatListBox" Margin="0 0 0 5" Height="400">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
 				<StackPanel Orientation="Horizontal">
-					<TextBox x:Name="SendTextBox" Margin="10 0 0 10" Width="460" IsEnabled="False" FontFamily="得意黑	"/>
-					<Button Margin="15 0 0 10" Classes="accent" IsEnabled="False" x:Name="accent_button"
-							Click="SendButton_Clicked">发送</Button>
+					<TextBox x:Name="SendTextBox" Margin="10 0 0 10" Width="460"
+							 IsEnabled="False" FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+					<ui:Button x:Name="SendButton" Margin="15 0 0 10" Classes="accent"
+							IsEnabled="False" Click="SendButton_Clicked" IsDefault="True">发送</ui:Button>
 				</StackPanel>
 			</StackPanel>
 		</SplitView.Content>

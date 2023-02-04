@@ -80,7 +80,7 @@ namespace Server_Console
             public void ClientService()
             {
                 String data = null;
-                byte[] bytes = new byte[512];
+                byte[] bytes = new byte[8193];
                 //如果Socket不是空，则连接数加1  
                 if (service != null)
                 {

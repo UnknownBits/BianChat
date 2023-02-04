@@ -40,6 +40,7 @@ namespace Client_WPF
             if (text.Text != "")
             {
                 advancedTcpClient.Send($"{Name.Text} 说：{text.Text}");
+                logs.Text = $"你说：{text.Text}{Environment.NewLine}" + logs.Text;
                 text.Text = null;
             }
             else
@@ -96,7 +97,7 @@ namespace Client_WPF
                         try
                         {
                             // 接收
-                            byte[] buffer = new byte[512];
+                            byte[] buffer = new byte[8193];
                             obj.ToString();
                             if (client.Client != null)
                             {

@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:ui="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="Client_Ava.Pages.InfoPage">
+	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
+				Orientation="Vertical">
+		<TextBlock FontWeight="Bold" FontSize="35"
+				   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
+		<TextBlock x:Name="Username" FontSize="20" Margin="0 10 0 0">用户名：</TextBlock>
+		<TextBlock x:Name="ServerName" FontSize="20" Margin="0 10 0 0">服务器：</TextBlock>
+		<TextBlock x:Name="PingText" FontSize="20" Margin="0 10 0 0">延迟：0 ms</TextBlock>
+		<TextBlock FontSize="20" Margin="0 10 0 0">公告：</TextBlock>
+		<ListBox x:Name="NoticeListBox" Margin="20 10 0 0" MaxHeight="70">
+			<ListBox.ItemsPanel>
+				<ItemsPanelTemplate>
+					<VirtualizingStackPanel VerticalAlignment="Bottom"/>
+				</ItemsPanelTemplate>
+			</ListBox.ItemsPanel>
+		</ListBox>
+		<ui:Button Margin="0 15 0 0" Classes="accent" Click="DisconnectButton_Click">断开连接</ui:Button>
+	</StackPanel>
+</UserControl>

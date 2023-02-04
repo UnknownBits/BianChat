@@ -80,7 +80,7 @@ namespace Client_Console
                             try
                             {
                                 // 接收
-                                byte[] buffer = new byte[1026];
+                                byte[] buffer = new byte[8193];
                                 obj.ToString();
                                 if(client.Client != null)
                                 {
