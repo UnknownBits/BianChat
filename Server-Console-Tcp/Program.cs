@@ -89,7 +89,7 @@ namespace Server_Console_Tcp
                                         try
                                         {
                                             if (client1 != client)
-                                                client1.Client.Send(new byte[1] { 1 }.Concat(buffer).ToArray());
+                                                client1.Client.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray());
                                         }
                                         catch
                                         {
