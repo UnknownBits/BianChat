@@ -4,35 +4,17 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Security.Cryptography;
 
 namespace Client_Console
 {
     internal class Program
     {
-        public static bool state = false;
         static void Main(string[] args)
         {
-            while (!state)
-            {
-                Console.WriteLine("Please input your account");
-                string account = Console.ReadLine();
-                string password = Console.ReadLine();
-                if (account != null)
-                {
-                    state = true;
-
-                }
-            }
-            Start();
-        }
-        static void Start()
-        {
             AdvancedTcpClient advancedTcpClient = new AdvancedTcpClient();
-            advancedTcpClient.Connect("test.biannetwork.top", 5000);
+            advancedTcpClient.Connect("127.0.0.1", 911);
             advancedTcpClient.BeginReceive();
-            advancedTcpClient.DataReceived += ((client, data) =>
-            {
+            advancedTcpClient.DataReceived += ((client, data) => {
                 Console.WriteLine($"接收到信息：{Encoding.UTF8.GetString(data.ReceivedData)}");
             });
 
@@ -49,31 +31,42 @@ namespace Client_Console
                 }
             }
         }
-        /// <summary>
-        /// SHA256加密
-        /// </summary>
-        /// <param name="strIN">要加密的string字符串</param>
-        /// <returns>SHA256加密之后的密文</returns>
-        public static string GetHash(string strIN)
+
+        public class AdvancedTcpClient
         {
-            using (SHA256 mySHA256 = SHA256.Create())
+            // EventArgs
+            public class DataReceivedEventArgs : EventArgs
             {
-                // Convert the input string to a byte array and compute the hash.
-                byte[] data = mySHA256.ComputeHash(Encoding.UTF8.GetBytes(strIN));
+                public byte[] ReceivedData { get; set; } = new byte[0];
+            }
 
-                // Create a new Stringbuilder to collect the bytes
-                // and create a string.
-                var sBuilder = new StringBuilder();
+            // TCP 客户端
+            private TcpClient client;
 
-                // Loop through each byte of the hashed data
-                // and format each one as a hexadecimal string.
-                for (int i = 0; i < data.Length; i++)
-                {
-                    sBuilder.Append(data[i].ToString("x2"));
-                }
+            /// <summary>
+            /// 接收线程（任务）
+            /// </summary>
+            public Thread ReceiveTask;
+            private static readonly object obj = new object();
+            /// <summary>
+            /// 是否连接
+            /// </summary>
+            public bool Connected = false;
 
-                // Return the hexadecimal string.
-                return sBuilder.ToString();
+            /// <summary>
+            /// 数据接收事件
+            /// </summary>
+            public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
+
+            public AdvancedTcpClient()
+            {
+                client = new TcpClient();
+            }
+
+            public void Connect(string ip, int port)
+            {
+                client.Connect(ip, port);
+                Connected = true;
             }
 
             public void BeginReceive()
@@ -89,12 +82,13 @@ namespace Client_Console
                                 // 接收
                                 byte[] buffer = new byte[8193];
                                 obj.ToString();
-                                if(client.Client != null)
+                                if (client.Client != null)
                                 {
                                     int size = client.Client.Receive(buffer);
                                     Array.Resize(ref buffer, size);
                                 }
-                                else {
+                                else
+                                {
                                     Connected = false;
                                     break;
                                 }
@@ -115,18 +109,40 @@ namespace Client_Console
             }
 
             public void EndReceive()
-        }
-        public static bool VerifyHash(string strIN,string hash)
-        {
-            using (SHA256 mySHA256 = SHA256.Create())
             {
-                // Hash the input.
-                var hashOfInput = GetHash(strIN);
+                if (Connected)
+                {
+                    lock (obj)
+                    {
+                        client.Close();
+                        try
+                        {
+                            ReceiveTask.Abort();
+                        }
+                        catch { }
+                    }
+                }
 
-                // Create a StringComparer an compare the hashes.
-                StringComparer comparer = StringComparer.OrdinalIgnoreCase;
+                Connected = false;
+            }
 
-                return comparer.Compare(hashOfInput, hash) == 0;
+            public bool Send(string message)
+            {
+                if (Connected)
+                {
+                    try
+                    {
+                        client.Client.Send(Encoding.UTF8.GetBytes(message));
+                        return true;
+                    }
+                    catch
+                    {
+                        Connected = false;
+                        return false;
+                    }
+                }
+
+                return false;
             }
         }
     }
