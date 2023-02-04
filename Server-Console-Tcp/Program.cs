@@ -37,7 +37,6 @@ namespace Server_Console_Tcp
                 }
             }
         }
-
         private static void AcceptCallback(IAsyncResult ar)
         {
             TcpListener listener = (TcpListener)ar.AsyncState;
@@ -68,7 +67,6 @@ namespace Server_Console_Tcp
                             throw new Exception();
                         }
                         Array.Resize(ref buffer, size);
-
                         switch (buffer[0])
                         {
                             // 登录
@@ -81,7 +79,6 @@ namespace Server_Console_Tcp
                             // 聊天信息
                             case 1:
                                 Console.WriteLine($"收到数据：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
-
                                 lock (clients)
                                 {
                                     foreach (var client1 in clients)

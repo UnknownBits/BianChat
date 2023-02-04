@@ -44,8 +44,7 @@ namespace Client_Ava
                                 CloseButtonText = "确定",
                                 DefaultButton = ContentDialogButton.Close,
                                 Title = "错误",
-                                Content = $@"连接异常终止。
-错误信息：{e.Exception.Message}"
+                                Content = $@"连接异常终止。错误信息：{e.Exception.Message}"
                             };
                             dialog.ShowAsync();
                         });
