@@ -78,7 +78,8 @@ namespace Server_Console_Tcp
 
                             // 聊天信息
                             case 1:
-                                Console.WriteLine($"收到数据：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+                                Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+
                                 lock (clients)
                                 {
                                     foreach (var client1 in clients)
@@ -86,7 +87,7 @@ namespace Server_Console_Tcp
                                         try
                                         {
                                             if (client1 != client)
-                                                client1.Client.Send(new byte[1] { 1 }.Concat(buffer).ToArray());
+                                                client1.Client.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray());
                                         }
                                         catch
                                         {
