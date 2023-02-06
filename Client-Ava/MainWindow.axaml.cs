@@ -68,6 +68,13 @@ namespace Client_Ava
                     });
                 });
             };
+            Client.PingReceived += (s, e) =>
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    InfoPage.PingText.Text = $"ÑÓ³Ù£º{e.Ping} ms";
+                });
+            };
         }
 
         private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
@@ -114,13 +121,6 @@ namespace Client_Ava
                         });
                         break;
 
-                    // Ê±¼ä´Á
-                    case 2:
-                        long timestamp = BitConverter.ToInt64(args.ReceivedData, 1);
-                        long localTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                        long ping = localTimestamp - timestamp;
-                        InfoPage.PingText.Text = $"ÑÓ³Ù£º{ping} ms";
-                        break;
                     case 255:
                         string stamp = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         ChatList.Add(new ListBoxItem
@@ -248,6 +248,11 @@ namespace Client_Ava
             public byte[] ReceivedData { get; set; }
         }
 
+        public class PingReceivedEventArgs : EventArgs
+        {
+            public int Ping { get; set; }
+        }
+
         public class DisconnectedEventArgs : EventArgs
         {
             public Exception Exception { get; init; }
@@ -271,6 +276,8 @@ namespace Client_Ava
         /// </summary>
         public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
 
+        public event EventHandler<PingReceivedEventArgs> PingReceived = delegate { };
+
         public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
 
         public AdvancedTcpClient() { }
@@ -293,6 +300,7 @@ namespace Client_Ava
             {
                 ReceiveTask = new Thread(() =>
                 {
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     while (true)
                     {
                         try
@@ -314,8 +322,20 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            DataReceived(
-                                client, new DataReceivedEventArgs { ReceivedData = buffer });
+                            if (buffer[0] == 253)
+                            {
+                                timediff = BitConverter.ToInt64(buffer, 1);
+                            }
+                            else if (buffer[0] == 254)
+                            {
+                                long timestamp = BitConverter.ToInt64(buffer, 1);
+                                PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff - 500) });
+                            }
+                            else
+                            {
+                                DataReceived(
+                                    client, new DataReceivedEventArgs { ReceivedData = buffer });
+                            }
                         }
                         catch (Exception ex)
                         {
