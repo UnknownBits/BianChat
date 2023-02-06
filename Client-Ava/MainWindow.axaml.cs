@@ -121,6 +121,16 @@ namespace Client_Ava
                         long ping = localTimestamp - timestamp;
                         InfoPage.PingText.Text = $"ÑÓ³Ù£º{ping} ms";
                         break;
+                    case 255:
+                        string stamp = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
+                        ChatList.Add(new ListBoxItem
+                        {
+                            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+                            Content = new TextBlock { Text = stamp, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
+                            IsHitTestVisible = false
+                        });
+                        Client.Send($"{LoginPage.Username.Text} Ëµ£º{stamp}");
+                        break;
                 }
             });
         }

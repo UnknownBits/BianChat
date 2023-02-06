@@ -44,7 +44,6 @@ namespace Server_Console_Tcp
             bool connected = true;
             clients.Add(client);
             Console.WriteLine($"{(IPEndPoint)client.Client.RemoteEndPoint} 已连接，当前连接数 {clients.Count}");
-
             Task.Run(() =>
             {
                 string username = null;
@@ -74,12 +73,13 @@ namespace Server_Console_Tcp
                                 username = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
                                 string notice = $"{username} 已上线";
                                 Notice(notice);
+                                client.Client.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
+                                client.Client.Send(new byte[1] { 255 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now}")).ToArray());
                                 break;
 
                             // 聊天信息
                             case 1:
                                 Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
-
                                 lock (clients)
                                 {
                                     foreach (var client1 in clients)
