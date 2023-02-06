@@ -74,6 +74,7 @@ namespace Server_Console_Tcp
                                 string notice = $"{username} 已上线";
                                 Notice(notice);
                                 client.Client.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
+                                client.Client.Send(new byte[1] { 255 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now}")).ToArray());
                                 break;
 
                             // 聊天信息
