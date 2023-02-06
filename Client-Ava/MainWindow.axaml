@@ -16,7 +16,7 @@
 		<SplitView.Content>
 			<StackPanel HorizontalAlignment="Left"
 						VerticalAlignment="Bottom">
-				<ListBox x:Name="ChatListBox" Margin="0 0 0 5" Height="400">
+				<ListBox x:Name="ChatListBox" Margin="0 0 0 5" Height="400" VirtualizationMode="None">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
