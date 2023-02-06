@@ -117,7 +117,8 @@ namespace Client_Ava
                     // Ê±¼ä´Á
                     case 2:
                         long timestamp = BitConverter.ToInt64(args.ReceivedData, 1);
-                        long ping = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - timestamp;
+                        long localTimestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                        long ping = localTimestamp - timestamp;
                         InfoPage.PingText.Text = $"ÑÓ³Ù£º{ping} ms";
                         break;
                 }
