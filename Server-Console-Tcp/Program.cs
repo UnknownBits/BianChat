@@ -102,7 +102,7 @@ namespace Server_Console_Tcp
                             // 返回 Ping 包
                             case 255:
                                 long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes((t1 - t0) / 2)).ToArray());
+                                client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes((t1 - t0))).ToArray());
                                 break;
                         }
                     }
