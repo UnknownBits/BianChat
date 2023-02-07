@@ -10,7 +10,7 @@ namespace Server_Console_Tcp
 
         static void Main(string[] args)
         {
-            TcpListener listener = new TcpListener(IPAddress.Any, 5000);
+            TcpListener listener = new TcpListener(IPAddress.Any, 911);
 
             listener.Start();
             Console.WriteLine("等待客户端连接...");
