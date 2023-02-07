@@ -324,7 +324,10 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == 253) ; // 测时包，不需要处理
+                            if (buffer[0] == 253)
+                            {
+                                client.Client.Send(new byte[1] { 255 });
+                            }
                             else if (buffer[0] == 254) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);

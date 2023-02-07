@@ -42,6 +42,7 @@ namespace Server_Console_Tcp
         {
             TcpListener listener = (TcpListener)ar.AsyncState;
             TcpClient client = listener.EndAcceptTcpClient(ar);
+            long t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             bool connected = true;
             clients.Add(client);
             Console.WriteLine($"{(IPEndPoint)client.Client.RemoteEndPoint} 已连接，当前连接数 {clients.Count}");
@@ -97,6 +98,12 @@ namespace Server_Console_Tcp
                                     }
                                 }
                                 break;
+
+                            // 返回 Ping 包
+                            case 255:
+                                long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes((t1 - t0) / 2)).ToArray());
+                                break;
                         }
                     }
                     catch
@@ -132,10 +139,8 @@ namespace Server_Console_Tcp
                     await Task.Delay(1000);
                     try
                     {
-                        long t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                        t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                         client.Client.Send(new byte[1] { 253 });
-                        long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                        client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
                     }
                     catch
                     {
