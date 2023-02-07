@@ -229,7 +229,9 @@ namespace Client_Ava
             }
             else
             {
+                long timestamp = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 Client.Send($"{LoginPage.Username.Text} 说：{SendTextBox.Text}");
+                long timestamp2 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 ChatList.Add(new ListBoxItem
                 {
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Right,
@@ -322,14 +324,11 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == 253) // Ping 包
+                            if (buffer[0] == 253) ; // 测时包，不需要处理
+                            else if (buffer[0] == 254) // Ping 包
                             {
-                                timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                            }
-                            else if (buffer[0] == 254) // 2 号 Ping 包
-                            {
-                                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                                PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff) });
+                                int ping = BitConverter.ToInt32(buffer, 1);
+                                PingReceived(client, new PingReceivedEventArgs { Ping = ping });
                             }
                             else
                             {

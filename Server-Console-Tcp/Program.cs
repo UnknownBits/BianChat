@@ -37,6 +37,7 @@ namespace Server_Console_Tcp
                 }
             }
         }
+
         private static void AcceptCallback(IAsyncResult ar)
         {
             TcpListener listener = (TcpListener)ar.AsyncState;
@@ -131,8 +132,10 @@ namespace Server_Console_Tcp
                     await Task.Delay(1000);
                     try
                     {
+                        long t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                         client.Client.Send(new byte[1] { 253 });
-                        client.Client.Send(new byte[1] { 254 });
+                        long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                        client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
                     }
                     catch
                     {
