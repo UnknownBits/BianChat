@@ -322,11 +322,11 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == 253)
+                            if (buffer[0] == 253) // Ping °ü
                             {
                                 timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                             }
-                            else if (buffer[0] == 254)
+                            else if (buffer[0] == 254) // 2 ºÅ Ping °ü
                             {
                                 long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                                 PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff - 500) });
