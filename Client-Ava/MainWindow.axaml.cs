@@ -324,11 +324,11 @@ namespace Client_Ava
                             }
                             if (buffer[0] == 253)
                             {
-                                timediff = BitConverter.ToInt64(buffer, 1);
+                                timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                             }
                             else if (buffer[0] == 254)
                             {
-                                long timestamp = BitConverter.ToInt64(buffer, 1);
+                                long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                                 PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff - 500) });
                             }
                             else

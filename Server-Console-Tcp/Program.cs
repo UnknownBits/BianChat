@@ -131,9 +131,9 @@ namespace Server_Console_Tcp
                     await Task.Delay(1000);
                     try
                     {
-                        client.Client.Send(new byte[1] { 253 }.Concat(BitConverter.GetBytes(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())).ToArray());
+                        client.Client.Send(new byte[1] { 253 });
                         await Task.Delay(500);
-                        client.Client.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds())).ToArray());
+                        client.Client.Send(new byte[1] { 254 });
                     }
                     catch
                     {
