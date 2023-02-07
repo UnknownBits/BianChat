@@ -136,7 +136,7 @@ namespace Server_Console_Tcp
             {
                 while (true)
                 {
-                    await Task.Delay(1000);
+                    await Task.Delay(5000);
                     try
                     {
                         t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
