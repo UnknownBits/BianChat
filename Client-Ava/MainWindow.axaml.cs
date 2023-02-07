@@ -329,7 +329,7 @@ namespace Client_Ava
                             else if (buffer[0] == 254) // 2 ºÅ Ping °ü
                             {
                                 long timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                                PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff - 500) });
+                                PingReceived(client, new PingReceivedEventArgs { Ping = (int)(timestamp - timediff) });
                             }
                             else
                             {

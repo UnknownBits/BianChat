@@ -132,7 +132,6 @@ namespace Server_Console_Tcp
                     try
                     {
                         client.Client.Send(new byte[1] { 253 });
-                        await Task.Delay(500);
                         client.Client.Send(new byte[1] { 254 });
                     }
                     catch
