@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="MySql.Data" Version="8.0.32" />
   </ItemGroup>
 
 </Project>
