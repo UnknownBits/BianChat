@@ -9,13 +9,14 @@ using MySqlConnector;
 
 namespace Server_Console
 {
-    public class MySql
+    public class MySql : IDisposable
     {
         /// <summary>
         /// 
         /// </summary>
         public MySqlConnection conn;
-        
+        private bool disposedValue;
+
         /// <summary>
         /// 
         /// </summary>
@@ -82,6 +83,26 @@ namespace Server_Console
                 rdr.Close();
                 return false;
             }
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    conn.Close();
+                }
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

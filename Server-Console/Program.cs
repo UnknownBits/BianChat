@@ -8,7 +8,6 @@ namespace Server_Console
     public class Threadtcpserver
     {
         private static Socket server;
-        public static MySql MySql = new MySql();
 
         static void Main(string[] args)
         {
@@ -16,16 +15,6 @@ namespace Server_Console
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream,ProtocolType.Tcp);
             server.Bind(iep);
             server.Listen(20);
-
-            // 连接 SQL 服务器
-            Task.Run(async () =>
-            {
-                while (true)
-                {
-                    await Task.Delay(5000);
-                    if (MySql.conn.State != ConnectionState.Open) MySql = new MySql();
-                }
-            });
 
             Console.WriteLine("等待客户机进行连接......");
             while (true)
@@ -140,8 +129,9 @@ namespace Server_Console
 
             public bool QueryDatabase(string username, string passwd_sha256)
             {
-                int user_id = MySql.Get_user_id(username);
-                bool result = MySql.Vaild_Password(user_id, passwd_sha256);
+                using MySql mySql = new MySql();
+                int user_id = mySql.Get_user_id(username);
+                bool result = mySql.Vaild_Password(user_id, passwd_sha256);
                 return result;
             }
 
