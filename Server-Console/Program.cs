@@ -7,6 +7,7 @@ namespace Server_Console
     public class Threadtcpserver
     {
         private static Socket server;
+        public static bool IsLocal = false;
 
         static void Main(string[] args)
         {
@@ -36,6 +37,10 @@ namespace Server_Console
                 if (command.StartsWith("notice ") && command.Length > 7)
                 {
                     ClientThread.Notice(command.Substring(7));
+                }
+                else if (command.StartsWith("local_mode ") && command.Length > 12)
+                {
+                    IsLocal = bool.Parse(command.Substring(11));
                 }
             }
         }
@@ -104,8 +109,15 @@ namespace Server_Console
                                 case 0: // 登录包
                                     string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
                                     username = login_info[0];
-                                    string notice = $"{username} 已上线";
-                                    Notice(notice);
+                                    Task.Run(async () =>
+                                    {
+                                        if (IsLocal)
+                                        {
+                                            await Task.Delay(10);
+                                        }
+                                        string notice = $"{username} 已上线";
+                                        Notice(notice);
+                                    });
                                     string passwd_sha256 = login_info[1];
                                     try
                                     {
