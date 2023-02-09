@@ -29,7 +29,7 @@ namespace Server_Console
 
         public class ClientThread
         {
-            public long t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            public long t0;
             public static List<ClientThread> clients = new List<ClientThread>();
             public Socket service;
             public bool connected = false;
@@ -104,8 +104,7 @@ namespace Server_Console
                     catch { Disconnect(); break; }
                 }
             }
-            public void Disconnect()
-            {
+            public void Disconnect() {
                 if (connected) {
                     try {
                         lock (clients) {

@@ -53,7 +53,7 @@ namespace Server_Console_Tcp
             else
             {
                 rdr.Close();
-                throw new Exception("sql返回值为空");
+                throw new Exception("SQL返回值为空");
             }
         }
         
@@ -79,11 +79,11 @@ namespace Server_Console_Tcp
             else
             {
                 rdr.Close();
-                throw new Exception("返回值为空");
+                throw new Exception("SQL返回值为空");
             }
         }
 
-        public string Get_SHA256(string Data)
+        public static string Get_SHA256(string Data)
         {
             byte[] SHA256Data = Encoding.UTF8.GetBytes(Data);
             SHA256Managed Sha256 = new SHA256Managed();
