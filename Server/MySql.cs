@@ -16,7 +16,7 @@ namespace Server
 
         public MySql()
         {
-            conn = new MySqlConnection($"server = {Environment.Sql_Server()}; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v");
+            conn = new MySqlConnection($"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v");
             try { conn.Open(); }
             catch (Exception ex)
             {
