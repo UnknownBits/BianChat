@@ -161,6 +161,7 @@ namespace Server_Console
                     catch {}
                 }
             }
+
             public static void Notice(string notice) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"公告包：{notice}"); }
         }
     }
