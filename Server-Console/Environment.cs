@@ -7,15 +7,20 @@ using System.Threading.Tasks;
 
 namespace Server_Console
 {
-    internal class Environment
+    internal static class Environment
     {
-        public ModeType Mode = ModeType.Online; 
-        public enum ModeType
+        public static ModeType Mode = ModeType.Online; 
+        public static enum ModeType
         {
             Online,//在线模式
             Local, //本地模式
             Maintenance //维护模式
         }
-
+        public static string Sql_Server()
+        {
+            if (Mode == ModeType.Online || Mode == ModeType.Maintenance)
+            { return "127.0.0.1"; }
+            else return "221.224.90.88";
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using MySqlX.XDevAPI;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -121,7 +122,7 @@ namespace Server_Console
                                     string passwd_sha256 = login_info[1];
                                     try
                                     {
-                                        if (!QueryDatabase(username, passwd_sha256))
+                                        if (Environment.Mode == Environment.ModeType.Local ||!QueryDatabase(username, passwd_sha256))
                                         {
                                             service.Send(new byte[2] { 255, 0 });
                                             Disconnect();
@@ -160,7 +161,7 @@ namespace Server_Console
 
             public bool QueryDatabase(string username, string passwd_sha256)
             {
-                using MySql mySql = new MySql();
+                using var mySql = new MySql();
                 int user_id = mySql.Get_user_id(username);
                 bool result = mySql.Vaild_Password(user_id, passwd_sha256);
                 return result;

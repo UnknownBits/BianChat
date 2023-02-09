@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 
 namespace Server_Console
 {
@@ -22,8 +22,7 @@ namespace Server_Console
         /// </summary>
         public MySql()
         {
-            string connStr = $"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
-            conn = new MySqlConnection(connStr);
+            conn = new MySqlConnection($"server = {Environment.Sql_Server}; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v");
             try
             {
                 conn.Open();
