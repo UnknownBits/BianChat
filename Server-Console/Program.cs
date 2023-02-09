@@ -56,85 +56,94 @@ namespace Server_Console
 
             public void ClientService()
             {
-                String data = null;
-                byte[] bytes = new byte[8193];
-
-                //如果Socket不是空 
                 if (service != null)
                 {
-                    connected = true;
-                    clients.Add(this);
-                }
-                Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
+                    byte[] bytes = new byte[8193];
 
-                Task.Run(async () => {
-                    await Task.Delay(5000);
-                    if (username == null) { Disconnect(); }
-                });
+                    //如果Socket不是空 
 
-                Task.Run(async () => {
-                    while (true)
+                    {
+                        connected = true;
+                        clients.Add(this);
+                    }
+                    Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
+
+                    Task.Run(async () =>
                     {
                         await Task.Delay(5000);
-                        try {
-                            t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                            service.Send(new byte[1] { 253 });
-                        }
-                        catch {
-                            Disconnect();
-                            break;
-                        }
-                    }
-                });
+                        if (username == null) { Disconnect(); }
+                    });
 
-                while (true)
-                {
-                    try
+                    Task.Run(async () =>
                     {
-                        byte[] buffer = new byte[8193];
-                        int size = service.Receive(buffer);
-                        if (size <= 0) { throw new Exception(); }
-                        Array.Resize(ref buffer, size);
-                        switch (buffer[0]) {
-                            case 0: // 登录包
-                                string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
-                                username = login_info[0];
-                                string notice = $"{username} 已上线";
-                                Notice(notice);
-                                string passwd_sha256 = login_info[1];
-                                try
-                                {
-                                    if (!QueryDatabase(username, passwd_sha256))
+                        while (true)
+                        {
+                            await Task.Delay(5000);
+                            try
+                            {
+                                t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                service.Send(new byte[1] { 253 });
+                            }
+                            catch
+                            {
+                                Disconnect();
+                                break;
+                            }
+                        }
+                    });
+
+                    while (true)
+                    {
+                        try
+                        {
+                            byte[] buffer = new byte[8193];
+                            int size = service.Receive(buffer);
+                            if (size <= 0) { throw new Exception(); }
+                            Array.Resize(ref buffer, size);
+                            switch (buffer[0])
+                            {
+                                case 0: // 登录包
+                                    string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                                    username = login_info[0];
+                                    string notice = $"{username} 已上线";
+                                    Notice(notice);
+                                    string passwd_sha256 = login_info[1];
+                                    try
                                     {
-                                        service.Send(new byte[2] { 255, 0 });
+                                        if (!QueryDatabase(username, passwd_sha256))
+                                        {
+                                            service.Send(new byte[2] { 255, 0 });
+                                            Disconnect();
+                                            break;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        service.Send(new byte[2] { 255, 255 });
                                         Disconnect();
                                         break;
                                     }
-                                }
-                                catch
-                                {
-                                    service.Send(new byte[2] { 255, 255 });
-                                    Disconnect();
+                                    service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
                                     break;
-                                }
-                                service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
-                                break;
-                            case 1: // 聊天信息
-                                Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
-                                lock (clients) {
-                                    foreach (var client in clients) {
-                                        try { if (client != this) { client.service.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray()); } }
-                                        catch { client.Disconnect(); }
+                                case 1: // 聊天信息
+                                    Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+                                    lock (clients)
+                                    {
+                                        foreach (var client in clients)
+                                        {
+                                            try { if (client != this) { client.service.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                            catch { client.Disconnect(); }
+                                        }
                                     }
-                                }
-                                break;
-                            case 255: // 返回 Ping 包
-                                long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
-                                break;
+                                    break;
+                                case 255: // 返回 Ping 包
+                                    long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                    service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
+                                    break;
+                            }
                         }
+                        catch { Disconnect(); break; }
                     }
-                    catch { Disconnect(); break; }
                 }
             }
 
