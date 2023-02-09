@@ -17,16 +17,27 @@ namespace Server_Console
             server.Listen(20);
 
             Console.WriteLine("等待客户机进行连接......");
+            Task.Run(() =>
+            {
+                while (true)
+                {
+                    //得到包含客户端信息的套接字  
+                    Socket client = server.Accept();
+                    //创建消息服务线程对象  
+                    ClientThread newclient = new ClientThread(client);
+                    //把ClientThread类的ClientService方法委托给线程  
+                    Thread newthread = new Thread(new ThreadStart(newclient.ClientService));
+                    //启动消息服务线程  
+                    newthread.Start();
+                }
+            });
             while (true)
             {
-                //得到包含客户端信息的套接字  
-                Socket client = server.Accept();
-                //创建消息服务线程对象  
-                ClientThread newclient = new ClientThread(client);
-                //把ClientThread类的ClientService方法委托给线程  
-                Thread newthread = new Thread(new ThreadStart(newclient.ClientService));
-                //启动消息服务线程  
-                newthread.Start();
+                string command = Console.ReadLine();
+                if (command.StartsWith("notice ") && command.Length > 7)
+                {
+                    ClientThread.Notice(command.Substring(7));
+                }
             }
         }
 
@@ -150,7 +161,7 @@ namespace Server_Console
                     catch {}
                 }
             }
-            private static void Notice(string notice) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"公告包：{notice}"); }
+            public static void Notice(string notice) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"公告包：{notice}"); }
         }
     }
 }

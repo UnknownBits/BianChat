@@ -182,6 +182,13 @@ namespace Client_Ava
 
                     try
                     {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            ChatList.Clear();
+                            ChatListBox.Items = ChatList;
+                            InfoPage.Notices.Clear();
+                        }).Wait();
+
                         Client.Connect(ip);
                         Client.BeginReceive();
                         string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
@@ -189,11 +196,8 @@ namespace Client_Ava
 
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            ChatList.Clear();
-                            ChatListBox.Items = ChatList;
                             SendTextBox.IsEnabled = true;
                             SendButton.IsEnabled = true;
-                            InfoPage.Notices.Clear();
                         }).Wait();
                     }
                     catch
