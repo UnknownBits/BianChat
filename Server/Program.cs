@@ -133,11 +133,14 @@ namespace Server
                                     string passwd_sha256 = login_info[1];
                                     try
                                     {
-                                        if (Environment.Mode != Environment.ModeType.Local && !QueryDatabase(username, passwd_sha256))
+                                        if (Environment.Mode != Environment.ModeType.Local)
                                         {
-                                            service.Send(new byte[2] { 255, 0 });
-                                            Disconnect();
-                                            break;
+                                            if (!QueryDatabase(username, passwd_sha256))
+                                            {
+                                                service.Send(new byte[2] { 255, 0 });
+                                                Disconnect();
+                                                break;
+                                            }
                                         }
                                     }
                                     catch

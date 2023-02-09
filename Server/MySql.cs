@@ -34,7 +34,7 @@ namespace Server
         {
             string sql = "SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"@username\"";
             MySqlCommand cmd = new MySqlCommand(sql, conn);
-            cmd.Parameters.AddWithValue("username", user_name);
+            cmd.Parameters.AddWithValue("@username", user_name);
             MySqlDataReader rdr = cmd.ExecuteReader();
             rdr.Read();
             var value = rdr[0].ToString();
