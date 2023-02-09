@@ -49,7 +49,7 @@ namespace Server_Console
                     connected = true;
                     clients.Add(this);
                 }
-                Console.WriteLine("新客户连接建立：{0}个连接数", clients.Count);
+                Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
 
                 Task.Run(async () => {
                     await Task.Delay(5000);
@@ -117,7 +117,7 @@ namespace Server_Console
                             clients.Remove(this);
                             service.Close();
                         }
-                        Notice($"{username}已下线");
+                        Notice($"{username} 已下线");
                         Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
                     }
                     catch {}
