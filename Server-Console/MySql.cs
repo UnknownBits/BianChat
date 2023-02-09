@@ -11,22 +11,13 @@ namespace Server_Console
 {
     public class MySql : IDisposable
     {
-        /// <summary>
-        /// 
-        /// </summary>
         public MySqlConnection conn;
         private bool disposedValue;
 
-        /// <summary>
-        /// 
-        /// </summary>
         public MySql()
         {
             conn = new MySqlConnection($"server = {Environment.Sql_Server}; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v");
-            try
-            {
-                conn.Open();
-            }
+            try { conn.Open(); }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
