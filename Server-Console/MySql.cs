@@ -41,8 +41,9 @@ namespace Server_Console
         /// <exception cref="Exception"></exception>
         public int Get_user_id(string user_name)
         {
-            string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
+            string sql = "SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"@username\"";
             MySqlCommand cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("username", user_name);
             MySqlDataReader rdr = cmd.ExecuteReader();
             rdr.Read();
             var value = rdr[0].ToString();

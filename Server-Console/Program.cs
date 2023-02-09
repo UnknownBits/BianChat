@@ -8,7 +8,6 @@ namespace Server_Console
     public class Threadtcpserver
     {
         private static Socket server;
-        public static bool IsLocal = false;
 
         static void Main(string[] args)
         {
@@ -39,9 +38,23 @@ namespace Server_Console
                 {
                     ClientThread.Notice(command.Substring(7));
                 }
-                else if (command.StartsWith("local_mode ") && command.Length > 12)
+                else if (command.StartsWith("mode ") && command.Length > 5)
                 {
-                    IsLocal = bool.Parse(command.Substring(11));
+                    string mode = command.Substring(5);
+                    switch (mode)
+                    {
+                        case "online":
+                            Environment.Mode = Environment.ModeType.Online;
+                            break;
+
+                        case "local":
+                            Environment.Mode = Environment.ModeType.Local;
+                            break;
+
+                        case "maintenance":
+                            Environment.Mode = Environment.ModeType.Maintenance;
+                            break;
+                    }
                 }
             }
         }
@@ -112,7 +125,7 @@ namespace Server_Console
                                     username = login_info[0];
                                     Task.Run(async () =>
                                     {
-                                        if (IsLocal)
+                                        if (Environment.Mode == Environment.ModeType.Local)
                                         {
                                             await Task.Delay(10);
                                         }

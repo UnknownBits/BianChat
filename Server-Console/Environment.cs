@@ -12,9 +12,9 @@ namespace Server_Console
         public static ModeType Mode = ModeType.Online; 
         public static enum ModeType
         {
-            Online,//在线模式
-            Local, //本地模式
-            Maintenance //维护模式
+            Online,// 在线模式
+            Local, // 本地模式
+            Maintenance // 维护模式
         }
         public static string Sql_Server()
         {
