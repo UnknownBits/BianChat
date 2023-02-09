@@ -15,6 +15,8 @@ namespace Server_Console
         /// 
         /// </summary>
         public MySqlConnection conn;
+
+        public bool Connected = false;
         
         /// <summary>
         /// 
@@ -23,17 +25,14 @@ namespace Server_Console
         {
             string connStr = $"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
             conn = new MySqlConnection(connStr);
-        }
-
-        public void Connect()
-        {
             try
             {
                 conn.Open();
+                Connected = true;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex);
             }
         }
 

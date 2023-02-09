@@ -16,6 +16,16 @@ namespace Server_Console
             server.Bind(iep);
             server.Listen(20);
 
+            // 连接 SQL 服务器
+            Task.Run(async () =>
+            {
+                while (true)
+                {
+                    await Task.Delay(1000);
+                    if (!MySql.Connected) MySql = new MySql();
+                }
+            });
+
             Console.WriteLine("等待客户机进行连接......");
             while (true)
             {
