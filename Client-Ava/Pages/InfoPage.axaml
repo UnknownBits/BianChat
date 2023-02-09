@@ -17,7 +17,7 @@
 			<TextBlock x:Name="ServerName" FontSize="15" Margin="0 10 0 0">服务器：</TextBlock>
 			<TextBlock x:Name="PingText" FontSize="15" Margin="0 10 0 0">延迟：0 ms</TextBlock>
 			<TextBlock FontSize="15" Margin="0 10 0 0">公告：</TextBlock>
-			<ListBox x:Name="NoticeListBox" Margin="20 10 0 0" MaxHeight="70" VirtualizationMode="None">
+			<ListBox x:Name="NoticeListBox" Margin="20 10 0 0" MaxHeight="150" MaxWidth="150" VirtualizationMode="None">
 				<ListBox.ItemsPanel>
 					<ItemsPanelTemplate>
 						<VirtualizingStackPanel VerticalAlignment="Bottom"/>

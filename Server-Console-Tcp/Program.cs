@@ -16,17 +16,26 @@ namespace Server_Console_Tcp
             Console.WriteLine("等待客户端连接...");
             listener.BeginAcceptTcpClient(AcceptCallback, listener);
 
-            string input = null;
+            string input = Console.ReadLine();
             while (input != "exit")
             {
-                input = Console.ReadLine();
-                if (input == "end all")
+                if(input.StartsWith("end "))
                 {
-                    lock (clients)
+                    if (input.Length > 4)
                     {
-                        foreach (var client in clients)
+                        int i;
+                        bool result = int.TryParse(input.AsSpan(4), out i);
+                        if (result && 0 < i && i <= clients.Count)
                         {
-                            client.Close();
+                            lock (clients)
+                            {
+                                clients[i-1].Client.Close();
+                            }
+                            Console.WriteLine($"PID为{i}的客户端连接被结束");
+                        }
+                        else
+                        {
+                            Console.WriteLine("请输入正确的客户端pid");
                         }
                     }
                 }
@@ -35,6 +44,7 @@ namespace Server_Console_Tcp
                     if (input.Length > 7)
                         Notice(input.Substring(7));
                 }
+                input = Console.ReadLine();
             }
         }
 
@@ -76,7 +86,6 @@ namespace Server_Console_Tcp
                                 string notice = $"{username} 已上线";
                                 Notice(notice);
                                 client.Client.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
-                                client.Client.Send(new byte[1] { 255 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now}")).ToArray());
                                 break;
 
                             // 聊天信息
@@ -164,7 +173,7 @@ namespace Server_Console_Tcp
                 {
                     try
                     {
-                        client1.Client.Send(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray());
+                        client1.Client.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray());
                     }
                     catch
                     {

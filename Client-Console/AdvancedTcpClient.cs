@@ -33,27 +33,30 @@ namespace Client_Console
         {
             client = new TcpClient();
         }
+
         public void Connect(string ip, int port)
         {
             client.Connect(ip, port);
             Connected = true;
         }
+
         public void BeginReceive()
         {
             if (Connected)
             {
                 ReceiveTask = new Thread(() =>
                 {
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     while (true)
                     {
                         try
                         {
                             // 接收
+                            int size = 0;
                             byte[] buffer = new byte[8193];
-                            obj.ToString();
                             if (client.Client != null)
                             {
-                                int size = client.Client.Receive(buffer);
+                                size = client.Client.Receive(buffer);
                                 Array.Resize(ref buffer, size);
                             }
                             else
@@ -61,13 +64,29 @@ namespace Client_Console
                                 Connected = false;
                                 break;
                             }
-                            DataReceived(
-                                client, new DataReceivedEventArgs { ReceivedData = buffer });
+                            if (size <= 0)
+                            {
+                                throw new SocketException(10054);
+                            }
+                            if (buffer[0] == 253)
+                            {
+                            }
+                            else if (buffer[0] == 254) // Ping 包
+                            {
+                            }
+                            else
+                            {
+                                DataReceived(
+                                    client, new DataReceivedEventArgs { ReceivedData = buffer });
+                            }
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            client.Close();
-                            Connected = false;
+                            if (Connected)
+                            {
+                                Connected = false;
+                                client.Close();
+                            }
                             break;
                         }
                     }
@@ -76,6 +95,7 @@ namespace Client_Console
                 ReceiveTask.Start();
             }
         }
+
 
         public void EndReceive()
         {
@@ -91,15 +111,22 @@ namespace Client_Console
                     catch { }
                 }
             }
+
             Connected = false;
         }
+
         public bool Send(string message)
+        {
+            return SendBytes(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes(message)).ToArray());
+        }
+
+        public bool SendBytes(byte[] data)
         {
             if (Connected)
             {
                 try
                 {
-                    client.Client.Send(Encoding.UTF8.GetBytes(message));
+                    client.Client.Send(data);
                     return true;
                 }
                 catch
@@ -108,6 +135,7 @@ namespace Client_Console
                     return false;
                 }
             }
+
             return false;
         }
     }

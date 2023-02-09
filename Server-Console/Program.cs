@@ -1,46 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
 
 namespace Server_Console
 {
     public class Threadtcpserver
     {
-
-        /* 本程序中采用了多线程技术，可以应付多客户的需求。首先，程序的主线程也就是程序的入口即Main（）函数， 
-         * 当执行到Accept方法时，线程变会阻塞；当有新连接时，就创建相应的消息服务线程。而主程序则继续进行监听， 
-         * 检查有没有新的连接进入。如果客户端有向服务器连接的请求，那么就把连接句柄传递给接收的套接字。由于线程 
-         * 的调度和切换是非常快的，快得足以让我们分辨不出程序的运行顺序，所以从宏观上来讲，可以说程序是并行执行 
-         * 的。但事实上，从微观的角度上说，只是cpu飞快地调度线程，让我们感觉好像可以同时接收连接和处理消息一样， 
-         * 但在一个时刻，只有一个线程是处于运行状态的。 
-         */
-
-
-        /// <summary>  
-        /// 下面这段代码的业务逻辑是：  
-        /// （1）创建套接字server，并将其与本地终结点iep进行绑定。然后，在13000端口上监听是否  
-        // 有新的客户端进行连接
-        /// （2）在无限循环中有一个阻塞的方法Accept，该方法直到有新客户端连接到服务器上时，把  
-        // 客户端的套接字信息传递给client对象。否则，将阻塞 直到有客户机进行连接。  
-        /// （3）ClientThread类负责客户端与服务器端之间的通信。先把客户端的套接字句柄传递给  
-        ///       负责消息服务的ClientThread类。然后，把ClientThread类 的ClientService方  
-        //法委托给线程，并启动线程。   
-        /// </summary>  
         private static Socket server;
         static void Main(string[] args)
         {
-            //初始化IP地址  
-            IPAddress local = IPAddress.Any; //.Parse("127.0.0.1");
-            IPEndPoint iep = new IPEndPoint(local, 911);
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream,
-            ProtocolType.Tcp);
-            //将套接字与本地终结点绑定  
+            IPEndPoint iep = new IPEndPoint(IPAddress.Any, 911);
+            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream,ProtocolType.Tcp);
             server.Bind(iep);
-            //在本地13000端口号上进行监听  
             server.Listen(20);
             Console.WriteLine("等待客户机进行连接......");
             while (true)
@@ -55,64 +26,112 @@ namespace Server_Console
                 newthread.Start();
             }
         }
-        /// <summary>  
-        /// （1）在构造函数中得到接收到的客户套接字client，以后就通过service句柄处理消息的接收  
-        ///      和发送。  
-        /// （2）ClientService方法是委托给线程的，此方法进行消息的处理工作。在这里实现的功能是，  
-        ///       先从客户端接收一条消息，然后把这条消息转换为大写字母，并立即发送一条应答的消息，  
-        ///      也就是所谓的echo技术，通常用来进行消息之间的传递。  
-        /// （3）还有就是通过connections变量来记录活动的连接数。当有新增连接或断开连接的情况发   
-        ///       生时，都会体现出connections的变化。  
-        /// </summary>  
+
         public class ClientThread
         {
-            //connections变量表示连接数  
-            public static int connections = 0;
-            public static List<Socket> clients = new List<Socket>();
+            public long t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+            public static List<ClientThread> clients = new List<ClientThread>();
             public Socket service;
-            int i;
-            //构造函数  
+            public bool connected = false;
+            public string username = null;
             public ClientThread(Socket clientsocket)
-            {
-                //service对象接管对消息的控制  
+            { 
                 this.service = clientsocket;
             }
             public void ClientService()
             {
                 String data = null;
                 byte[] bytes = new byte[8193];
-                //如果Socket不是空，则连接数加1  
+
+                //如果Socket不是空 
                 if (service != null)
                 {
-                    connections++;
-                    clients.Add(service);
+                    connected = true;
+                    clients.Add(this);
                 }
-                Console.WriteLine("新客户连接建立：{0}个连接数", connections);
-                try
-                {
-                    while ((i = service.Receive(bytes)) != 0)
+                Console.WriteLine("新客户连接建立：{0}个连接数", clients.Count);
+
+                Task.Run(async () => {
+                    await Task.Delay(5000);
+                    if (username == null) { Disconnect(); }
+                });
+
+                Task.Run(async () => {
+                    while (true)
                     {
-                        data = System.Text.Encoding.UTF8.GetString(bytes, 0, i);
-                        Array.Resize(ref bytes, i);
-                        Console.WriteLine("收到的数据：{0} " + ((System.Net.IPEndPoint)service.RemoteEndPoint).Address, data);
-                        foreach (Socket socket in clients)
-                        {
-                            socket.Send(bytes);
+                        await Task.Delay(5000);
+                        try {
+                            t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                            service.Send(new byte[1] { 253 });
                         }
-                        bytes = new byte[512];
+                        catch {
+                            Disconnect();
+                            break;
+                        }
+                    }
+                });
+
+                while (true)
+                {
+                    try
+                    {
+                        byte[] buffer = new byte[8193];
+                        int size = service.Receive(buffer);
+                        if (size <= 0) { throw new Exception(); }
+                        Array.Resize(ref buffer, size);
+                        switch (buffer[0])
+                        {
+                            case 0: // 登录包
+                                username = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
+                                string notice = $"{username} 已上线";
+                                Notice(notice);
+                                service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
+                                break;
+                            case 1: // 聊天信息
+                                Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+                                lock (clients) {
+                                    foreach (var client in clients) {
+                                        try { if (client != this) { client.service.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                        catch { client.Disconnect(); }
+                                    }
+                                }
+                                break;
+                            case 255: // 返回 Ping 包
+                                long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                                service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes((t1 - t0))).ToArray());
+                                break;
+                        }
+                    }
+                    catch {
+                        Disconnect();
+                        break;
                     }
                 }
-                catch (Exception e)
-                {
-                    Console.Write(e.Message);
+            }
+            public void Disconnect()
+            {
+                if (connected) {
+                    try {
+                        lock (clients) {
+                            connected = false;
+                            clients.Remove(this);
+                            service.Close();
+                        }
+                        Notice($"{username}已下线");
+                        Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
+                    }
+                    catch {}
                 }
-                //关闭套接字  
-                service.Close();
-                connections--;
-                clients.Remove(service);
-                Console.WriteLine("客户关闭连接：{0}个连接数", connections);
+            }
+            private static void Notice(string notice) {
+                lock (clients) {
+                    foreach (var client in clients) {
+                        try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); }
+                        catch { client.Disconnect(); }
+                    }
+                }
+                Console.WriteLine($"公告包：{notice}");
             }
         }
     }
-
 }

@@ -105,7 +105,7 @@ namespace Client_Ava
                 switch (args.ReceivedData[0])
                 {
                     // ¹«¸æ
-                    case 0:
+                    case 9:
                         string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
                         break;
@@ -119,17 +119,6 @@ namespace Client_Ava
                             Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
                             IsHitTestVisible = false
                         });
-                        break;
-
-                    case 255:
-                        string stamp = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
-                        ChatList.Add(new ListBoxItem
-                        {
-                            HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-                            Content = new TextBlock { Text = stamp, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
-                            IsHitTestVisible = false
-                        });
-                        Client.Send($"{LoginPage.Username.Text} Ëµ£º{stamp}");
                         break;
                 }
             });
