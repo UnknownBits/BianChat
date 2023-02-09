@@ -7,6 +7,7 @@ namespace Server_Console_Tcp
     internal class Program
     {
         private static List<TcpClient> clients = new List<TcpClient>();
+        private static MySql MySql = new MySql();
 
         static void Main(string[] args)
         {
@@ -48,6 +49,13 @@ namespace Server_Console_Tcp
             }
         }
 
+        public static bool QueryDatabase(string username, string passwd_sha256)
+        {
+            int user_id = MySql.Get_user_id(username);
+            bool result = MySql.Vaild_Password(user_id, passwd_sha256);
+            return result;
+        }
+
         private static void AcceptCallback(IAsyncResult ar)
         {
             TcpListener listener = (TcpListener)ar.AsyncState;
@@ -82,7 +90,15 @@ namespace Server_Console_Tcp
                         {
                             // 登录
                             case 0:
-                                username = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
+                                string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                                username = login_info[0];
+                                string passwd_sha256 = login_info[1];
+                                if (!QueryDatabase(username, passwd_sha256))
+                                {
+                                    client.Client.Send(new byte[2] { 255, 0 });
+                                    Disconnect();
+                                    break;
+                                }
                                 string notice = $"{username} 已上线";
                                 Notice(notice);
                                 client.Client.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());

@@ -9,7 +9,7 @@ using System.Security.Cryptography;
 
 namespace Server_Console_Tcp
 {
-    internal class mysql
+    public class MySql
     {
         /// <summary>
         /// 
@@ -19,7 +19,7 @@ namespace Server_Console_Tcp
         /// <summary>
         /// 
         /// </summary>
-        public mysql()
+        public MySql()
         {
             string connStr = $"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
             conn = new MySqlConnection(connStr);
@@ -64,7 +64,7 @@ namespace Server_Console_Tcp
         /// <param name="password_SHA256"></param>
         /// <returns></returns>
         /// <exception cref="Exception"></exception>
-        public bool Get_password(int uid, string password_SHA256)
+        public bool Vaild_Password(int uid, string password_SHA256)
         {
             string sql = $"SELECT UserInfo.`Password` FROM UserInfo WHERE UserInfo.Uid = {uid}";
             MySqlCommand cmd = new MySqlCommand(sql, conn);
@@ -81,14 +81,6 @@ namespace Server_Console_Tcp
                 rdr.Close();
                 throw new Exception("返回值为空");
             }
-        }
-
-        public string Get_SHA256(string Data)
-        {
-            byte[] SHA256Data = Encoding.UTF8.GetBytes(Data);
-            SHA256Managed Sha256 = new SHA256Managed();
-            byte[] by = Sha256.ComputeHash(SHA256Data);
-            return BitConverter.ToString(by).Replace("-", "").ToLower();
         }
     }
 }

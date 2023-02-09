@@ -9,26 +9,31 @@ using MySqlConnector;
 
 namespace Server_Console
 {
-    internal class mysql
+    public class MySql
     {
         /// <summary>
         /// 
         /// </summary>
-        MySqlConnection conn;
+        public MySqlConnection conn;
         
         /// <summary>
         /// 
         /// </summary>
-        public mysql()
+        public MySql()
         {
             string connStr = $"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
             conn = new MySqlConnection(connStr);
-            try { 
-                conn.Open(); 
+        }
+
+        public void Connect()
+        {
+            try
+            {
+                conn.Open();
             }
-            catch (Exception ex) 
-            { 
-                Console.WriteLine(ex.ToString()); 
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
         }
 
@@ -70,7 +75,7 @@ namespace Server_Console
             MySqlCommand cmd = new MySqlCommand(sql, conn);
             MySqlDataReader rdr = cmd.ExecuteReader();
             rdr.Read();
-            var s = rdr[0].ToString();
+            var s = rdr[0].ToString().Replace("\r\n", "");
             if (s != null && password_SHA256 != null && s == password_SHA256)
             {
                 rdr.Close();
@@ -79,16 +84,8 @@ namespace Server_Console
             else
             {
                 rdr.Close();
-                throw new Exception("返回值为空");
+                return false;
             }
-        }
-
-        public string Get_SHA256(string Data)
-        {
-            byte[] SHA256Data = Encoding.UTF8.GetBytes(Data);
-            SHA256Managed Sha256 = new SHA256Managed();
-            byte[] by = Sha256.ComputeHash(SHA256Data);
-            return BitConverter.ToString(by).Replace("-", "").ToLower();
         }
     }
 }

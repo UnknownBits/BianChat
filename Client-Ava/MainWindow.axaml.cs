@@ -9,6 +9,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,6 +21,7 @@ namespace Client_Ava
     {
         private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
+        private bool ShowError = true;
         private LoginPage LoginPage;
         private InfoPage InfoPage = new InfoPage();
 
@@ -35,7 +37,7 @@ namespace Client_Ava
             {
                 Task.Run(() =>
                 {
-                    if (e.Exception != null)
+                    if (e.Exception != null && ShowError)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -50,6 +52,7 @@ namespace Client_Ava
                         });
                         Task.Delay(200).Wait();
                     }
+                    ShowError = false;
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         SendTextBox.IsEnabled = false;
@@ -120,6 +123,38 @@ namespace Client_Ava
                             IsHitTestVisible = false
                         });
                         break;
+
+                    // 连接错误
+                    case 255:
+                        switch (args.ReceivedData[1])
+                        {
+                            // 用户名或密码错误
+                            case 0:
+                                ShowError = false;
+                                ContentDialog dialog = new ContentDialog
+                                {
+                                    Content = "连接失败：用户名或密码错误",
+                                    Title = "连接失败",
+                                    CloseButtonText = "确定",
+                                    DefaultButton = ContentDialogButton.Close
+                                };
+                                dialog.ShowAsync();
+                                break;
+
+                            // 服务器内部错误
+                            case 255:
+                                ShowError = false;
+                                ContentDialog dialog1 = new ContentDialog
+                                {
+                                    Content = "连接失败：服务器内部错误",
+                                    Title = "连接失败",
+                                    CloseButtonText = "确定",
+                                    DefaultButton = ContentDialogButton.Close
+                                };
+                                dialog1.ShowAsync();
+                                break;
+                        }
+                        break;  
                 }
             });
         }
@@ -149,7 +184,8 @@ namespace Client_Ava
                     {
                         Client.Connect(ip);
                         Client.BeginReceive();
-                        Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text)).ToArray());
+                        string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
+                        Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
 
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -228,6 +264,20 @@ namespace Client_Ava
                     Content = new TextBlock { Text = $"你说：{SendTextBox.Text}", TextWrapping = Avalonia.Media.TextWrapping.Wrap }
                 });
                 SendTextBox.Text = "";
+            }
+        }
+
+        private string GetSHA256(string content)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] sha256_result = sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
+                StringBuilder sb = new StringBuilder();
+                foreach (byte c in sha256_result)
+                {
+                    sb.Append(c.ToString("x2"));
+                }
+                return sb.ToString();
             }
         }
     }

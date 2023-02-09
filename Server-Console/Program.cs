@@ -7,12 +7,15 @@ namespace Server_Console
     public class Threadtcpserver
     {
         private static Socket server;
+        public static MySql MySql = new MySql();
+
         static void Main(string[] args)
         {
             IPEndPoint iep = new IPEndPoint(IPAddress.Any, 911);
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream,ProtocolType.Tcp);
             server.Bind(iep);
             server.Listen(20);
+
             Console.WriteLine("等待客户机进行连接......");
             while (true)
             {
@@ -34,10 +37,12 @@ namespace Server_Console
             public Socket service;
             public bool connected = false;
             public string username = null;
+
             public ClientThread(Socket clientsocket)
             { 
                 this.service = clientsocket;
             }
+
             public void ClientService()
             {
                 String data = null;
@@ -81,9 +86,26 @@ namespace Server_Console
                         Array.Resize(ref buffer, size);
                         switch (buffer[0]) {
                             case 0: // 登录包
-                                username = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
+                                string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                                username = login_info[0];
                                 string notice = $"{username} 已上线";
                                 Notice(notice);
+                                string passwd_sha256 = login_info[1];
+                                try
+                                {
+                                    if (!QueryDatabase(username, passwd_sha256))
+                                    {
+                                        service.Send(new byte[2] { 255, 0 });
+                                        Disconnect();
+                                        break;
+                                    }
+                                }
+                                catch
+                                {
+                                    service.Send(new byte[2] { 255, 255 });
+                                    Disconnect();
+                                    break;
+                                }
                                 service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{clients.Count}")).ToArray());
                                 break;
                             case 1: // 聊天信息
@@ -97,13 +119,21 @@ namespace Server_Console
                                 break;
                             case 255: // 返回 Ping 包
                                 long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes((t1 - t0))).ToArray());
+                                service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
                                 break;
                         }
                     }
                     catch { Disconnect(); break; }
                 }
             }
+
+            public bool QueryDatabase(string username, string passwd_sha256)
+            {
+                int user_id = MySql.Get_user_id(username);
+                bool result = MySql.Vaild_Password(user_id, passwd_sha256);
+                return result;
+            }
+
             public void Disconnect()
             {
                 if (connected) {
