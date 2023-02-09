@@ -224,6 +224,7 @@ namespace Client_Ava
                 ChatList.Add(new ListBoxItem
                 {
                     HorizontalContentAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    IsHitTestVisible = false,
                     Content = new TextBlock { Text = $"ÄãËµ£º{SendTextBox.Text}", TextWrapping = Avalonia.Media.TextWrapping.Wrap }
                 });
                 SendTextBox.Text = "";
