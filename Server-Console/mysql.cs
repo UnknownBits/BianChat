@@ -72,37 +72,11 @@ namespace Server_Console
             MySqlCommand cmd = new MySqlCommand(sql, conn);
             MySqlDataReader rdr = cmd.ExecuteReader();
             rdr.Read();
-            var s = rdr[0].ToString().Replace("\r\n", "");
-            if (s != null && password_SHA256 != null && s == password_SHA256)
-            {
-                rdr.Close();
-                return true;
-            }
-            else
-            {
-                rdr.Close();
-                return false;
-            }
+            var s = rdr[0].ToString();
+            if (s != null && password_SHA256 != null && s == password_SHA256) { rdr.Close(); return true; }
+            else { rdr.Close(); return false; }
         }
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    conn.Close();
-                }
-
-                disposedValue = true;
-            }
-        }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-    }
+        protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) { conn.Close(); } disposedValue = true; } }
+        public void Dispose() { Dispose(true); GC.SuppressFinalize(this); } }
 }
