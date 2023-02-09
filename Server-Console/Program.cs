@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Data;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
@@ -21,8 +22,8 @@ namespace Server_Console
             {
                 while (true)
                 {
-                    await Task.Delay(1000);
-                    if (!MySql.Connected) MySql = new MySql();
+                    await Task.Delay(5000);
+                    if (MySql.conn.State != ConnectionState.Open) MySql = new MySql();
                 }
             });
 

@@ -15,8 +15,6 @@ namespace Server_Console
         /// 
         /// </summary>
         public MySqlConnection conn;
-
-        public bool Connected = false;
         
         /// <summary>
         /// 
@@ -28,7 +26,6 @@ namespace Server_Console
             try
             {
                 conn.Open();
-                Connected = true;
             }
             catch (Exception ex)
             {
