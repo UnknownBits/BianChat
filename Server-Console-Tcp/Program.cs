@@ -176,27 +176,8 @@ namespace Server_Console_Tcp
                     }
                 }
             });
-
             listener.BeginAcceptTcpClient(AcceptCallback, listener);
         }
-
-        private static void Notice(string notice)
-        {
-            Console.WriteLine($"公告：{notice}");
-            lock (clients)
-            {
-                foreach (var client1 in clients)
-                {
-                    try
-                    {
-                        client1.Client.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray());
-                    }
-                    catch
-                    {
-                        client1.Close();
-                    }
-                }
-            }
-        }
+        private static void Notice(string notice) { Console.WriteLine($"公告：{notice}"); lock (clients) { foreach (var client1 in clients) { try { client1.Client.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); } catch { client1.Close(); } } } }
     }
 }

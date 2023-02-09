@@ -53,7 +53,7 @@ namespace Server_Console_Tcp
             else
             {
                 rdr.Close();
-                throw new Exception("sql返回值为空");
+                throw new Exception("SQL返回值为空");
             }
         }
         
@@ -79,7 +79,7 @@ namespace Server_Console_Tcp
             else
             {
                 rdr.Close();
-                throw new Exception("返回值为空");
+                throw new Exception("SQL返回值为空");
             }
         }
     }
