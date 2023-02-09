@@ -10,7 +10,7 @@ namespace Server_Console
     internal static class Environment
     {
         public static ModeType Mode = ModeType.Online; 
-        public static enum ModeType
+        public enum ModeType
         {
             Online,// 在线模式
             Local, // 本地模式
