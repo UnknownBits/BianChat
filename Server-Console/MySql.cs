@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-using MySqlConnector;
+using MySql.Data.MySqlClient;
 
 namespace Server_Console
 {
@@ -22,7 +22,9 @@ namespace Server_Console
         /// </summary>
         public MySql()
         {
-            string connStr = $"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
+            string server = null;
+            if (Environment.Mode == Environment.ModeType.Online || Environment.Mode == Environment.ModeType.Maintenance) server = "127.0.0.1";
+            string connStr = $"server = {server}; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v";
             conn = new MySqlConnection(connStr);
             try
             {
@@ -42,8 +44,9 @@ namespace Server_Console
         /// <exception cref="Exception"></exception>
         public int Get_user_id(string user_name)
         {
-            string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
+            string sql = "SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"@username\"";
             MySqlCommand cmd = new MySqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("username", user_name);
             MySqlDataReader rdr = cmd.ExecuteReader();
             rdr.Read();
             var value = rdr[0].ToString();
