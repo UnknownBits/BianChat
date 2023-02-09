@@ -79,8 +79,7 @@ namespace Server_Console
                         int size = service.Receive(buffer);
                         if (size <= 0) { throw new Exception(); }
                         Array.Resize(ref buffer, size);
-                        switch (buffer[0])
-                        {
+                        switch (buffer[0]) {
                             case 0: // 登录包
                                 username = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
                                 string notice = $"{username} 已上线";
@@ -102,10 +101,7 @@ namespace Server_Console
                                 break;
                         }
                     }
-                    catch {
-                        Disconnect();
-                        break;
-                    }
+                    catch { Disconnect(); break; }
                 }
             }
             public void Disconnect()
@@ -123,15 +119,7 @@ namespace Server_Console
                     catch {}
                 }
             }
-            private static void Notice(string notice) {
-                lock (clients) {
-                    foreach (var client in clients) {
-                        try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); }
-                        catch { client.Disconnect(); }
-                    }
-                }
-                Console.WriteLine($"公告包：{notice}");
-            }
+            private static void Notice(string notice) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(notice)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"公告包：{notice}"); }
         }
     }
 }
