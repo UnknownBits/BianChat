@@ -143,7 +143,7 @@ namespace Server
                                             }
                                         }
                                     }
-                                    catch
+                                    catch (Exception ex)
                                     {
                                         service.Send(new byte[2] { 255, 255 });
                                         Disconnect();
