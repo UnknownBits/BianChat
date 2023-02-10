@@ -27,7 +27,7 @@ namespace Server
                     newthread.Start();
                 }
             });
-            Console.WriteLine("欢迎使用BianChat");
+            Console.WriteLine("欢迎使用BianChat V1.5.0 寒假特供版");
             Console.WriteLine("等待客户机进行连接......");
             while (true)
             {
