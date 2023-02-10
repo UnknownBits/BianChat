@@ -242,15 +242,8 @@ namespace Client_Ava
                     {
                         InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
                         var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
-<<<<<<< HEAD
                         InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
                     }).Wait();
-=======
-                        if (selectedItem != null)
-                        {
-                            InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
-                            Login.Content = InfoPage;
->>>>>>> parent of d2210bb (#淇敼)
 
                     SwitchPage(PageType.InfoPage);
                 });
