@@ -2,6 +2,7 @@
 using System.Net;
 using System.Text;
 using System;
+using System.Runtime.CompilerServices;
 
 namespace Server
 {
@@ -20,13 +21,9 @@ namespace Server
             {
                 while (true)
                 {
-                    //得到包含客户端信息的套接字  
                     Socket client = server.Accept();
-                    //创建消息服务线程对象  
                     ClientThread newclient = new ClientThread(client);
-                    //把ClientThread类的ClientService方法委托给线程  
                     Thread newthread = new Thread(new ThreadStart(newclient.ClientService));
-                    //启动消息服务线程  
                     newthread.Start();
                 }
             });
@@ -44,28 +41,56 @@ namespace Server
                         switch (command_args[0])
                         {
                             case "kill":
+                                if (command_args.Length == 2)
+                                {
+                                    lock (clients)
+                                    {
+                                        foreach (var client in clients)
+                                        {
+                                            if (client.Pid == int.Parse(command_args[1]))
+                                            {
+                                                client.Disconnect();
+                                            }
+                                        }
+                                    }
+                                }
+                                else
+                                    Console_Helper(CommandType.kill);
                                 break;
                             case "notice":
-                                ClientThread.SendData(command_args[1], ClientThread.DataType.Notice);
+                                if (command_args.Length == 2)
+                                    ClientThread.SendData($"{command_args[1]}", ClientThread.DataType.Message);
+                                else
+                                    Console_Helper(CommandType.notice);
                                 break;
                             case "end":
+                                try
+                                {
+                                    lock (clients)
+                                    {
+                                        foreach (var client in clients)
+                                        {
+                                            client.Disconnect();
+                                        }
+                                    }
+                                }
+                                catch { }
+                                while(clients.Count == 0)
+                                {
+                                    System.Environment.Exit(System.Environment.ExitCode);
+                                }
                                 break;
                             case "mode":
                                 break;
                             case "say":
                                 if (command_args.Length == 2)
-                                {
                                     ClientThread.SendData($"服务器说：{command_args[1]}", ClientThread.DataType.Message);
-                                }
                                 else
-                                {
                                     Console_Helper(CommandType.say);
-                                }
                                 break;
                             default:
                                 Console_Helper();
                                 break;
-
                         }
                     }
                 }
