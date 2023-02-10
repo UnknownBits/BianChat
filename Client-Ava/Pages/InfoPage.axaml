@@ -28,7 +28,7 @@
 
 
 	</StackPanel>
-		<ui:Button Margin="0 0 0 10" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+		<ui:Button Margin="0 0 20 20" HorizontalAlignment="Right" VerticalAlignment="Bottom"
 		Classes="accent" Click="DisconnectButton_Click">断开连接</ui:Button>
 	</Grid>
 </UserControl>

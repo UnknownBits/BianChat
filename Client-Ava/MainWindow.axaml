@@ -8,12 +8,18 @@
         x:Class="Client_Ava.MainWindow" Title="Client_Ava">
 	<SplitView DisplayMode="Inline" IsPaneOpen="True">
 		<SplitView.Pane>
-			<ui:Frame x:Name="Login" SourcePageType="{x:Type pages:LoginPage}"/>
+			<ui:Frame x:Name="Login"/>
 		</SplitView.Pane>
 		<SplitView.Content>
 			<Grid ColumnDefinitions="13*,150" RowDefinitions="*,35" Margin="0 0 0 20">
 				<ListBox x:Name="ChatListBox" Margin="0 0 0 20" VirtualizationMode="None"
-						 Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0"/>
+						 Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
 				<TextBox x:Name="SendTextBox" Grid.Row="1" Grid.Column="0" 
 				IsEnabled="False" FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
 				<ui:Button x:Name="SendButton" Grid.Row="1" Grid.Column="1"
