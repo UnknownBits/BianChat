@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:Class="Client_Ava.Pages.LoginPage">
 	<Grid>
 		<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -30,8 +30,10 @@
 				</ui:ComboBox>
 				<ui:Button Margin="0 20 0 0" HorizontalAlignment="Right"
 						   Content="连接" Classes="accent" Click="ConnectButton_Clicked"/>
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="测试账户" Margin="0 20 0 0"/>
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="test test@123456" Margin="0 20 0 0"/>
 			</StackPanel>
 		</StackPanel>
-		<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="by BianStudio" Margin="0 0 0 20"></TextBlock>
+		<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="by 李子桐，罗梓瑞" Margin="0 0 0 20"></TextBlock>
 	</Grid>
 </UserControl>
