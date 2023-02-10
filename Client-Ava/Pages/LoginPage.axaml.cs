@@ -14,10 +14,12 @@ namespace Client_Ava.Pages
 
         private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
         {
-            ComboBoxItem item = (ComboBoxItem)ServerSelectionComboBox.SelectedItem;
+            FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
             string ip = item.Tag as string;
 
             MainWindow.Connect(Username.Text, ip);
         }
+
+        private void RegisterButton_Clicked(object sender, RoutedEventArgs e) => MainWindow.SwitchPage(MainWindow.PageType.RegisterPage);
     }
 }

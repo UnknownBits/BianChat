@@ -22,14 +22,23 @@ namespace Client_Ava
         private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
         private bool ShowError = true;
-        private LoginPage LoginPage;
+        private UserControl PanePage;
+        private PageType PanePageType;
+        private LoginPage LoginPage = new LoginPage();
         private InfoPage InfoPage = new InfoPage();
+        private RegisterPage RegisterPage = new RegisterPage();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            LoginPage = (LoginPage)Login.Content;
+            LoginPage.MainWindow = this;
+            InfoPage.MainWindow = this;
+            RegisterPage.MainWindow = this;
+            PanePage = LoginPage;
+            PanePageType = PageType.LoginPage;
+            Login.Content = PanePage;
+
             LoginPage.MainWindow = this;
             InfoPage.MainWindow = this;
             Client.DataReceived += DataReceivedCallback;
@@ -58,17 +67,8 @@ namespace Client_Ava
                         SendTextBox.IsEnabled = false;
                         SendButton.IsEnabled = false;
                         ChatList.Clear();
-                        Login.IsHitTestVisible = false;
-                        OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
                     });
-                    Task.Delay(300).Wait();
-
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        Login.Content = LoginPage;
-                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                        Login.IsHitTestVisible = true;
-                    });
+                    SwitchPage(PageType.LoginPage);
                 });
             };
             Client.PingReceived += (s, e) =>
@@ -79,6 +79,47 @@ namespace Client_Ava
                 });
             };
         }
+
+        public void SwitchPage(PageType type)
+        {
+            Task.Run(() =>
+            {
+                PanePageType = type;
+                switch (type)
+                {
+                    case PageType.LoginPage:
+                        PanePage = LoginPage;
+                        break;
+                    case PageType.InfoPage:
+                        PanePage = InfoPage;
+                        break;
+                    case PageType.RegisterPage:
+                        PanePage = RegisterPage;
+                        break;
+                }
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Login.IsHitTestVisible = false;
+                    OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                });
+                Task.Delay(300).Wait();
+
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Login.Content = PanePage;
+                    OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                    Login.IsHitTestVisible = true;
+                });
+            });
+        }
+
+        public enum PageType
+        {
+            LoginPage,
+            InfoPage,
+            RegisterPage
+        }
+
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -156,8 +197,6 @@ namespace Client_Ava
                 OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
                 Task.Run(() =>
                 {
-                    Task.Delay(500).Wait();
-
                     try
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
@@ -178,7 +217,7 @@ namespace Client_Ava
                             SendButton.IsEnabled = true;
                         }).Wait();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -186,34 +225,40 @@ namespace Client_Ava
                             {
                                 CloseButtonText = "确定",
                                 DefaultButton = ContentDialogButton.Close,
-                                Content = "无法连接到服务器",
+                                Content = $"无法连接到服务器：{ex.Message}",
                                 Title = "错误"
                             };
                             dialog.ShowAsync();
 
                             SendTextBox.IsEnabled = false;
                             SendButton.IsEnabled = false;
-                            OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                            Login.IsHitTestVisible = true;
-                        });
+                        }).Wait();
+
+                        SwitchPage(PageType.LoginPage);
                         return;
                     }
 
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
+                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+<<<<<<< HEAD
+                        InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
+                    }).Wait();
+=======
                         if (selectedItem != null)
                         {
                             InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
                             Login.Content = InfoPage;
+>>>>>>> parent of d2210bb (#淇敼)
 
-                            OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                            Login.IsHitTestVisible = true;
-                        }
-                    });
+                    SwitchPage(PageType.InfoPage);
                 });
             }
+        }
+
+        public void Register(string username, string password)
+        {
         }
 
         public void Disconnect()
