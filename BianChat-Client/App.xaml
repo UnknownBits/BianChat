@@ -1,17 +1,16 @@
-﻿<Application x:Class="BianChat_Client.App"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:BianChat_Client"
-             xmlns:ui="http://schemas.modernwpf.com/2019"
-             StartupUri="MainWindow.xaml">
+<!-- Copyright (c) Microsoft Corporation and Contributors. -->
+<!-- Licensed under the MIT License. -->
+
+<Application
+    x:Class="BianChat_Client.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BianChat_Client">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ui:ThemeResources/>
-                <ui:XamlControlsResources />
-                <ResourceDictionary Source="/ModernWpf;component/DesignTime/SystemColors.xaml" />
-                <ResourceDictionary Source="/ModernWpf;component/ControlsResources.xaml" />
-                        <!-- Other merged dictionaries here -->
+                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
+                <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
             <!-- Other app resources here -->
         </ResourceDictionary>

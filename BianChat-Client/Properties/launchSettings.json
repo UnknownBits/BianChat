@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "BianChat-Client (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "BianChat-Client (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
