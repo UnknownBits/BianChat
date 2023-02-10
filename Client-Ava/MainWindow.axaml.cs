@@ -202,7 +202,7 @@ namespace Client_Ava
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
                         if (selectedItem != null)
                         {
                             InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";

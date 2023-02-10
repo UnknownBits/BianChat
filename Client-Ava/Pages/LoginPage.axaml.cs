@@ -14,7 +14,7 @@ namespace Client_Ava.Pages
 
         private void ConnectButton_Clicked(object sender, RoutedEventArgs e)
         {
-            FluentAvalonia.UI.Controls.ComboBoxItem item = ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+            ComboBoxItem item = (ComboBoxItem)ServerSelectionComboBox.SelectedItem;
             string ip = item.Tag as string;
 
             MainWindow.Connect(Username.Text, ip);
