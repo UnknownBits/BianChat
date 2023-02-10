@@ -183,13 +183,13 @@ namespace Server
                                         service.Send(new byte[1] { 2 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} UID:{this.Uid}")).ToArray());
                                     });
                                     break;
-                                case 8: // 聊天信息
+                                case 9: // 聊天信息
                                     Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
                                     lock (clients)
                                     {
                                         foreach (var client in clients)
                                         {
-                                            try { if (client != this) { client.service.Send(new byte[1] { 8 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                            try { if (client != this) { client.service.Send(new byte[1] { 9 }.Concat(buffer.Skip(1)).ToArray()); } }
                                             catch { client.Disconnect(); }
                                         }
                                     }
