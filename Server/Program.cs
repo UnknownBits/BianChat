@@ -205,7 +205,7 @@ namespace Server
             }
 
             public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
-            public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7,Message = 8, }
+            public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7, Register = 8, Message = 9 }
             public static void SendData(string data, DataType type)
             {
                 lock (clients)
