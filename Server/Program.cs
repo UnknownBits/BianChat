@@ -10,7 +10,7 @@ namespace Server
     {
         public static List<ClientThread> clients = new List<ClientThread>();
 
-        private static Socket server;
+        private static Socket? server;
         static void Main(string[] args)
         {
             IPEndPoint iep = new IPEndPoint(IPAddress.Any, 911);
@@ -31,7 +31,7 @@ namespace Server
             Console.WriteLine("等待客户机进行连接......");
             while (true)
             {
-                string command = Console.ReadLine();
+                string? command = Console.ReadLine();
 
                 if (!string.IsNullOrEmpty(command))
                 {
@@ -122,7 +122,7 @@ namespace Server
             public long t0;
             public Socket service;
             public bool connected = false;
-            public string username = null;
+            public string? username;
             public int Pid;
             public ClientThread(Socket clientsocket)
             {
@@ -191,7 +191,7 @@ namespace Server
                                             }
                                         }
                                     }
-                                    catch (Exception ex)
+                                    catch
                                     {
                                         service.Send(new byte[2] { 255, 255 });
                                         Disconnect();
