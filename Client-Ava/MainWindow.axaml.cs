@@ -104,8 +104,8 @@ namespace Client_Ava
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
-            {
-                switch (args.ReceivedData[0])
+            { 
+                switch (args?.ReceivedData?[0])
                 {
                     // 公告
                     case 9:
@@ -224,12 +224,15 @@ namespace Client_Ava
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                        var selectedItem = (FluentAvalonia.UI.Controls.ComboBoxItem)LoginPage.ServerSelectionComboBox.SelectedItem;
-                        InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
-                        Login.Content = InfoPage;
+                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as FluentAvalonia.UI.Controls.ComboBoxItem;
+                        if (selectedItem != null)
+                        {
+                            InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
+                            Login.Content = InfoPage;
 
-                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                        Login.IsHitTestVisible = true;
+                            OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                            Login.IsHitTestVisible = true;
+                        }
                     });
                 });
             }

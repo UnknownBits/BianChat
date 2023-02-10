@@ -10,44 +10,29 @@ namespace Client_Ava
 {
     public class AdvancedTcpClient : IDisposable
     {
-        // EventArgs
+
+        public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
         public class DataReceivedEventArgs : EventArgs
         {
-            public byte[] ReceivedData { get; set; }
+            public byte[] ?ReceivedData { get; set; }
         }
 
+        public event EventHandler<PingReceivedEventArgs> PingReceived = delegate { };
         public class PingReceivedEventArgs : EventArgs
         {
             public int Ping { get; set; }
         }
 
+        public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
         public class DisconnectedEventArgs : EventArgs
         {
-            public Exception Exception { get; init; }
+            public Exception ?Exception { get; init; }
         }
 
-        // TCP 客户端
-        private TcpClient client;
-
-        /// <summary>
-        /// 接收线程（任务）
-        /// </summary>
-        public Thread ReceiveTask;
-        /// <summary>
-        /// 是否连接
-        /// </summary>
+        private TcpClient client = new TcpClient();
+        public Thread ?ReceiveTask;
         public bool Connected = false;
         private bool disposedValue;
-
-        /// <summary>
-        /// 数据接收事件
-        /// </summary>
-        public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
-
-        public event EventHandler<PingReceivedEventArgs> PingReceived = delegate { };
-
-        public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
-
         public void Connect(string ip)
         {
             client?.Close();
