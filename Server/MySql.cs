@@ -17,7 +17,7 @@ namespace Server
             }
         }
 
-        public bool GetUserId(string user_name , out int user_id)
+        public bool GetUserId(string user_name, out int user_id)
         {
             try
             {
@@ -39,10 +39,10 @@ namespace Server
                     return false;
                 }
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                user_id= 0;
+                user_id = 0;
                 return false;
             }
         }
@@ -56,10 +56,38 @@ namespace Server
                 MySqlDataReader rdr = cmd.ExecuteReader();
                 rdr.Read();
                 var value = rdr[0].ToString();
-                if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } } 
+                if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } }
             catch (Exception ex) { Console.WriteLine(ex); return false; }
         }
+        public bool awa(string user_name, string password, string email)
+        {
+            try
+            {
+                string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email) VALUES ('{user_name}', '{password}', '{email}');";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
 
+        public bool awa(string user_name, string password, string email,string QQ)
+        {
+            try
+            {
+                string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email,QQ) VALUES ('{user_name}', '{password}', '{email}','{QQ}');";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
+        }
         protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) { conn.Close(); } disposedValue = true; } }
         public void Dispose() { Dispose(true); GC.SuppressFinalize(this); }
     }
