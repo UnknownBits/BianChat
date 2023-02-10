@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
-using MySql.Data.MySqlClient;
+﻿using MySqlConnector;
 
 namespace Server
 {
@@ -24,12 +17,6 @@ namespace Server
             }
         }
 
-        /// <summary>
-        /// 获取用户id
-        /// </summary>
-        /// <param name="user_name"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         public int Get_user_id(string user_name)
         {
             string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
@@ -49,13 +36,6 @@ namespace Server
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="uid"></param>
-        /// <param name="password_SHA256"></param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
         public bool Vaild_Password(int uid, string password_SHA256)
         {
             string sql = $"SELECT UserInfo.`Password` FROM UserInfo WHERE UserInfo.Uid = {uid}";
