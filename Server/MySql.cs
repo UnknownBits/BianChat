@@ -56,22 +56,8 @@ namespace Server
                 MySqlDataReader rdr = cmd.ExecuteReader();
                 rdr.Read();
                 var value = rdr[0].ToString();
-                if (value != null && password_SHA256 != null && value == password_SHA256)
-                {
-                    rdr.Close();
-                    return true;
-                }
-                else
-                {
-                    rdr.Close();
-                    return false;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
-            }
+                if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } } 
+            catch (Exception ex) { Console.WriteLine(ex); return false; }
         }
 
         protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) { conn.Close(); } disposedValue = true; } }

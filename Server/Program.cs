@@ -41,50 +41,21 @@ namespace Server
                         switch (command_args[0])
                         {
                             case "kill":
-                                if (command_args.Length == 2)
-                                {
-                                    lock (clients)
-                                    {
-                                        foreach (var client in clients)
-                                        {
-                                            if (client.Pid == int.Parse(command_args[1]))
-                                            {
-                                                client.Disconnect();
-                                            }
-                                        }
-                                    }
-                                }
-                                else
-                                    Console_Helper(CommandType.kill);
+                                if (command_args.Length == 2) { lock (clients) { foreach (var client in clients) { if (client.Pid == int.Parse(command_args[1])) { client.Disconnect(); } } } }
+                                else Console_Helper(CommandType.kill);
                                 break;
                             case "notice":
-                                if (command_args.Length == 2)
-                                    ClientThread.SendData($"{command_args[1]}", ClientThread.DataType.Message);
-                                else
-                                    Console_Helper(CommandType.notice);
+                                if (command_args.Length == 2) ClientThread.SendData($"{command_args[1]}", ClientThread.DataType.Message);
+                                else Console_Helper(CommandType.notice);
                                 break;
                             case "end":
-                                try
-                                {
-                                    lock (clients)
-                                    {
-                                        foreach (var client in clients)
-                                        {
-                                            client.Disconnect();
-                                        }
-                                    }
-                                }
+                                try { lock (clients) { foreach (var client in clients) { client.Disconnect(); } } }
                                 catch { }
-                                while(clients.Count == 0)
-                                {
-                                    System.Environment.Exit(System.Environment.ExitCode);
-                                }
+                                while(clients.Count == 0) { System.Environment.Exit(System.Environment.ExitCode); }
                                 break;
                             case "say":
-                                if (command_args.Length == 2)
-                                    ClientThread.SendData($"服务器说：{command_args[1]}", ClientThread.DataType.Message);
-                                else
-                                    Console_Helper(CommandType.say);
+                                if (command_args.Length == 2) ClientThread.SendData($"服务器说：{command_args[1]}", ClientThread.DataType.Message);
+                                else Console_Helper(CommandType.say);
                                 break;
                             default:
                                 Console_Helper();
@@ -96,15 +67,13 @@ namespace Server
         }
         public static void Console_Helper(CommandType commandType = CommandType.all)
         {
-            switch(commandType)
-            {
+            switch(commandType) {
                 case CommandType.all:
                     Console.WriteLine("未知的指令 指令集：");
                     Console.WriteLine(" say");
                     Console.WriteLine(" kill");
                     Console.WriteLine(" end");
                     Console.WriteLine(" notice");
-
                     break;
                 case CommandType.say:
                     Console.WriteLine("say [message]");
@@ -112,11 +81,7 @@ namespace Server
                     break;
             }
         }
-        public enum CommandType
-        {
-            all,say,kill,end,notice
-        }
-
+        public enum CommandType { all,say,kill,end,notice }
         public class ClientThread
         {
             public long t0;
