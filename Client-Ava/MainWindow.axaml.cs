@@ -79,28 +79,6 @@ namespace Client_Ava
                 });
             };
         }
-
-        private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
-        {
-            Animation animation = new Animation
-            {
-                Duration = duration,
-                PlaybackDirection = PlaybackDirection.Normal,
-                FillMode = FillMode.Both
-            };
-            var kf = new KeyFrame
-            {
-                Cue = new Cue(1.0)
-            };
-            kf.Setters.Add(new Setter
-            {
-                Property = OpacityProperty,
-                Value = opacity
-            });
-            animation.Children.Add(kf);
-            animation.RunAsync(Login, null);
-        }
-
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
             Dispatcher.UIThread.InvokeAsync(() =>
@@ -287,7 +265,25 @@ namespace Client_Ava
                 return sb.ToString();
             }
         }
+        private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
+        {
+            Animation animation = new Animation
+            {
+                Duration = duration,
+                PlaybackDirection = PlaybackDirection.Normal,
+                FillMode = FillMode.Both
+            };
+            var kf = new KeyFrame
+            {
+                Cue = new Cue(1.0)
+            };
+            kf.Setters.Add(new Setter
+            {
+                Property = OpacityProperty,
+                Value = opacity
+            });
+            animation.Children.Add(kf);
+            animation.RunAsync(Login, null);
+        }
     }
-
-    
 }
