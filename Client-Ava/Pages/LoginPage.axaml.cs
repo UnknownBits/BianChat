@@ -19,5 +19,7 @@ namespace Client_Ava.Pages
 
             MainWindow.Connect(Username.Text, ip);
         }
+
+        private void RegisterButton_Clicked(object sender, RoutedEventArgs e) => MainWindow.SwitchPage(MainWindow.PageType.RegisterPage);
     }
 }
