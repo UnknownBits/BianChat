@@ -80,8 +80,6 @@ namespace Server
                                     System.Environment.Exit(System.Environment.ExitCode);
                                 }
                                 break;
-                            case "mode":
-                                break;
                             case "say":
                                 if (command_args.Length == 2)
                                     ClientThread.SendData($"服务器说：{command_args[1]}", ClientThread.DataType.Message);
@@ -104,7 +102,6 @@ namespace Server
                     Console.WriteLine("未知的指令 指令集：");
                     Console.WriteLine(" say");
                     Console.WriteLine(" kill");
-                    Console.WriteLine(" mode");
                     Console.WriteLine(" end");
                     Console.WriteLine(" notice");
 
@@ -117,7 +114,7 @@ namespace Server
         }
         public enum CommandType
         {
-            all,say,kill,mode,end,notice
+            all,say,kill,end,notice
         }
 
         public class ClientThread
