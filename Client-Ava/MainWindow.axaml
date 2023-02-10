@@ -4,9 +4,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		xmlns:pages="clr-namespace:Client_Ava.Pages"
-        mc:Ignorable="d"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="675"
 		Width="1200" Height="675"
-        x:Class="Client_Ava.MainWindow" SizeToContent=""
+        x:Class="Client_Ava.MainWindow"
         Title="Client_Ava" CanResize="False">
 	<SplitView DisplayMode="Inline" IsPaneOpen="True"
 			   OpenPaneLength="250">
