@@ -152,7 +152,7 @@ namespace Client_Ava
                     break;
 
                 // ÏûÏ¢
-                case 8:
+                case 9:
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
