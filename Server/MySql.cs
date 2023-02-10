@@ -17,38 +17,64 @@ namespace Server
             }
         }
 
-        public int Get_user_id(string user_name)
+        public bool GetUserId(string user_name , out int user_id)
         {
-            string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
-            MySqlCommand cmd = new MySqlCommand(sql, conn);
-            MySqlDataReader rdr = cmd.ExecuteReader();
-            rdr.Read();
-            var value = rdr[0].ToString();
-            if (value != null)
+            try
             {
-                rdr.Close();
-                return int.Parse(value);
+                string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                rdr.Read();
+                var value = rdr[0].ToString();
+                if (int.TryParse(value, out int number))
+                {
+                    user_id = number;
+                    rdr.Close();
+                    return true;
+                }
+                else
+                {
+                    user_id = 0;
+                    rdr.Close();
+                    return false;
+                }
             }
-            else
+            catch(Exception ex) 
             {
-                rdr.Close();
-                throw new Exception("sql返回值为空");
+                Console.WriteLine(ex);
+                user_id= 0;
+                return false;
             }
         }
 
         public bool Vaild_Password(int uid, string password_SHA256)
         {
-            string sql = $"SELECT UserInfo.`Password` FROM UserInfo WHERE UserInfo.Uid = {uid}";
-            MySqlCommand cmd = new MySqlCommand(sql, conn);
-            MySqlDataReader rdr = cmd.ExecuteReader();
-            rdr.Read();
-            var s = rdr[0].ToString();
-            if (s != null && password_SHA256 != null && s == password_SHA256) { rdr.Close(); return true; }
-            else { rdr.Close(); return false; }
+            try
+            {
+                string sql = $"SELECT UserInfo.`Password` FROM UserInfo WHERE UserInfo.Uid = {uid}";
+                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                MySqlDataReader rdr = cmd.ExecuteReader();
+                rdr.Read();
+                var value = rdr[0].ToString();
+                if (value != null && password_SHA256 != null && value == password_SHA256)
+                {
+                    rdr.Close();
+                    return true;
+                }
+                else
+                {
+                    rdr.Close();
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                return false;
+            }
         }
 
         protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) { conn.Close(); } disposedValue = true; } }
         public void Dispose() { Dispose(true); GC.SuppressFinalize(this); }
     }
 }
-

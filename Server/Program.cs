@@ -123,6 +123,7 @@ namespace Server
             public Socket service;
             public bool connected = false;
             public string? username;
+            public string? password_sha256;
             public int Pid;
             public ClientThread(Socket clientsocket)
             {
@@ -134,9 +135,9 @@ namespace Server
                 if (service != null)
                 {
                     byte[] bytes = new byte[8193];
-                    connected = true;
                     lock (clients)
                     {
+                        connected = true;
                         clients.Add(this);
                     }
                     Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
@@ -178,12 +179,13 @@ namespace Server
                                 case 0: // 登录包
                                     string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
                                     username = login_info[0];
-                                    string passwd_sha256 = login_info[1];
+                                    password_sha256 = login_info[1];
                                     try
                                     {
                                         if (Environment.Mode != Environment.ModeType.Local)
                                         {
-                                            if (!QueryDatabase(username, passwd_sha256))
+                                            using var mySql = new MySql();
+                                            if (!(mySql.GetUserId(username, out Pid) && mySql.Vaild_Password(Pid, password_sha256)))
                                             {
                                                 service.Send(new byte[2] { 255, 0 });
                                                 Disconnect();
@@ -199,10 +201,7 @@ namespace Server
                                     }
                                     Task.Run(async () =>
                                     {
-                                        if (Environment.Mode == Environment.ModeType.Local)
-                                        {
-                                            await Task.Delay(10);
-                                        }
+                                        if (Environment.Mode == Environment.ModeType.Local) { await Task.Delay(10); }
                                         SendData($"{username} 已上线", DataType.Notice);
                                         service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{this.Pid}")).ToArray());
                                     });
@@ -219,8 +218,7 @@ namespace Server
                                     }
                                     break;
                                 case 255: // 返回 Ping 包
-                                    long t1 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                    service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(t1 - t0)).ToArray());
+                                    service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                     break;
                             }
                         }
@@ -229,60 +227,9 @@ namespace Server
                 }
             }
 
-            public bool QueryDatabase(string username, string passwd_sha256)
-            {
-                try
-                {
-                    using var mySql = new MySql();
-                    Pid = mySql.Get_user_id(username);
-                    bool result = mySql.Vaild_Password(Pid, passwd_sha256);
-                    return result;
-                }
-                catch { return false; }
-            }
-
-            public void Disconnect()
-            {
-                if (connected)
-                {
-                    try
-                    {
-                        lock (clients)
-                        {
-                            connected = false;
-                            clients.Remove(this);
-                            service.Close();
-                        }
-                        SendData($"{username} 已下线",DataType.Notice);
-                        Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
-                    }
-                    catch { }
-                }
-            }
-
-            public enum DataType
-            {
-                Message = 1,
-                Notice = 9
-            }
-            public static void SendData(string data,DataType type)
-            {
-                lock (clients)
-                {
-                    foreach (var client in clients)
-                    {
-                        try
-                        {
-                            client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray());
-                        }
-                        catch
-                        {
-                            client.Disconnect();
-                        }
-                    }
-                }
-                Console.WriteLine($"{type}包：{data}");
-            }
+            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
+            public enum DataType { Message = 1, Notice = 9 }
+            public static void SendData(string data,DataType type) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"{type}包：{data}"); }
         }
     }
 }
