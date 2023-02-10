@@ -1,15 +1,12 @@
 ﻿using System.Net.Sockets;
 using System.Net;
 using System.Text;
-using System;
-using System.Runtime.CompilerServices;
 
 namespace Server
 {
     public class Threadtcpserver
     {
         public static List<ClientThread> clients = new List<ClientThread>();
-
         private static Socket? server;
         static void Main(string[] args)
         {
@@ -41,7 +38,22 @@ namespace Server
                         switch (command_args[0])
                         {
                             case "kill":
-                                if (command_args.Length == 2) { lock (clients) { foreach (var client in clients) { if (client.Pid == int.Parse(command_args[1])) { client.Disconnect(); } } } }
+                                if (command_args.Length == 2) {
+                                    try
+                                    {
+                                        lock (clients)
+                                        {
+                                            foreach (var client in clients)
+                                            {
+                                                if (client.Uid == int.Parse(command_args[1]))
+                                                {
+                                                    client.Disconnect();
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception ex) { }
+                                }
                                 else Console_Helper(CommandType.kill);
                                 break;
                             case "notice":
@@ -89,7 +101,7 @@ namespace Server
             public bool connected = false;
             public string? username;
             public string? password_sha256;
-            public int Pid;
+            public int Uid;
             public ClientThread(Socket clientsocket)
             {
                 this.service = clientsocket;
@@ -150,7 +162,7 @@ namespace Server
                                         if (Environment.Mode != Environment.ModeType.Local)
                                         {
                                             using var mySql = new MySql();
-                                            if (!(mySql.GetUserId(username, out Pid) && mySql.Vaild_Password(Pid, password_sha256)))
+                                            if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                             {
                                                 service.Send(new byte[2] { 255, 0 });
                                                 Disconnect();
@@ -168,7 +180,7 @@ namespace Server
                                     {
                                         if (Environment.Mode == Environment.ModeType.Local) { await Task.Delay(10); }
                                         SendData($"{username} 已上线", DataType.Notice);
-                                        service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{this.Pid}")).ToArray());
+                                        service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{this.Uid}")).ToArray());
                                     });
                                     break;
                                 case 1: // 聊天信息
