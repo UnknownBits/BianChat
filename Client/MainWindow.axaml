@@ -1,0 +1,32 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		xmlns:ui="using:FluentAvalonia.UI.Controls"
+		xmlns:pages="clr-namespace:Client_Ava.Pages"
+        mc:Ignorable="d" Width="1280" Height="720"
+        x:Class="Client.MainWindow" Title="Client_Ava">
+	<SplitView DisplayMode="Inline" IsPaneOpen="True">
+		<SplitView.Pane>
+			<ui:Frame x:Name="Login"/>
+		</SplitView.Pane>
+		<SplitView.Content>
+			<Grid ColumnDefinitions="13*,150" RowDefinitions="*,35" Margin="0 0 0 20">
+				<ListBox x:Name="ChatListBox" Margin="0 0 0 20" VirtualizationMode="None"
+						 Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
+				<TextBox x:Name="SendTextBox" Grid.Row="1" Grid.Column="0"
+				IsEnabled="False" FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+				<Button x:Name="SendButton" Grid.Row="1" Grid.Column="1"
+				HorizontalAlignment="Center" VerticalAlignment="Center"
+				Classes="accent" Height="35" Width="100" FontSize="15"
+				IsEnabled="False" Click="SendButton_Clicked" IsDefault="True">发送</Button>
+			</Grid>
+		</SplitView.Content>
+	</SplitView>
+</Window>

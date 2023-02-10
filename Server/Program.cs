@@ -104,7 +104,7 @@ namespace Server
             public int Uid;
             public ClientThread(Socket clientsocket)
             {
-                this.service = clientsocket;
+                service = clientsocket;
             }
 
             public void ClientService()
@@ -133,7 +133,7 @@ namespace Server
                             try
                             {
                                 t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                service.Send(new byte[1] { 253 });
+                                service.Send(new byte[1] { 0 });
                             }
                             catch
                             {
@@ -153,51 +153,49 @@ namespace Server
                             Array.Resize(ref buffer, size);
                             switch (buffer[0])
                             {
-                                case 0: // 登录包
+                                case 7: // 登录包
                                     string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
                                     username = login_info[0];
                                     password_sha256 = login_info[1];
-                                    try
+                                    if (Environment.Mode != Environment.ModeType.Local)
                                     {
-                                        if (Environment.Mode != Environment.ModeType.Local)
+                                        try
                                         {
                                             using var mySql = new MySql();
                                             if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                             {
-                                                service.Send(new byte[2] { 255, 1 });
+                                                service.Send(new byte[1] { 5 });
                                                 Disconnect();
                                                 break;
                                             }
                                         }
+                                        catch
+                                        {
+                                            service.Send(new byte[1] { 4 });
+                                            Disconnect();
+                                            break;
+                                        }
                                     }
-                                    catch
-                                    {
-                                        service.Send(new byte[2] { 255, 255 });
-                                        Disconnect();
-                                        break;
-                                    }
-                                    service.Send(new byte[2] { 255, 0 });
-                                    Task.Delay(10).Wait();
                                     Task.Run(async () =>
                                     {
                                         if (Environment.Mode == Environment.ModeType.Local) { await Task.Delay(10); }
                                         SendData($"{username} 已上线", DataType.Notice);
-                                        service.Send(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} PID:{this.Uid}")).ToArray());
+                                        service.Send(new byte[1] { 2 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} UID:{this.Uid}")).ToArray());
                                     });
                                     break;
-                                case 1: // 聊天信息
+                                case 8: // 聊天信息
                                     Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
                                     lock (clients)
                                     {
                                         foreach (var client in clients)
                                         {
-                                            try { if (client != this) { client.service.Send(new byte[1] { 1 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                            try { if (client != this) { client.service.Send(new byte[1] { 8 }.Concat(buffer.Skip(1)).ToArray()); } }
                                             catch { client.Disconnect(); }
                                         }
                                     }
                                     break;
-                                case 255: // 返回 Ping 包
-                                    service.Send(new byte[1] { 254 }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
+                                case 0: // 返回 Ping 包
+                                    service.Send(new byte[1] { 1 }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                     break;
                             }
                         }
@@ -207,8 +205,37 @@ namespace Server
             }
 
             public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
-            public enum DataType { Message = 1, Notice = 9 }
-            public static void SendData(string data,DataType type) { lock (clients) { foreach (var client in clients) { try { client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); } catch { client.Disconnect(); } } } Console.WriteLine($"{type}包：{data}"); }
+            public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7,Message = 8, }
+            public static void SendData(string data, DataType type)
+            {
+                lock (clients)
+                {
+                    foreach (var client in clients)
+                    {
+                        try { client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
+                        catch
+                        {
+                            client.Disconnect();
+                        }
+                    }
+                }
+                Console.WriteLine($"{type}包：{data}");
+            }
+            public static void SendData(DataType type)
+            {
+                lock (clients)
+                {
+                    foreach (var client in clients)
+                    {
+                        try { client.service.Send(new byte[1] { (byte)type }); }
+                        catch
+                        {
+                            client.Disconnect();
+                        }
+                    }
+                }
+                Console.WriteLine($"发送{type}包");
+            }
         }
     }
 }
