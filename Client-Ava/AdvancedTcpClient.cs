@@ -73,11 +73,11 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == 253)
+                            if (buffer[0] == 0)
                             {
-                                client.Client.Send(new byte[1] { 255 });
+                                client.Client.Send(new byte[1] { 0 });
                             }
-                            else if (buffer[0] == 254) // Ping 包
+                            else if (buffer[0] == 1) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);
                                 PingReceived(client, new PingReceivedEventArgs { Ping = ping });

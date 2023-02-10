@@ -178,9 +178,9 @@ namespace Server
                                     }
                                     Task.Run(async () =>
                                     {
-                                        if (Environment.Mode == Environment.ModeType.Local) { await Task.Delay(10); }
+                                        service.Send(new byte[1] { 2 });
+                                        await Task.Delay(100);
                                         SendData($"{username} 已上线", DataType.Notice);
-                                        service.Send(new byte[1] { 2 }.Concat(Encoding.UTF8.GetBytes($"{DateTime.Now} UID:{this.Uid}")).ToArray());
                                     });
                                     break;
                                 case 9: // 聊天信息

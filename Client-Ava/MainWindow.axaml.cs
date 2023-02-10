@@ -78,24 +78,6 @@ namespace Client_Ava
                     InfoPage.PingText.Text = $"延迟：{e.Ping} ms";
                 });
             };
-
-            LoginSuccessEvent += delegate
-            {
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    SendTextBox.IsEnabled = true;
-                    SendButton.IsEnabled = true;
-                }).Wait();
-
-                Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                    var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
-                    InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
-                }).Wait();
-
-                SwitchPage(PageType.InfoPage);
-            };
         }
 
         public void SwitchPage(PageType type)
@@ -162,7 +144,20 @@ namespace Client_Ava
                         break;
                     // 登录成功
                     case 2:
-                        LoginSuccessEvent(null, new EventArgs());
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            SendTextBox.IsEnabled = true;
+                            SendButton.IsEnabled = true;
+                        }).Wait();
+
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
+                            var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
+                            InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
+                        }).Wait();
+
+                        SwitchPage(PageType.InfoPage);
                         break;
                     // 服务器内部错误
                     case 4:
