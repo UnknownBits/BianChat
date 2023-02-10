@@ -15,8 +15,7 @@
 				<TextBox x:Name="Username" FontSize="20" Margin="0 10 0 0"/>
 
 				<TextBlock FontSize="20" Margin="0 10 0 0">密码</TextBlock>
-				<TextBox x:Name="Password" FontSize="20" Margin="0 10 0 0" PasswordChar="2"
-						 FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+				<TextBox x:Name="Password" FontSize="20" Margin="0 10 0 0" PasswordChar="*"/>
 				
 				<TextBlock FontSize="20" Margin="0 10 0 0">服务器</TextBlock>
 				<ComboBox x:Name="ServerSelectionComboBox" Margin="0 10 0 0" SelectedIndex="0" 
