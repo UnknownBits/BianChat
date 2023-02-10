@@ -8,7 +8,7 @@
 	<Grid>
 		<Button HorizontalContentAlignment="Left" VerticalAlignment="Top"
 				Margin="15 15 0 0" Click="BackButton_Click">
-			<ui:SymbolIcon Symbol="Undo"/>
+			<ui:SymbolIcon Symbol="Back"/>
 		</Button>
 		<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
 			Orientation="Vertical">
