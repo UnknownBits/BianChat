@@ -78,6 +78,24 @@ namespace Client_Ava
                     InfoPage.PingText.Text = $"延迟：{e.Ping} ms";
                 });
             };
+
+            LoginSuccessEvent += delegate
+            {
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    SendTextBox.IsEnabled = true;
+                    SendButton.IsEnabled = true;
+                }).Wait();
+
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
+                    var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
+                    InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
+                }).Wait();
+
+                SwitchPage(PageType.InfoPage);
+            };
         }
 
         public void SwitchPage(PageType type)
@@ -122,18 +140,21 @@ namespace Client_Ava
 
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
-            { 
-                switch (args?.ReceivedData?[0])
-                {
-                    // 公告
-                    case 9:
+            switch (args?.ReceivedData?[0])
+            {
+                // 公告
+                case 9:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
-                        break;
+                    });
+                    break;
 
-                    // 消息
-                    case 1:
+                // 消息
+                case 1:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         ChatList.Add(new ListBoxItem
                         {
@@ -141,42 +162,49 @@ namespace Client_Ava
                             Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
                             IsHitTestVisible = false
                         });
-                        break;
+                    });
+                    break;
 
-                    // 连接错误
-                    case 255:
-                        switch (args.ReceivedData[1])
-                        {
-                            // 用户名或密码错误
-                            case 0:
-                                ShowError = false;
-                                ContentDialog dialog = new ContentDialog
-                                {
-                                    Content = "连接失败：用户名或密码错误",
-                                    Title = "连接失败",
-                                    CloseButtonText = "确定",
-                                    DefaultButton = ContentDialogButton.Close
-                                };
-                                dialog.ShowAsync();
-                                break;
+                // 登录状态
+                case 255:
+                    switch (args.ReceivedData[1])
+                    {
+                        // 登录成功
+                        case 0:
+                            LoginSuccessEvent(null, new EventArgs());
+                            break;
 
-                            // 服务器内部错误
-                            case 255:
-                                ShowError = false;
-                                ContentDialog dialog1 = new ContentDialog
-                                {
-                                    Content = "连接失败：服务器内部错误",
-                                    Title = "连接失败",
-                                    CloseButtonText = "确定",
-                                    DefaultButton = ContentDialogButton.Close
-                                };
-                                dialog1.ShowAsync();
-                                break;
-                        }
-                        break;  
-                }
-            });
+                        // 用户名或密码错误
+                        case 1:
+                            ShowError = false;
+                            ContentDialog dialog = new ContentDialog
+                            {
+                                Content = "连接失败：用户名或密码错误",
+                                Title = "连接失败",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            };
+                            dialog.ShowAsync();
+                            break;
+
+                        // 服务器内部错误
+                        case 255:
+                            ShowError = false;
+                            ContentDialog dialog1 = new ContentDialog
+                            {
+                                Content = "连接失败：服务器内部错误",
+                                Title = "连接失败",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            };
+                            dialog1.ShowAsync();
+                            break;
+                    }
+                    break;
+            }
         }
+
+        private event EventHandler LoginSuccessEvent = delegate { };
 
         public void Connect(string username, string ip)
         {
@@ -210,12 +238,6 @@ namespace Client_Ava
                         Client.BeginReceive();
                         string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
                         Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
-
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            SendTextBox.IsEnabled = true;
-                            SendButton.IsEnabled = true;
-                        }).Wait();
                     }
                     catch (Exception ex)
                     {
@@ -237,15 +259,6 @@ namespace Client_Ava
                         SwitchPage(PageType.LoginPage);
                         return;
                     }
-
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                        var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
-                        InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
-                    }).Wait();
-
-                    SwitchPage(PageType.InfoPage);
                 });
             }
         }

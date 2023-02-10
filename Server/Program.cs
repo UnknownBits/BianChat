@@ -164,7 +164,7 @@ namespace Server
                                             using var mySql = new MySql();
                                             if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                             {
-                                                service.Send(new byte[2] { 255, 0 });
+                                                service.Send(new byte[2] { 255, 1 });
                                                 Disconnect();
                                                 break;
                                             }
@@ -176,6 +176,8 @@ namespace Server
                                         Disconnect();
                                         break;
                                     }
+                                    service.Send(new byte[2] { 255, 0 });
+                                    Task.Delay(10).Wait();
                                     Task.Run(async () =>
                                     {
                                         if (Environment.Mode == Environment.ModeType.Local) { await Task.Delay(10); }
