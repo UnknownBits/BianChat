@@ -107,7 +107,7 @@ namespace Client_Ava
 
         public bool Send(string message)
         {
-            return SendBytes(new byte[1] { 1 }.Concat(Encoding.UTF8.GetBytes(message)).ToArray());
+            return SendBytes(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(message)).ToArray());
         }
 
         public bool SendBytes(byte[] data)

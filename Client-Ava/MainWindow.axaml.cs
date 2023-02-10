@@ -140,21 +140,18 @@ namespace Client_Ava
 
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
-            switch (args?.ReceivedData?[0])
+            Dispatcher.UIThread.InvokeAsync(() =>
             {
-                // 公告
-                case 6:
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
+                switch (args?.ReceivedData?[0])
+                {
+                    // 公告
+                    case 6:
                         string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
-                    });
-                    break;
+                        break;
 
-                // 消息
-                case 8:
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
+                    // 消息
+                    case 9:
                         string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         ChatList.Add(new ListBoxItem
                         {
@@ -162,37 +159,35 @@ namespace Client_Ava
                             Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
                             IsHitTestVisible = false
                         });
-                    });
-                    break;
-                // 登录成功
-                case 2:
-                    LoginSuccessEvent(null, new EventArgs());
-                    break;
-                // 服务器内部错误
-                case 4:
-                    ShowError = false;
-                    ContentDialog dialog1 = new ContentDialog
-                    {
-                        Content = "连接失败：服务器内部错误",
-                        Title = "连接失败",
-                        CloseButtonText = "确定",
-                        DefaultButton = ContentDialogButton.Close
-                    };
-                    dialog1.ShowAsync();
-                    break;
-                // 用户名或密码错误
-                case 5:
-                    ShowError = false;
-                    ContentDialog dialog = new ContentDialog
-                    {
-                        Content = "连接失败：用户名或密码错误",
-                        Title = "连接失败",
-                        CloseButtonText = "确定",
-                        DefaultButton = ContentDialogButton.Close
-                    };
-                    dialog.ShowAsync();
-                    break;
-            }
+                        break;
+                    // 登录成功
+                    case 2:
+                        LoginSuccessEvent(null, new EventArgs());
+                        break;
+                    // 服务器内部错误
+                    case 4:
+                        ShowError = false;
+                        new ContentDialog
+                        {
+                            Content = "连接失败：服务器内部错误",
+                            Title = "连接失败",
+                            CloseButtonText = "确定",
+                            DefaultButton = ContentDialogButton.Close
+                        }.ShowAsync();
+                        break;
+                    // 用户名或密码错误
+                    case 5:
+                        ShowError = false;
+                        new ContentDialog
+                        {
+                            Content = "连接失败：用户名或密码错误",
+                            Title = "连接失败",
+                            CloseButtonText = "确定",
+                            DefaultButton = ContentDialogButton.Close
+                        }.ShowAsync();
+                        break;
+                }
+            });
         }
 
         private event EventHandler LoginSuccessEvent = delegate { };
