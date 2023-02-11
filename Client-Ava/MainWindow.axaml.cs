@@ -214,7 +214,7 @@ namespace Client_Ava
                         {
                             new ContentDialog
                             {
-                                Content = "连接失败：用户已存在",
+                                Content = "注册失败：用户已存在",
                                 Title = "错误",
                                 CloseButtonText = "确定",
                                 DefaultButton = ContentDialogButton.Close
@@ -226,16 +226,14 @@ namespace Client_Ava
             }
         }
 
-        private event EventHandler LoginSuccessEvent = delegate { };
-
         public void Connect(string username, string ip)
         {
-            if (string.IsNullOrEmpty(username) || username.Length >= 12)
+            if (string.IsNullOrEmpty(username) || username.Length >= 12 || username.Contains(' ') || username.Contains('^'))
             {
                 ContentDialog dialog = new ContentDialog
                 {
                     Title = "提示",
-                    Content = "用户名不可为空或大于 12 字符",
+                    Content = "用户名不可为空或大于 12 字符或包含空格或 '^' 符号",
                     CloseButtonText = "确认",
                     DefaultButton = ContentDialogButton.Close
                 };

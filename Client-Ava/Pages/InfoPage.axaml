@@ -2,33 +2,36 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Client_Ava.Pages.InfoPage">
 	<Grid>
-	<StackPanel HorizontalAlignment="Center" Margin="0 20 0 0"
-			Orientation="Vertical">
-		<TextBlock FontWeight="Bold" FontSize="35"
-				   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
+		<StackPanel HorizontalAlignment="Center" Margin="0 20 0 0"
+				Orientation="Vertical">
+			<TextBlock FontWeight="Bold" FontSize="35"
+					   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
 
-		<StackPanel Orientation="Vertical" Margin="-20 20 0 0" Width="170">
+			<StackPanel Orientation="Vertical" Margin="-20 20 0 0" Width="170">
 
-			<TextBlock x:Name="Username" FontSize="15" Margin="0 10 0 0">用户名：</TextBlock>
-			<TextBlock x:Name="ServerName" FontSize="15" Margin="0 10 0 0">服务器：</TextBlock>
-			<TextBlock x:Name="PingText" FontSize="15" Margin="0 10 0 0">延迟：0 ms</TextBlock>
-			<TextBlock FontSize="15" Margin="0 10 0 0">公告：</TextBlock>
-			<ListBox x:Name="NoticeListBox" Margin="20 10 0 0" MaxHeight="150" MaxWidth="150" VirtualizationMode="None">
-				<ListBox.ItemsPanel>
-					<ItemsPanelTemplate>
-						<VirtualizingStackPanel VerticalAlignment="Bottom"/>
-					</ItemsPanelTemplate>
-				</ListBox.ItemsPanel>
-			</ListBox>
+				<TextBlock x:Name="Username" FontSize="15" Margin="0 10 0 0">用户名：</TextBlock>
+				<TextBlock x:Name="ServerName" FontSize="15" Margin="0 10 0 0">服务器：</TextBlock>
+				<TextBlock x:Name="PingText" FontSize="15" Margin="0 10 0 0">延迟：0 ms</TextBlock>
+				<TextBlock FontSize="15" Margin="0 10 0 0">公告：</TextBlock>
+				<ListBox x:Name="NoticeListBox" Margin="20 10 0 0"
+						 MaxHeight="150" MaxWidth="150" VirtualizationMode="None">
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
+			</StackPanel>
+
+
 		</StackPanel>
-
-
-	</StackPanel>
-		<ui:Button Margin="0 0 20 20" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-		Classes="accent" Click="DisconnectButton_Click">断开连接</ui:Button>
+		<StackPanel Orientation="Horizontal" Margin="0 0 20 20"
+					HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<!--Button Margin="0 0 10 0" Classes="accent" Click="ChangePasswdButton_Click">更改密码</Button-->
+			<Button Classes="accent" Click="DisconnectButton_Click">断开连接</Button>
+		</StackPanel>
 	</Grid>
 </UserControl>

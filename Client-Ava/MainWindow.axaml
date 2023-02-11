@@ -5,6 +5,7 @@
 		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		xmlns:pages="clr-namespace:Client_Ava.Pages"
         mc:Ignorable="d" Width="1280" Height="720"
+		MinWidth="700" MinHeight="600"
         x:Class="Client_Ava.MainWindow" Title="Client_Ava">
 	<SplitView DisplayMode="Inline" IsPaneOpen="True">
 		<SplitView.Pane>

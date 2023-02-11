@@ -99,7 +99,7 @@ namespace Server
             public long t0;
             public Socket service;
             public bool connected = false;
-            public bool registerMode = false;
+            public bool isLogin = false;
             public string? username;
             public string? password_sha256;
             public int Uid;
@@ -160,6 +160,13 @@ namespace Server
                                         string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
                                         username = login_info[0];
                                         password_sha256 = login_info[1];
+                                        if (username.Contains(' ') || password_sha256.Contains(' '))
+                                        {
+                                            service.Send(new byte[1] { 5 });
+                                            Task.Delay(100).Wait();
+                                            Disconnect();
+                                            break;
+                                        }
                                         if (Environment.Mode != Environment.ModeType.Local)
                                         {
                                             try
@@ -184,13 +191,13 @@ namespace Server
                                         Task.Run(async () =>
                                         {
                                             service.Send(new byte[1] { 2 });
+                                            isLogin = true;
                                             await Task.Delay(100);
                                             SendData($"{username} 已上线", DataType.Notice);
                                         });
                                     }
                                     else if (buffer[1] == 1) // 注册
                                     {
-                                        registerMode = true;
                                         if (Environment.Mode != Environment.ModeType.Local)
                                         {
                                             try
@@ -235,13 +242,16 @@ namespace Server
                                     }
                                     break;
                                 case 9: // 聊天信息
-                                    Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
-                                    lock (clients)
+                                    if (isLogin)
                                     {
-                                        foreach (var client in clients)
+                                        Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+                                        lock (clients)
                                         {
-                                            try { if (client != this) { client.service.Send(new byte[1] { 9 }.Concat(buffer.Skip(1)).ToArray()); } }
-                                            catch { client.Disconnect(); }
+                                            foreach (var client in clients)
+                                            {
+                                                try { if (client != this) { client.service.Send(new byte[1] { 9 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                                catch { client.Disconnect(); }
+                                            }
                                         }
                                     }
                                     break;
@@ -255,7 +265,7 @@ namespace Server
                 }
             }
 
-            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } if (!registerMode) SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
+            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } if (isLogin) SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
             public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7, Register = 8, Message = 9 }
             public static void SendData(string data, DataType type)
             {

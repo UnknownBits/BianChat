@@ -17,5 +17,10 @@ namespace Client_Ava.Pages
         {
             MainWindow.Disconnect();
         }
+
+        private void ChangePasswdButton_Click(object sender, RoutedEventArgs args)
+        {
+
+        }
     }
 }
