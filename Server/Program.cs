@@ -99,6 +99,7 @@ namespace Server
             public long t0;
             public Socket service;
             public bool connected = false;
+            public bool registerMode = false;
             public string? username;
             public string? password_sha256;
             public int Uid;
@@ -154,34 +155,84 @@ namespace Server
                             switch (buffer[0])
                             {
                                 case 7: // 登录包
-                                    string[] login_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
-                                    username = login_info[0];
-                                    password_sha256 = login_info[1];
-                                    if (Environment.Mode != Environment.ModeType.Local)
+                                    if (buffer[1] == 0) // 登录
                                     {
-                                        try
+                                        string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
+                                        username = login_info[0];
+                                        password_sha256 = login_info[1];
+                                        if (Environment.Mode != Environment.ModeType.Local)
                                         {
-                                            using var mySql = new MySql();
-                                            if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
+                                            try
                                             {
-                                                service.Send(new byte[1] { 5 });
+                                                using var mySql = new MySql();
+                                                if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
+                                                {
+                                                    service.Send(new byte[1] { 5 });
+                                                    Task.Delay(100).Wait();
+                                                    Disconnect();
+                                                    break;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                service.Send(new byte[1] { 4 });
+                                                Task.Delay(100).Wait();
                                                 Disconnect();
                                                 break;
                                             }
                                         }
-                                        catch
+                                        Task.Run(async () =>
                                         {
-                                            service.Send(new byte[1] { 4 });
-                                            Disconnect();
-                                            break;
-                                        }
+                                            service.Send(new byte[1] { 2 });
+                                            await Task.Delay(100);
+                                            SendData($"{username} 已上线", DataType.Notice);
+                                        });
                                     }
-                                    Task.Run(async () =>
+                                    else if (buffer[1] == 1) // 注册
                                     {
-                                        service.Send(new byte[1] { 2 });
-                                        await Task.Delay(100);
-                                        SendData($"{username} 已上线", DataType.Notice);
-                                    });
+                                        registerMode = true;
+                                        if (Environment.Mode != Environment.ModeType.Local)
+                                        {
+                                            try
+                                            {
+                                                string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
+                                                username = login_info[0];
+                                                password_sha256 = login_info[1];
+                                                using var mySql = new MySql();
+                                                if (mySql.GetUserId(username, out Uid))
+                                                {
+                                                    service.Send(new byte[1] { 5 });
+                                                    Console.WriteLine("注册失败：用户已存在");
+                                                    Task.Delay(100).Wait();
+                                                    Disconnect();
+                                                    break;
+                                                }
+                                                if (!mySql.AddValue(username, password_sha256, ""))
+                                                {
+                                                    service.Send(new byte[1] { 4 });
+                                                    Console.WriteLine("注册失败：服务器内部错误");
+                                                    Task.Delay(100).Wait();
+                                                    Disconnect();
+                                                    break;
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                service.Send(new byte[1] { 4 });
+                                                Console.WriteLine("注册失败：服务器内部错误");
+                                                Task.Delay(100).Wait();
+                                                Disconnect();
+                                                break;
+                                            }
+                                        }
+                                        Task.Run(() =>
+                                        {
+                                            service.Send(new byte[1] { 2 });
+                                            Console.WriteLine($"新用户注册：{username}");
+                                            Task.Delay(100).Wait();
+                                            Disconnect();
+                                        });
+                                    }
                                     break;
                                 case 9: // 聊天信息
                                     Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
@@ -204,7 +255,7 @@ namespace Server
                 }
             }
 
-            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
+            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } if (!registerMode) SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
             public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7, Register = 8, Message = 9 }
             public static void SendData(string data, DataType type)
             {

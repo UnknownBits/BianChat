@@ -21,7 +21,6 @@ namespace Client_Ava
     {
         private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
-        private bool ShowError = true;
         private UserControl PanePage;
         private PageType PanePageType;
         private LoginPage LoginPage = new LoginPage();
@@ -46,7 +45,7 @@ namespace Client_Ava
             {
                 Task.Run(() =>
                 {
-                    if (e.Exception != null && ShowError)
+                    if (e.Exception != null)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -61,7 +60,6 @@ namespace Client_Ava
                         });
                         Task.Delay(200).Wait();
                     }
-                    ShowError = false;
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         SendTextBox.IsEnabled = false;
@@ -122,18 +120,21 @@ namespace Client_Ava
 
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
+            switch (args?.ReceivedData?[0])
             {
-                switch (args?.ReceivedData?[0])
-                {
-                    // 公告
-                    case 6:
+                // 公告
+                case 6:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
-                        break;
+                    });
+                    break;
 
-                    // 消息
-                    case 9:
+                // 消息
+                case 9:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         ChatList.Add(new ListBoxItem
                         {
@@ -141,9 +142,12 @@ namespace Client_Ava
                             Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
                             IsHitTestVisible = false
                         });
-                        break;
-                    // 登录成功
-                    case 2:
+                    });
+                    break;
+                // 登录/注册 成功
+                case 2:
+                    if (PanePageType == PageType.LoginPage)
+                    {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
                             SendTextBox.IsEnabled = true;
@@ -158,31 +162,68 @@ namespace Client_Ava
                         }).Wait();
 
                         SwitchPage(PageType.InfoPage);
-                        break;
-                    // 服务器内部错误
-                    case 4:
-                        ShowError = false;
+                    }
+                    else if (PanePageType == PageType.RegisterPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            new ContentDialog
+                            {
+                                Content = "注册成功",
+                                Title = "提示",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    break;
+                // 服务器内部错误
+                case 4:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         new ContentDialog
                         {
                             Content = "连接失败：服务器内部错误",
-                            Title = "连接失败",
+                            Title = "错误",
                             CloseButtonText = "确定",
                             DefaultButton = ContentDialogButton.Close
                         }.ShowAsync();
-                        break;
-                    // 用户名或密码错误
-                    case 5:
-                        ShowError = false;
-                        new ContentDialog
+                    });
+                    Client.Disconnect();
+                    break;
+                // 用户名或密码错误
+                case 5:
+                    if (PanePageType == PageType.LoginPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            Content = "连接失败：用户名或密码错误",
-                            Title = "连接失败",
-                            CloseButtonText = "确定",
-                            DefaultButton = ContentDialogButton.Close
-                        }.ShowAsync();
-                        break;
-                }
-            });
+                            new ContentDialog
+                            {
+                                Content = "连接失败：用户名或密码错误",
+                                Title = "错误",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    else if (PanePageType == PageType.RegisterPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            new ContentDialog
+                            {
+                                Content = "连接失败：用户已存在",
+                                Title = "错误",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    break;
+            }
         }
 
         private event EventHandler LoginSuccessEvent = delegate { };
@@ -218,7 +259,7 @@ namespace Client_Ava
                         Client.Connect(ip);
                         Client.BeginReceive();
                         string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
-                        Client.SendBytes(new byte[1] { 7 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
+                        Client.SendBytes(new byte[2] { 7, 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
                     }
                     catch (Exception ex)
                     {
@@ -244,8 +285,27 @@ namespace Client_Ava
             }
         }
 
-        public void Register(string username, string password)
+        public void Register(string username, string password, string ip)
         {
+            try
+            {
+                string sha256 = GetSHA256(password);
+                byte[] regInfo = new byte[2] { 7, 1 }.Concat(Encoding.UTF8.GetBytes(username + '^' + sha256)).ToArray();
+                Client.Connect(ip);
+                Client.BeginReceive();
+                Client.SendBytes(regInfo);
+            }
+            catch (Exception ex)
+            {
+                new ContentDialog
+                {
+                    Title = "错误",
+                    Content = $"无法注册账户：{ex.Message}",
+                    CloseButtonText = "确定",
+                    DefaultButton = ContentDialogButton.Close
+                }.ShowAsync();
+                SwitchPage(PageType.LoginPage);
+            }
         }
 
         public void Disconnect()
@@ -282,6 +342,11 @@ namespace Client_Ava
                 });
                 SendTextBox.Text = "";
             }
+        }
+
+        private void RegisterButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            SwitchPage(PageType.RegisterPage);
         }
 
         private string GetSHA256(string content)

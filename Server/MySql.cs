@@ -59,13 +59,14 @@ namespace Server
                 if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } }
             catch (Exception ex) { Console.WriteLine(ex); return false; }
         }
-        public bool awa(string user_name, string password, string email)
+        public bool AddValue(string user_name, string password, string email)
         {
             try
             {
                 string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email) VALUES ('{user_name}', '{password}', '{email}');";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
+                return true;
             }
             catch (Exception ex)
             {
@@ -74,13 +75,14 @@ namespace Server
             }
         }
 
-        public bool awa(string user_name, string password, string email,string QQ)
+        public bool AddValue(string user_name, string password, string email,string QQ)
         {
             try
             {
                 string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email,QQ) VALUES ('{user_name}', '{password}', '{email}','{QQ}');";
                 MySqlCommand cmd = new MySqlCommand(sql, conn);
                 cmd.ExecuteNonQuery();
+                return true;
             }
             catch (Exception ex)
             {

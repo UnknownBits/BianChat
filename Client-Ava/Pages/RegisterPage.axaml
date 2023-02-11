@@ -3,7 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="550"
              x:Class="Client_Ava.Pages.RegisterPage">
 	<Grid>
 		<Button HorizontalContentAlignment="Left" VerticalAlignment="Top"
@@ -21,6 +21,14 @@
 				<TextBlock FontSize="20" Margin="0 10 0 0">密码</TextBlock>
 				<TextBox x:Name="Password" FontSize="20" Margin="0 10 0 0" PasswordChar="*"
 						 FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+				<TextBlock FontSize="20" Margin="0 10 0 0">服务器</TextBlock>
+				<ComboBox x:Name="ServerSelectionComboBox" Margin="0 10 0 0" SelectedIndex="0"
+						  VerticalContentAlignment="Center">
+					<ComboBox.Items>
+						<ComboBoxItem Content="测试服" Tag="test.biannetwork.top:911"/>
+						<ComboBoxItem Content="本地服" Tag="127.0.0.1:911"/>
+					</ComboBox.Items>
+				</ComboBox>
 				<ui:Button Margin="0 20 0 20" HorizontalAlignment="Right"
 						   Content="注册" Classes="accent" Click="RegisterButton_Clicked"/>
 			</StackPanel>

@@ -19,7 +19,8 @@ namespace Client_Ava.Pages
 
         private void RegisterButton_Clicked(object sender, RoutedEventArgs e)
         {
-            MainWindow.Register(Username.Text, Password.Text);
+            string ip = ((ComboBoxItem)ServerSelectionComboBox.SelectedItem).Tag.ToString();
+            MainWindow.Register(Username.Text, Password.Text, ip);
         }
     }
 }

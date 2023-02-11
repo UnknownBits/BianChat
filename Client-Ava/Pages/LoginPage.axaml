@@ -25,8 +25,10 @@
 						<ComboBoxItem Content="本地服" Tag="127.0.0.1:911"/>
 					</ComboBox.Items>
 				</ComboBox>
-				<Button Margin="0 20 0 0" HorizontalAlignment="Right"
-						   Content="连接" Classes="accent" Click="ConnectButton_Clicked"/>
+				<StackPanel Orientation="Horizontal" Margin="0 20 0 0" HorizontalAlignment="Right">
+					<Button Content="注册" Classes="accent" Margin="0 0 10 0" Click="RegisterButton_Clicked"/>
+					<Button Content="登录" Classes="accent" Click="ConnectButton_Clicked"/>
+				</StackPanel>
 				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="测试账户" Margin="0 20 0 0"/>
 				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="test test@123456" Margin="0 20 0 0"/>
 			</StackPanel>
