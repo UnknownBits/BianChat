@@ -1,15 +1,15 @@
-﻿using MySqlConnector;
+﻿using System.Data.SQLite;
 
 namespace Server
 {
-    public class MySql : IDisposable
+    public class SQLite : IDisposable
     {
-        public MySqlConnection conn;
+        public SQLiteConnection conn;
         private bool disposedValue;
 
-        public MySql()
+        public SQLite()
         {
-            conn = new MySqlConnection($"server = 221.224.90.88; user = visitor; database = bian; port = 5000; password = H#ok3365)~!mQ.v");
+            conn = new SQLiteConnection($"Data Source={Environment.DatabaseFileName};");
             try { conn.Open(); }
             catch (Exception ex)
             {
@@ -22,8 +22,8 @@ namespace Server
             try
             {
                 string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                SQLiteDataReader rdr = cmd.ExecuteReader();
                 rdr.Read();
                 var value = rdr[0].ToString();
                 if (int.TryParse(value, out int number))
@@ -51,9 +51,9 @@ namespace Server
         {
             try
             {
-                string sql = $"SELECT UserInfo.`Password` FROM UserInfo WHERE UserInfo.Uid = {uid}";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
-                MySqlDataReader rdr = cmd.ExecuteReader();
+                string sql = $"SELECT UserInfo.Password FROM UserInfo WHERE UserInfo.Uid = {uid}";
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                SQLiteDataReader rdr = cmd.ExecuteReader();
                 rdr.Read();
                 var value = rdr[0].ToString();
                 if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } }
@@ -63,8 +63,8 @@ namespace Server
         {
             try
             {
-                string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email) VALUES ('{user_name}', '{password}', '{email}');";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                string sql = $"INSERT INTO UserInfo(UserName,Password,Email) VALUES ('{user_name}', '{password}', '{email}');";
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
                 return true;
             }
@@ -79,8 +79,8 @@ namespace Server
         {
             try
             {
-                string sql = $"INSERT INTO `UserInfo`(UserName,`Password`,Email,QQ) VALUES ('{user_name}', '{password}', '{email}','{QQ}');";
-                MySqlCommand cmd = new MySqlCommand(sql, conn);
+                string sql = $"INSERT INTO UserInfo(UserName,Password,Email,QQ) VALUES ('{user_name}', '{password}', '{email}','{QQ}');";
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
                 return true;
             }

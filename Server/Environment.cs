@@ -9,5 +9,7 @@
             Local, // 本地模式
             Maintenance // 维护模式
         }
+
+        public static string DatabaseFileName = @"Database.db";
     }
 }

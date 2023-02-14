@@ -171,7 +171,7 @@ namespace Server
                                         {
                                             try
                                             {
-                                                using var mySql = new MySql();
+                                                using var mySql = new SQLite();
                                                 if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                                 {
                                                     service.Send(new byte[1] { 5 });
@@ -205,7 +205,7 @@ namespace Server
                                                 string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
                                                 username = login_info[0];
                                                 password_sha256 = login_info[1];
-                                                using var mySql = new MySql();
+                                                using var mySql = new SQLite();
                                                 if (mySql.GetUserId(username, out Uid))
                                                 {
                                                     service.Send(new byte[1] { 5 });
