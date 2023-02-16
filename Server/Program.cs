@@ -24,6 +24,7 @@ namespace Server
                     newthread.Start();
                 }
             });
+            SQLite.CreateDatabase();
             Console.WriteLine("欢迎使用BianChat V1.5.0 寒假特供版");
             Console.WriteLine("等待客户机进行连接......");
             while (true)
@@ -57,7 +58,7 @@ namespace Server
                                 else Console_Helper(CommandType.kill);
                                 break;
                             case "notice":
-                                if (command_args.Length == 2) ClientThread.SendData($"{command_args[1]}", ClientThread.DataType.Message);
+                                if (command_args.Length == 2) ClientThread.SendData($"{command_args[1]}", ClientThread.DataType.Notice);
                                 else Console_Helper(CommandType.notice);
                                 break;
                             case "end":
@@ -128,9 +129,9 @@ namespace Server
 
                     Task.Run(async () =>
                     {
+                        await Task.Delay(200);
                         while (true)
                         {
-                            await Task.Delay(5000);
                             try
                             {
                                 t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
@@ -141,6 +142,7 @@ namespace Server
                                 Disconnect();
                                 break;
                             }
+                            await Task.Delay(5000);
                         }
                     });
 
@@ -280,7 +282,7 @@ namespace Server
                         }
                     }
                 }
-                Console.WriteLine($"{type}包：{data}");
+                Console.WriteLine($"{type} 包：{data}");
             }
             public static void SendData(DataType type)
             {
@@ -295,7 +297,7 @@ namespace Server
                         }
                     }
                 }
-                Console.WriteLine($"发送{type}包");
+                Console.WriteLine($"发送 {type} 包");
             }
         }
     }

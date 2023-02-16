@@ -275,6 +275,7 @@ namespace Client_Ava
                             SendTextBox.IsEnabled = false;
                             SendButton.IsEnabled = false;
                         }).Wait();
+                        Client.Disconnect();
 
                         SwitchPage(PageType.LoginPage);
                         return;
@@ -285,24 +286,39 @@ namespace Client_Ava
 
         public void Register(string username, string password, string ip)
         {
-            try
-            {
-                string sha256 = GetSHA256(password);
-                byte[] regInfo = new byte[2] { 7, 1 }.Concat(Encoding.UTF8.GetBytes(username + '^' + sha256)).ToArray();
-                Client.Connect(ip);
-                Client.BeginReceive();
-                Client.SendBytes(regInfo);
-            }
-            catch (Exception ex)
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || username.Contains('^'))
             {
                 new ContentDialog
                 {
                     Title = "错误",
-                    Content = $"无法注册账户：{ex.Message}",
+                    Content = $"无法注册账户：用户名或密码不可为空或用户名不可包含 \'^\'",
                     CloseButtonText = "确定",
                     DefaultButton = ContentDialogButton.Close
                 }.ShowAsync();
+
                 SwitchPage(PageType.LoginPage);
+            }
+            else
+            {
+                try
+                {
+                    string sha256 = GetSHA256(password);
+                    byte[] regInfo = new byte[2] { 7, 1 }.Concat(Encoding.UTF8.GetBytes(username + '^' + sha256)).ToArray();
+                    Client.Connect(ip);
+                    Client.BeginReceive();
+                    Client.SendBytes(regInfo);
+                }
+                catch (Exception ex)
+                {
+                    new ContentDialog
+                    {
+                        Title = "错误",
+                        Content = $"无法注册账户：{ex.Message}",
+                        CloseButtonText = "确定",
+                        DefaultButton = ContentDialogButton.Close
+                    }.ShowAsync();
+                    SwitchPage(PageType.LoginPage);
+                }
             }
         }
 

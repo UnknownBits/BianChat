@@ -17,6 +17,27 @@ namespace Server
             }
         }
 
+        public static void CreateDatabase()
+        {
+            if (!File.Exists(Environment.DatabaseFileName))
+            {
+                SQLiteConnection.CreateFile(Environment.DatabaseFileName);
+            }
+            SQLiteConnection conn = new SQLiteConnection($"Data Source={Environment.DatabaseFileName};");
+            try
+            {
+                conn.Open();
+                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"UserName\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"Email\" TEXT, \"QQ\" TEXT, Primary Key(\"Uid\"))";
+                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                cmd.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+            conn.Close();
+        }
+
         public bool GetUserId(string user_name, out int user_id)
         {
             try
