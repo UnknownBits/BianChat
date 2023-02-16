@@ -23,7 +23,7 @@ namespace Client_Ava
         private AdvancedTcpClient Client = new AdvancedTcpClient();
         private UserControl PanePage;
         private PageType PanePageType;
-        private LoginPage LoginPage = new LoginPage();
+        private LoginPage LoginPage;
         private InfoPage InfoPage = new InfoPage();
         private RegisterPage RegisterPage = new RegisterPage();
 
@@ -31,6 +31,7 @@ namespace Client_Ava
         {
             InitializeComponent();
 
+            LoginPage = new LoginPage();
             LoginPage.MainWindow = this;
             InfoPage.MainWindow = this;
             RegisterPage.MainWindow = this;
@@ -38,8 +39,6 @@ namespace Client_Ava
             PanePageType = PageType.LoginPage;
             Login.Content = PanePage;
 
-            LoginPage.MainWindow = this;
-            InfoPage.MainWindow = this;
             Client.DataReceived += DataReceivedCallback;
             Client.Disconnected += (s, e) =>
             {
@@ -226,14 +225,14 @@ namespace Client_Ava
             }
         }
 
-        public void Connect(string username, string ip)
+        public void Connect(string username,string password, string ip)
         {
-            if (string.IsNullOrEmpty(username) || username.Length >= 12 || username.Contains(' ') || username.Contains('^'))
+            if (string.IsNullOrEmpty(username) || username.Length < 1 || username.Length > 12  || username.Contains('￥') || username.Contains(' ') || username.Contains('^'))
             {
                 ContentDialog dialog = new ContentDialog
                 {
                     Title = "提示",
-                    Content = "用户名不可为空或大于 12 字符或包含空格或 '^' 符号",
+                    Content = "用户名不可为空、小于1字符或大于 12 字符、或包含特殊符号（A-Z a-z 0-9 _）",
                     CloseButtonText = "确认",
                     DefaultButton = ContentDialogButton.Close
                 };
@@ -241,46 +240,60 @@ namespace Client_Ava
             }
             else
             {
-                Login.IsHitTestVisible = false;
-                OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
-                Task.Run(() =>
+                if (string.IsNullOrEmpty(password) || password.Length < 6 || password.Length > 15)
                 {
-                    try
+                    ContentDialog dialog = new ContentDialog
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            ChatList.Clear();
-                            ChatListBox.Items = ChatList;
-                            InfoPage.Notices.Clear();
-                        }).Wait();
-
-                        Client.Connect(ip);
-                        Client.BeginReceive();
-                        string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
-                        Client.SendBytes(new byte[2] { 7, 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
-                    }
-                    catch (Exception ex)
+                        Title = "提示",
+                        Content = "密码不可为空、小于6字符或大于15字符",
+                        CloseButtonText = "确认",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    dialog.ShowAsync();
+                }
+                else
+                {
+                    Login.IsHitTestVisible = false;
+                    OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                    Task.Run(() =>
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        try
                         {
-                            ContentDialog dialog = new ContentDialog
+                            Dispatcher.UIThread.InvokeAsync(() =>
                             {
-                                CloseButtonText = "确定",
-                                DefaultButton = ContentDialogButton.Close,
-                                Content = $"无法连接到服务器：{ex.Message}",
-                                Title = "错误"
-                            };
-                            dialog.ShowAsync();
+                                ChatList.Clear();
+                                ChatListBox.Items = ChatList;
+                                InfoPage.Notices.Clear();
+                            }).Wait();
 
-                            SendTextBox.IsEnabled = false;
-                            SendButton.IsEnabled = false;
-                        }).Wait();
-                        Client.Disconnect();
+                            Client.Connect(ip);
+                            Client.BeginReceive();
+                            string passwd_sha256 = GetSHA256(password);
+                            Client.SendBytes(new byte[2] { 7, 0 }.Concat(Encoding.UTF8.GetBytes(username + '^' + passwd_sha256)).ToArray());
+                        }
+                        catch (Exception ex)
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                ContentDialog dialog = new ContentDialog
+                                {
+                                    CloseButtonText = "确定",
+                                    DefaultButton = ContentDialogButton.Close,
+                                    Content = $"无法连接到服务器：{ex.Message}",
+                                    Title = "错误"
+                                };
+                                dialog.ShowAsync();
 
-                        SwitchPage(PageType.LoginPage);
-                        return;
-                    }
-                });
+                                SendTextBox.IsEnabled = false;
+                                SendButton.IsEnabled = false;
+                            }).Wait();
+                            Client.Disconnect();
+
+                            SwitchPage(PageType.LoginPage);
+                            return;
+                        }
+                    });
+                }
             }
         }
 
