@@ -4,9 +4,18 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BianChat"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        ui:WindowHelper.UseModernWindowStyle="True">
     <Grid>
-
+        <ui:NavigationView PaneDisplayMode="Top" IsBackButtonVisible="Collapsed"
+                           IsSettingsVisible="False">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem Content="账户" Icon="Contact" Tag="Account" IsSelected="True"/>
+                <ui:NavigationViewItem Content="聊天" Icon="People" Tag="Chat"/>
+            </ui:NavigationView.MenuItems>
+            <Frame/>
+        </ui:NavigationView>
     </Grid>
 </Window>
