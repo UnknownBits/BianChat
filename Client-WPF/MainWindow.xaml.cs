@@ -24,6 +24,11 @@ namespace Client_WPF
         public MainWindow()
         {
             InitializeComponent();
+
+            Loaded += delegate
+            {
+                Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Appearance.BackgroundType.Mica);
+            };
         }
     }
 }
