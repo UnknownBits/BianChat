@@ -45,20 +45,23 @@ namespace Server
                 string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
                 SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 SQLiteDataReader rdr = cmd.ExecuteReader();
-                rdr.Read();
-                var value = rdr[0].ToString();
-                if (int.TryParse(value, out int number))
+                if (rdr.Read())
                 {
-                    user_id = number;
-                    rdr.Close();
-                    return true;
+                    var value = rdr[0].ToString();
+                    if (int.TryParse(value, out int number))
+                    {
+                        user_id = number;
+                        rdr.Close();
+                        return true;
+                    }
+                    else
+                    {
+                        user_id = 0;
+                        rdr.Close();
+                        return false;
+                    }
                 }
-                else
-                {
-                    user_id = 0;
-                    rdr.Close();
-                    return false;
-                }
+                else { user_id = 0; rdr.Close(); return false; }
             }
             catch (Exception ex)
             {
@@ -75,9 +78,13 @@ namespace Server
                 string sql = $"SELECT UserInfo.Password FROM UserInfo WHERE UserInfo.Uid = {uid}";
                 SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 SQLiteDataReader rdr = cmd.ExecuteReader();
-                rdr.Read();
-                var value = rdr[0].ToString();
-                if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; } }
+                if (rdr.Read())
+                {
+                    var value = rdr[0].ToString();
+                    if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; }
+                }
+                else { rdr.Close(); return false; }
+            }
             catch (Exception ex) { Console.WriteLine(ex); return false; }
         }
         public bool AddValue(string user_name, string password, string email)
