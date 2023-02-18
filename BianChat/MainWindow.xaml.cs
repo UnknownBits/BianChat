@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -34,6 +35,7 @@ namespace BianChat
             switch (selectedItem.Tag)
             {
                 case "Home":
+                    navigatePage = typeof(AccountPage);
                     break;
                 case "Chat":
                     navigatePage = typeof(ChatPage);
@@ -42,6 +44,7 @@ namespace BianChat
                     navigatePage = typeof(AccountPage);
                     break;
                 case "Settings":
+                    navigatePage = typeof(Settings);
                     break;
                 default:
                     goto case "Home";

@@ -6,22 +6,13 @@
       xmlns:local="clr-namespace:BianChat.Views"
       xmlns:ui="http://schemas.modernwpf.com/2019"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800"
-      Title="Settings">
+      d:DesignHeight="450" d:DesignWidth="800">
 
-    <TabControl>
-        <TabItem>
-            <TabItem.Header>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <ui:FontIcon FontFamily="Segoe UI" Glyph="🖌" VerticalAlignment="Center"/>
-                    <Label Content="主题" VerticalAlignment="Center"/>
-                </StackPanel>
-            </TabItem.Header>
-            <TabItem.Content>
-                <Grid>
-                                      
-                </Grid>
-            </TabItem.Content>
-        </TabItem>
-    </TabControl>
+    <ScrollViewer HorizontalScrollBarVisibility="Auto">
+        <StackPanel VerticalAlignment="Top" HorizontalAlignment="Left">
+            <TextBlock TextWrapping="Wrap" Margin="0,0,0,20">Scrolling is enabled when it is necessary. 
+      Resize the window, making it larger and smaller.</TextBlock>
+            <Rectangle Fill="Red" Width="500" Height="500"></Rectangle>
+        </StackPanel>
+    </ScrollViewer>
 </Page>
