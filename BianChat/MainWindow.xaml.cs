@@ -20,7 +20,7 @@ namespace BianChat
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         public MainWindow()
         {
@@ -33,14 +33,18 @@ namespace BianChat
             Type navigatePage;
             switch (selectedItem.Tag)
             {
-                case "Account":
-                    navigatePage = typeof(AccountPage);
+                case "Home":
                     break;
                 case "Chat":
                     navigatePage = typeof(ChatPage);
                     break;
+                case "Account":
+                    navigatePage = typeof(AccountPage);
+                    break;
+                case "Settings":
+                    break;
                 default:
-                    goto case "Account";
+                    goto case "Home";
             }
             RootFrame.Navigate(navigatePage, null, args.RecommendedNavigationTransitionInfo);
         }
