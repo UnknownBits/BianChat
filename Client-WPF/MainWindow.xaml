@@ -13,11 +13,16 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <ui:NavigationCompact Grid.Row="1" x:Name="RootNavigation" HorizontalAlignment="Left">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <ui:NavigationCompact Grid.Row="1" Grid.Column="0" x:Name="RootNavigation" HorizontalAlignment="Left">
             <ui:NavigationCompact.Items>
                 <ui:NavigationItem Content="聊天" Icon="Chat24"/>
             </ui:NavigationCompact.Items>
         </ui:NavigationCompact>
-        <ui:TitleBar Grid.Row="0" Title="BianChat"/>
+        <ui:NavigationBackButton Grid.Row="0" Grid.Column="0" Margin="5 5 0 0 " />
+        <ui:TitleBar Grid.Row="0" Grid.Column="1" Title="BianChat"/>
     </Grid>
 </ui:UiWindow>
