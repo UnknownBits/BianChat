@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ModernWpfUI" Version="0.9.6" />
     <PackageReference Include="WPF-UI" Version="2.0.3" />
   </ItemGroup>
 
