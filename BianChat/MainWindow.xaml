@@ -6,22 +6,24 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True"
         xmlns:local="clr-namespace:BianChat"
+        xmlns:views="clr-namespace:BianChat.Views"
         x:Name="Window"
         mc:Ignorable="d"
         Title="BianChat" Width="800" Height="450">
 
     <Grid>
 
-        <ui:NavigationView PaneDisplayMode="Top"
+        <ui:NavigationView PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
-            <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem Content="账户" Icon="Contact"/>
-                <ui:NavigationViewItem Content="设置" Icon="Setting"/>
-            </ui:NavigationView.FooterMenuItems>
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="主页" Icon="Home"/>
-                <ui:NavigationViewItem Content="聊天" Icon="LeaveChat"/>
+                <ui:NavigationViewItem Content="主页" Icon="Home" Tag="Home"/>
+                <ui:NavigationViewItem Content="聊天" Icon="LeaveChat" Tag="Chat"/>
             </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem Content="账户" Icon="Contact" Tag="Account"/>
+                <ui:NavigationViewItem Content="设置" Icon="Setting" Tag="Settings"/>
+            </ui:NavigationView.FooterMenuItems>
+            <ui:Frame x:Name="RootFrame" SourcePageType="{x:Type views:AccountPage}"/>
         </ui:NavigationView>
     </Grid>
 </Window>
