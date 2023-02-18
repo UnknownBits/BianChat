@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Client_WPF.Views;
+using ModernWpf.Controls;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +25,24 @@ namespace BianChat
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
+            var selectedItem = (NavigationViewItem)args.SelectedItem;
+            Type navigatePage;
+            switch (selectedItem.Tag)
+            {
+                case "Account":
+                    navigatePage = typeof(AccountPage);
+                    break;
+                case "Chat":
+                    navigatePage = typeof(ChatPage);
+                    break;
+                default:
+                    goto case "Account";
+            }
+            RootFrame.Navigate(navigatePage, null, args.RecommendedNavigationTransitionInfo);
         }
     }
 }

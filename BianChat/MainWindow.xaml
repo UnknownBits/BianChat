@@ -4,18 +4,19 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:BianChat"
+        xmlns:views="clr-namespace:Client_WPF.Views"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         ui:WindowHelper.UseModernWindowStyle="True">
     <Grid>
         <ui:NavigationView PaneDisplayMode="Top" IsBackButtonVisible="Collapsed"
-                           IsSettingsVisible="False">
+                           IsSettingsVisible="False" SelectionChanged="NavigationView_SelectionChanged">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="账户" Icon="Contact" Tag="Account" IsSelected="True"/>
                 <ui:NavigationViewItem Content="聊天" Icon="People" Tag="Chat"/>
             </ui:NavigationView.MenuItems>
-            <Frame/>
+            <ui:Frame x:Name="RootFrame" SourcePageType="{x:Type views:AccountPage}"/>
         </ui:NavigationView>
     </Grid>
 </Window>
