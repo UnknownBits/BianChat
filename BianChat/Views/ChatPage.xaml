@@ -9,8 +9,12 @@
       Title="ChatPage">
 
     <Grid>
-        <Label>
-            该页为聊天页，在这里你可以和你的好友私聊或群聊。
-        </Label>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <ListView Grid.Column="0">
+            <ListViewItem>114514</ListViewItem>
+        </ListView>
     </Grid>
 </Page>

@@ -9,8 +9,14 @@
       Title="AccountPage">
 
     <Grid>
-        <Label>
-            该页为账户信息页，在这里你可以查看或更改你的账户信息或登录你的账户。
-        </Label>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
+            <Ellipse Width="100" Height="100" Fill="LightGray"/>
+            <TextBlock HorizontalAlignment="Center" Margin="0 20 0 0"
+                       FontSize="20">abcdefghijkl</TextBlock>
+        </StackPanel>
     </Grid>
 </Page>
