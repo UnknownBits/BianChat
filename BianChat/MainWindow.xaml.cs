@@ -12,9 +12,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Wpf.Ui.Controls;
 
-namespace Client_WPF
+namespace BianChat
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
@@ -24,11 +23,6 @@ namespace Client_WPF
         public MainWindow()
         {
             InitializeComponent();
-
-            Loaded += delegate
-            {
-                Wpf.Ui.Appearance.Watcher.Watch(this, Wpf.Ui.Appearance.BackgroundType.Mica);
-            };
         }
     }
 }
