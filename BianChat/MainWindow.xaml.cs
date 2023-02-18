@@ -1,4 +1,4 @@
-﻿using Client_WPF.Views;
+﻿using BianChat.Views;
 using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
