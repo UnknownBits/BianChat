@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModernWpf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,24 @@ namespace BianChat.Views
         public Settings()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            ClearValue(ThemeManager.RequestedThemeProperty);
+
+            Application.Current.Dispatcher.BeginInvoke(() =>
+            {
+                var tm = ThemeManager.Current;
+                if (tm.ActualApplicationTheme == ApplicationTheme.Dark)
+                {
+                    tm.ApplicationTheme = ApplicationTheme.Light;
+                }
+                else
+                {
+                    tm.ApplicationTheme = ApplicationTheme.Dark;
+                }
+            });
         }
     }
 }

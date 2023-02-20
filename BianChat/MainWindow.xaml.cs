@@ -35,7 +35,7 @@ namespace BianChat
             switch (selectedItem.Tag)
             {
                 case "Home":
-                    navigatePage = typeof(AccountPage);
+                    navigatePage = typeof(HomePage);
                     break;
                 case "Chat":
                     navigatePage = typeof(ChatPage);
