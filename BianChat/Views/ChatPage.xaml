@@ -14,7 +14,19 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <ListView Grid.Column="0">
-            <ListViewItem>114514</ListViewItem>
+            <ListViewItem Height="60">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Grid.Column="0" Width="50" Height="50" Fill="LightGray"/>
+                    <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0">
+                        <TextBlock FontSize="18">114514</TextBlock>
+                        <TextBlock FontSize="12" Margin="0 5 0 0">1919810</TextBlock>
+                    </StackPanel>
+                </Grid>
+            </ListViewItem>
         </ListView>
     </Grid>
 </Page>
