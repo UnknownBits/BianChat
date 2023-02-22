@@ -14,7 +14,6 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
-            <Ellipse Width="100" Height="100" Fill="LightGray"/>
             <TextBlock HorizontalAlignment="Center" Margin="0 20 0 0"
                        FontSize="20">abcdefghijkl</TextBlock>
         </StackPanel>

@@ -1,0 +1,31 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:BianChat"
+    xmlns:controls="clr-namespace:BianChat.Controls">
+
+    <Style TargetType="{x:Type controls:UserListItem}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type controls:UserListItem}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Image Width="50" Height="50"
+                               Source="{TemplateBinding ImageSource}">
+                            <Image.Clip>
+                                <RectangleGeometry RadiusX="25" RadiusY="25" Rect="0,0,50,50"/>
+                            </Image.Clip>
+                        </Image>
+                        <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0">
+                            <TextBlock FontSize="18" Text="{TemplateBinding Username}"/>
+                            <TextBlock FontSize="12" Margin="0 5 0 0" Text="{TemplateBinding LastMessage}"/>
+                        </StackPanel>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

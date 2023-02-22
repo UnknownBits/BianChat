@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:BianChat.Views"
+      xmlns:controls="clr-namespace:BianChat.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ChatPage">
@@ -15,17 +16,7 @@
         </Grid.ColumnDefinitions>
         <ListView Grid.Column="0">
             <ListViewItem Height="60">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Ellipse Grid.Column="0" Width="50" Height="50" Fill="LightGray"/>
-                    <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0">
-                        <TextBlock FontSize="18">114514</TextBlock>
-                        <TextBlock FontSize="12" Margin="0 5 0 0">1919810</TextBlock>
-                    </StackPanel>
-                </Grid>
+                <controls:UserListItem ImageSource="test.jpg" Username="114514" LastMessage="1919810"/>
             </ListViewItem>
         </ListView>
     </Grid>
