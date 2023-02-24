@@ -21,7 +21,8 @@
                         </Image>
                         <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0">
                             <TextBlock FontSize="18" Text="{TemplateBinding Username}"/>
-                            <TextBlock FontSize="12" Margin="0 5 0 0" Text="{TemplateBinding LastMessage}"/>
+                            <TextBlock FontSize="12" Margin="0 5 0 0" Text="{TemplateBinding LastMessage}"
+                                       Foreground="#999999"/>
                         </StackPanel>
                     </Grid>
                 </ControlTemplate>

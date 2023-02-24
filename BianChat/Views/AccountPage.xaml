@@ -10,12 +10,17 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
-            <TextBlock HorizontalAlignment="Center" Margin="0 20 0 0"
-                       FontSize="20">abcdefghijkl</TextBlock>
+            <Image x:Name="ProfileImage" Width="100" Height="100" Source="/Views/test.jpg">
+                <Image.Clip>
+                    <RectangleGeometry RadiusX="50" RadiusY="50" Rect="0,0,100,100"/>
+                </Image.Clip>
+            </Image>
+            <TextBlock x:Name="Username" HorizontalAlignment="Center" Margin="0 20 0 0"
+                       FontSize="20"/>
         </StackPanel>
     </Grid>
 </Page>

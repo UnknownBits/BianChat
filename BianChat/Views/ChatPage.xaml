@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:BianChat.Views"
+      xmlns:ui="http://schemas.modernwpf.com/2019"
       xmlns:controls="clr-namespace:BianChat.Controls"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
@@ -11,13 +12,13 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
-        <ListView Grid.Column="0">
-            <ListViewItem Height="60">
-                <controls:UserListItem ImageSource="test.jpg" Username="114514" LastMessage="1919810"/>
-            </ListViewItem>
-        </ListView>
+        <ui:ListView x:Name="UserList" Grid.Column="0">
+            <ui:ListViewItem Height="60">
+                <controls:UserListItem ImageSource="/Views/test.jpg" Username="Lzr" LastMessage="6"/>
+            </ui:ListViewItem>
+        </ui:ListView>
     </Grid>
 </Page>

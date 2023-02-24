@@ -135,7 +135,7 @@ namespace Server
                             try
                             {
                                 t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                                service.Send(new byte[1] { 0 });
+                                service.Send(new byte[1] { (int)DataType.Ping });
                             }
                             catch
                             {
@@ -160,11 +160,17 @@ namespace Server
                                     if (buffer[1] == 0) // 登录
                                     {
                                         string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
+                                        if (login_info.Length > 2)
+                                        {
+                                            service.Send(new byte[1] { (int)DataType.Error_Account });
+                                            Task.Delay(100).Wait();
+                                            Disconnect();
+                                        }
                                         username = login_info[0];
                                         password_sha256 = login_info[1];
                                         if (username.Contains(' ') || password_sha256.Contains(' '))
                                         {
-                                            service.Send(new byte[1] { 5 });
+                                            service.Send(new byte[1] { (int)DataType.Error_Account });
                                             Task.Delay(100).Wait();
                                             Disconnect();
                                             break;
@@ -176,7 +182,7 @@ namespace Server
                                                 using var mySql = new SQLite();
                                                 if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                                 {
-                                                    service.Send(new byte[1] { 5 });
+                                                    service.Send(new byte[1] { (int)DataType.Error_Account });
                                                     Task.Delay(100).Wait();
                                                     Disconnect();
                                                     break;
@@ -184,7 +190,7 @@ namespace Server
                                             }
                                             catch
                                             {
-                                                service.Send(new byte[1] { 4 });
+                                                service.Send(new byte[1] { (int)DataType.Error_Unknown });
                                                 Task.Delay(100).Wait();
                                                 Disconnect();
                                                 break;
@@ -192,7 +198,7 @@ namespace Server
                                         }
                                         Task.Run(async () =>
                                         {
-                                            service.Send(new byte[1] { 2 });
+                                            service.Send(new byte[1] { (int)DataType.State_Account_Success });
                                             isLogin = true;
                                             await Task.Delay(100);
                                             SendData($"{username} 已上线", DataType.Notice);
@@ -205,12 +211,18 @@ namespace Server
                                             try
                                             {
                                                 string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
+                                                if (login_info.Length > 2)
+                                                {
+                                                    service.Send(new byte[1] { (int)DataType.Error_Account });
+                                                    Task.Delay(100).Wait();
+                                                    Disconnect();
+                                                }
                                                 username = login_info[0];
                                                 password_sha256 = login_info[1];
                                                 using var mySql = new SQLite();
                                                 if (mySql.GetUserId(username, out Uid))
                                                 {
-                                                    service.Send(new byte[1] { 5 });
+                                                    service.Send(new byte[1] { (int)DataType.Error_Account });
                                                     Console.WriteLine("注册失败：用户已存在");
                                                     Task.Delay(100).Wait();
                                                     Disconnect();
@@ -218,7 +230,7 @@ namespace Server
                                                 }
                                                 if (!mySql.AddValue(username, password_sha256, ""))
                                                 {
-                                                    service.Send(new byte[1] { 4 });
+                                                    service.Send(new byte[1] { (int)DataType.Error_Unknown });
                                                     Console.WriteLine("注册失败：服务器内部错误");
                                                     Task.Delay(100).Wait();
                                                     Disconnect();
@@ -227,7 +239,7 @@ namespace Server
                                             }
                                             catch
                                             {
-                                                service.Send(new byte[1] { 4 });
+                                                service.Send(new byte[1] { (int)DataType.Error_Unknown });
                                                 Console.WriteLine("注册失败：服务器内部错误");
                                                 Task.Delay(100).Wait();
                                                 Disconnect();
@@ -236,7 +248,7 @@ namespace Server
                                         }
                                         Task.Run(() =>
                                         {
-                                            service.Send(new byte[1] { 2 });
+                                            service.Send(new byte[1] { (int)DataType.State_Account_Success });
                                             Console.WriteLine($"新用户注册：{username}");
                                             Task.Delay(100).Wait();
                                             Disconnect();
@@ -251,14 +263,14 @@ namespace Server
                                         {
                                             foreach (var client in clients)
                                             {
-                                                try { if (client != this) { client.service.Send(new byte[1] { 9 }.Concat(buffer.Skip(1)).ToArray()); } }
+                                                try { if (client != this) { client.service.Send(new byte[1] { (int)DataType.Message }.Concat(buffer.Skip(1)).ToArray()); } }
                                                 catch { client.Disconnect(); }
                                             }
                                         }
                                     }
                                     break;
                                 case 0: // 返回 Ping 包
-                                    service.Send(new byte[1] { 1 }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
+                                    service.Send(new byte[1] { (int)DataType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                     break;
                             }
                         }
