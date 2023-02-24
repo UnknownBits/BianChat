@@ -10,8 +10,8 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
             <Image x:Name="ProfileImage" Width="100" Height="100" Source="/Views/test.jpg">

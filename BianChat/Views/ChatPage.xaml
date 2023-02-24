@@ -10,7 +10,6 @@
       d:DesignHeight="450" d:DesignWidth="800"
       Title="ChatPage">
     <Grid>
-        <Grid x:Name="Mask" Background="Gray" Opacity="0.5"/>
         <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200"/>
@@ -22,5 +21,6 @@
                 </ui:ListViewItem>
             </ui:ListView>
         </Grid>
+        <Grid x:Name="Mask" Background="Gray" Opacity="0.5"/>
     </Grid>
 </Page>
