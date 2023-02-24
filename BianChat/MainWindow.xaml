@@ -10,9 +10,7 @@
         x:Name="Window"
         mc:Ignorable="d"
         Title="BianChat" Width="800" Height="450">
-
     <Grid>
-
         <ui:NavigationView PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
             <ui:NavigationView.MenuItems>
