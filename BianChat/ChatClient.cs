@@ -38,7 +38,6 @@ namespace BianChat
 
         public ChatClient()
         {
-            client = new AdvancedTcpClient();
             client.PingReceived += (s, e) => { PingReceived(s, e); };
             client.DataReceived += DataReceivedCallback;
             client.Disconnected += (s, e) =>
@@ -91,14 +90,7 @@ namespace BianChat
         public void Connect(string username, string password, string ip = "127.0.0.1:911")
         {
             // 断开已有连接
-            client.Disconnect();
-
-            // 连接
-            client.Connect(ip);
-
-            // 开始接收
-            client.BeginReceive();
-
+            client = new AdvancedTcpClient(ip);
             Connected = true;
 
             // 登录
@@ -114,7 +106,7 @@ namespace BianChat
 
         public void Disconnect()
         {
-            client.Disconnect();
+            client.Dispose();
         }
     }
 }

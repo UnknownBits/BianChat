@@ -8,7 +8,7 @@
         ui:TitleBar.IsIconVisible="True"
         xmlns:local="clr-namespace:BianChat"
         xmlns:views="clr-namespace:BianChat.Views"
-        x:Name="Window" Icon="/Icon1.ico"
+        x:Name="Window" Icon="Resources/Icon1.ico"
         mc:Ignorable="d"
         Title="BianChat" Width="800" Height="450">
     <Grid>
