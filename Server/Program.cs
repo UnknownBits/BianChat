@@ -300,7 +300,8 @@ namespace Server
                 Notice = 6,
                 Login = 7,
                 Register = 8,
-                Message = 9
+                Message = 9,
+                Message_Send_Success = 10
             }
 
             public static void SendData(string data, DataType type)
