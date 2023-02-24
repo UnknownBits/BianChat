@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,83 +26,82 @@ namespace BianChat
         public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
         public class DisconnectedEventArgs : EventArgs
         {
-            public Exception ?Exception { get; init; }
+            public Exception? Exception { get; init; }
         }
 
         private TcpClient client = new TcpClient();
-        public Thread ?ReceiveTask;
-        public bool Connected = false;
-        private bool disposedValue;
-        public void Connect(string ip)
-        {
-            Disconnect();
-            Task.Delay(10).Wait();
-            client = new TcpClient();
-            int idx = ip.LastIndexOf(':');
-            string ip1 = ip[..idx];
-            int port = int.Parse(ip[(idx + 1)..]);
-            client.Connect(ip1, port);
-            Connected = true;
-        }
+        public Thread? ReceiveTask;
+        public bool Connected ;
+        private bool disposedValue = false;
 
-        public void BeginReceive()
+        public AdvancedTcpClient(string ip)
         {
-            if (Connected)
+            Connected= false;
+            try
             {
-                ReceiveTask = new Thread(() =>
+                Task.Delay(10).Wait();
+                int idx = ip.LastIndexOf(':');
+                string ip1 = ip[..idx];
+                int port = int.Parse(ip[(idx + 1)..]);
+                client.Connect(ip1, port);
+                Connected = true;
+                if (Connected)
                 {
-                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    while (true)
+                    ReceiveTask = new Thread(() =>
                     {
-                        try
+                        long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                        while (true)
                         {
-                            // 接收
-                            int size = 0;
-                            byte[] buffer = new byte[8193];
-                            if (client.Client != null)
+                            try
                             {
-                                size = client.Client.Receive(buffer);
-                                Array.Resize(ref buffer, size);
+                                // 接收
+                                int size = 0;
+                                byte[] buffer = new byte[8193];
+                                if (client.Client != null)
+                                {
+                                    size = client.Client.Receive(buffer);
+                                    Array.Resize(ref buffer, size);
+                                }
+                                else
+                                {
+                                    Connected = false;
+                                    break;
+                                }
+                                if (size <= 0)
+                                {
+                                    throw new SocketException(10054);
+                                }
+                                if (buffer[0] == (int)PacketType.Ping)
+                                {
+                                    client.Client.Send(new byte[1] { 0 });
+                                }
+                                else if (buffer[0] == (int)PacketType.PingBack) // Ping 包
+                                {
+                                    int ping = BitConverter.ToInt32(buffer, 1);
+                                    PingReceived(client, new PingReceivedEventArgs { Ping = ping });
+                                }
+                                else
+                                {
+                                    DataReceived(
+                                        client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
+                                }
                             }
-                            else
+                            catch (Exception ex)
                             {
-                                Connected = false;
+                                if (Connected)
+                                {
+                                    Connected = false;
+                                    client.Close();
+                                    Disconnected(this, new DisconnectedEventArgs { Exception = ex });
+                                }
                                 break;
                             }
-                            if (size <= 0)
-                            {
-                                throw new SocketException(10054);
-                            }
-                            if (buffer[0] == (int)PacketType.Ping)
-                            {
-                                client.Client.Send(new byte[1] { 0 });
-                            }
-                            else if (buffer[0] == (int)PacketType.PingBack) // Ping 包
-                            {
-                                int ping = BitConverter.ToInt32(buffer, 1);
-                                PingReceived(client, new PingReceivedEventArgs { Ping = ping });
-                            }
-                            else
-                            {
-                                DataReceived(
-                                    client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
-                            }
                         }
-                        catch (Exception ex)
-                        {
-                            if (Connected)
-                            {
-                                Connected = false;
-                                client.Close();
-                                Disconnected(this, new DisconnectedEventArgs { Exception = ex });
-                            }
-                            break;
-                        }
-                    }
-                });
-                ReceiveTask.IsBackground = true;
-                ReceiveTask.Start();
-            }
+                    });
+                    ReceiveTask.IsBackground = true;
+                    ReceiveTask.Start();
+                }
+            } catch(Exception ex) { Dispose(ex); }
         }
 
         public bool SendPacket(PacketType packetType, byte[] data)
@@ -135,34 +133,35 @@ namespace BianChat
                     client.Client.Send(data);
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Connected = false;
+                    Dispose(ex);
                     return false;
                 }
             }
-
             return false;
         }
 
-        public void Disconnect()
+        public void Dispose(Exception exception)
         {
-            if (Connected)
-            {
-                Connected = false;
-                client?.Close();
-                Disconnected(this, new DisconnectedEventArgs());
-            }
+            Dispose(disposing: true, exception);
+            GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected virtual void Dispose(bool disposing, Exception exception)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    Disconnect();
+                    if (Connected)
+                    {
+                        client?.Close();
+                        Disconnected(this, new DisconnectedEventArgs { Exception = exception });
+                    }
                 }
+                Connected = false;
+                client?.Dispose();
                 disposedValue = true;
             }
         }
@@ -170,6 +169,22 @@ namespace BianChat
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (Connected)
+                    {
+                        Connected = false;
+                        client?.Close();
+                        Disconnected(this, new DisconnectedEventArgs());
+                    }
+                }
+                disposedValue = true;
+            }
         }
     }
 }
