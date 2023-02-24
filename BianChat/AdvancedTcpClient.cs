@@ -135,16 +135,30 @@ namespace BianChat
                     client.Client.Send(data);
                     return true;
                 }
-                catch
+                catch(Exception ex)
                 {
-                    Connected = false;
+                    Disconnect(ex);
                     return false;
                 }
             }
-
             return false;
         }
-
+        /// <summary>
+        /// 异常的连接退出
+        /// </summary>
+        /// <param name="ex"></param>
+        public void Disconnect(Exception ex)
+        {
+            if (Connected)
+            {
+                Connected = false;
+                client?.Close();
+                Disconnected(this, new DisconnectedEventArgs { Exception = ex } );
+            }
+        }
+        /// <summary>
+        /// 连接断开
+        /// </summary>
         public void Disconnect()
         {
             if (Connected)
