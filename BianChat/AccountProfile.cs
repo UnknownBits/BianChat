@@ -13,18 +13,15 @@ namespace BianChat
         public string Username { get; private set; }
         public string ProfilePhotoUrl { get; private set; }
         public AccountProfile[] FriendList { get; private set; }
-        public ChatClient Client { get; } = new ChatClient();
+        public ChatClient Client { get; }
 
-        public AccountProfile()
+        public AccountProfile(string username, string password)
         {
+            Client = new ChatClient();
             Client.client.Disconnected += delegate
             {
                 Connected = false;
             };
-        }
-
-        public static void Connect(string username, string password)
-        {
             Current?.Client.Disconnect();
             Current = new AccountProfile();
             Current.Client.Connect(username, password);

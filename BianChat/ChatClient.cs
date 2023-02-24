@@ -36,8 +36,10 @@ namespace BianChat
         public event EventHandler<MessageReceivedEventArgs> MessageReceived = delegate { };
         public event EventHandler<AdvancedTcpClient.DisconnectedEventArgs> Disconnected = delegate { };
 
-        public ChatClient()
+        public ChatClient(string username, string password, string ip = "127.0.0.1:911")
         {
+            // 断开已有连接
+            client = new AdvancedTcpClient(ip);
             client.PingReceived += (s, e) => { PingReceived(s, e); };
             client.DataReceived += DataReceivedCallback;
             client.Disconnected += (s, e) =>
@@ -46,6 +48,12 @@ namespace BianChat
 
                 Disconnected(s, e);
             };
+            Connected = true;
+
+            // 登录
+            string passwdHash = HashTools.GetSHA256(password);
+            client.SendPacket(AdvancedTcpClient.PacketType.Login,
+                new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(username + '^' + passwdHash)).ToArray());
         }
 
         private void DataReceivedCallback(object sender, AdvancedTcpClient.DataReceivedEventArgs e)
@@ -85,18 +93,6 @@ namespace BianChat
                     });
                     break;
             }
-        }
-
-        public void Connect(string username, string password, string ip = "127.0.0.1:911")
-        {
-            // 断开已有连接
-            client = new AdvancedTcpClient(ip);
-            Connected = true;
-
-            // 登录
-            string passwdHash = HashTools.GetSHA256(password);
-            client.SendPacket(AdvancedTcpClient.PacketType.Login,
-                new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(username + '^' + passwdHash)).ToArray());
         }
 
         public void SendMessage(string message)
