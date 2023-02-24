@@ -36,7 +36,7 @@ namespace BianChat
         private bool disposedValue;
         public void Connect(string ip)
         {
-            client?.Close();
+            Disconnect();
             Task.Delay(10).Wait();
             client = new TcpClient();
             int idx = ip.LastIndexOf(':');

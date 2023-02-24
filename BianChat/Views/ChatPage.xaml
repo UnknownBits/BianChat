@@ -11,16 +11,23 @@
       Title="ChatPage">
     <Grid>
         <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-            <ui:ListView x:Name="UserList" Grid.Column="0">
-                <ui:ListViewItem Height="60">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ui:ListView x:Name="UserList" Grid.Column="0" Background="LightGray">
+                <ui:ListViewItem Height="65">
                     <controls:UserListItem ImageSource="/Views/test.jpg" Username="Lzr" LastMessage="6"/>
                 </ui:ListViewItem>
             </ui:ListView>
+            <StackPanel Orientation="Vertical" Grid.Column="1"
+                        VerticalAlignment="Bottom">
+                <DockPanel LastChildFill="True">
+                    <TextBox Margin="10 0 10 0"/>
+                    <Button>发送</Button>
+                </DockPanel>
+            </StackPanel>
         </Grid>
-        <Grid x:Name="Mask" Background="Gray" Opacity="0.5"/>
+        <Grid x:Name="Mask" Background="Gray" Opacity="0.5" Panel.ZIndex="0" IsHitTestVisible="True"/>
     </Grid>
 </Page>

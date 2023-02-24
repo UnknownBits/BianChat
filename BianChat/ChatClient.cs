@@ -9,6 +9,25 @@ namespace BianChat
 {
     public class ChatClient
     {
+        public class MessageReceivedEventArgs : EventArgs
+        {
+            public string Message { get; set; }
+
+            public AdvancedTcpClient.PacketType MessageType { get; set; }
+        }
+
+        public class LoginCompletedEventArgs : EventArgs
+        {
+            public State LoginState { get; set; }
+
+            public enum State
+            {
+                Success,
+                Failed_Account,
+                Failed_Unknown
+            }
+        }
+
         public AdvancedTcpClient client;
         public bool Connected = false;
 
@@ -96,25 +115,6 @@ namespace BianChat
         public void Disconnect()
         {
             client.Disconnect();
-        }
-    }
-
-    public class MessageReceivedEventArgs : EventArgs
-    {
-        public string Message { get; set; }
-
-        public AdvancedTcpClient.PacketType MessageType { get; set; }
-    }
-
-    public class LoginCompletedEventArgs : EventArgs
-    {
-        public State LoginState { get; set; }
-
-        public enum State
-        {
-            Success,
-            Failed_Account,
-            Failed_Unknown
         }
     }
 }
