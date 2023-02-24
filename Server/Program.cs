@@ -163,6 +163,7 @@ namespace Server
                                         if (login_info.Length > 2)
                                         {
                                             service.Send(new byte[1] { (int)DataType.Error_Account });
+                                            Console.WriteLine("登录失败：账号或密码错误");
                                             Task.Delay(100).Wait();
                                             Disconnect();
                                         }
@@ -171,6 +172,7 @@ namespace Server
                                         if (username.Contains(' ') || password_sha256.Contains(' '))
                                         {
                                             service.Send(new byte[1] { (int)DataType.Error_Account });
+                                            Console.WriteLine("登录失败：账号或密码错误");
                                             Task.Delay(100).Wait();
                                             Disconnect();
                                             break;
@@ -183,6 +185,7 @@ namespace Server
                                                 if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)))
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Account });
+                                                    Console.WriteLine("登录失败：账号或密码错误");
                                                     Task.Delay(100).Wait();
                                                     Disconnect();
                                                     break;
@@ -191,6 +194,7 @@ namespace Server
                                             catch
                                             {
                                                 service.Send(new byte[1] { (int)DataType.Error_Unknown });
+                                                Console.WriteLine("登录失败：未知错误");
                                                 Task.Delay(100).Wait();
                                                 Disconnect();
                                                 break;
@@ -211,7 +215,7 @@ namespace Server
                                             try
                                             {
                                                 string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
-                                                if (login_info.Length > 2)
+                                                if (login_info.Length != 2)
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Account });
                                                     Task.Delay(100).Wait();
@@ -258,7 +262,12 @@ namespace Server
                                 case 9: // 聊天信息
                                     if (isLogin)
                                     {
-                                        Console.WriteLine($"数据包：{Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1)}");
+                                        string[] message_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                                        if (message_info.Length != 2)
+                                        {
+                                            continue;
+                                        }
+                                        Console.WriteLine($"聊天信息：");
                                         lock (clients)
                                         {
                                             foreach (var client in clients)
@@ -280,7 +289,20 @@ namespace Server
             }
 
             public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(this); service.Close(); } if (isLogin) SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
-            public enum DataType { Ping = 0, PingBack = 1, State_Account_Success = 2, State_Closing = 3, Error_Unknown = 4, Error_Account = 5, Notice = 6, Login = 7, Register = 8, Message = 9 }
+            public enum DataType
+            {
+                Ping = 0,
+                PingBack = 1,
+                State_Account_Success = 2,
+                State_Closing = 3,
+                Error_Unknown = 4,
+                Error_Account = 5,
+                Notice = 6,
+                Login = 7,
+                Register = 8,
+                Message = 9
+            }
+
             public static void SendData(string data, DataType type)
             {
                 lock (clients)

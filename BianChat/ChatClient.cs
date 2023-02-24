@@ -69,7 +69,7 @@ namespace BianChat
             }
         }
 
-        public void Connect(string username, string password, string ip = "127.0.0.1")
+        public void Connect(string username, string password, string ip = "127.0.0.1:911")
         {
             // 断开已有连接
             client.Disconnect();

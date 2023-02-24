@@ -122,7 +122,8 @@ namespace BianChat
             Notice = 6,
             Login = 7,
             Register = 8,
-            Message = 9
+            Message = 9,
+            Message_Send_Success = 10
         }
 
         public bool SendBytes(byte[] data)

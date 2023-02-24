@@ -26,7 +26,7 @@ namespace BianChat.Views
         {
             InitializeComponent();
 
-            if (AccountProfile.Current == null)
+            if (AccountProfile.Connected == false)
             {
                 LoginDialogPage page = new LoginDialogPage();
                 new ContentDialog
@@ -36,7 +36,8 @@ namespace BianChat.Views
                     PrimaryButtonText = "确定",
                     PrimaryButtonCommand = new CommandModel(new Predicate<object>((obj) => { return true; }), (obj) =>
                     {
-                        
+                        AccountProfile.Connect(page.Username.Text, page.Password.Password);
+                        Username.Text = AccountProfile.Current.Username;
                     }),
                     DefaultButton = ContentDialogButton.Primary
                 }.ShowAsync();
