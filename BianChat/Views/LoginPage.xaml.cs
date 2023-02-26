@@ -55,7 +55,41 @@ namespace BianChat.Views
             }
             else // 验证通过
             {
-                AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300));
+                AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
+                string username = Username.Text;
+                string password = Password.Password;
+                Task.Run(() =>
+                {
+                    Exception? ex = null;
+                    ChatClient.LoginCompletedEventArgs.State? state = null;
+
+                    AccountProfile profile = new AccountProfile();
+                    profile.Client.Disconnected += (s, e) => { ex = e.Exception; };
+                    profile.Client.LoginCompleted += (s, e) => { state = e.LoginState; };
+                    profile.Connect(username, password);
+
+                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
+                    if (ex != null)
+                    {
+                        DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{ex.Message}");
+                    }
+                    else
+                    {
+                        switch (state)
+                        {
+                            case ChatClient.LoginCompletedEventArgs.State.Success:
+                                DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
+                                PublicValues.MainWindow.NavigateToPage(typeof(AccountPage));
+                                break;
+                            case ChatClient.LoginCompletedEventArgs.State.Failed_Account:
+                                DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
+                                break;
+                            case ChatClient.LoginCompletedEventArgs.State.Failed_Unknown:
+                                DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
+                                break;
+                        }
+                    }
+                });
             }
         }
     }

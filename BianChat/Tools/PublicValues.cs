@@ -10,5 +10,6 @@ namespace BianChat.Tools
     public static class PublicValues
     {
         public static Dispatcher UIDispatcher;
+        public static MainWindow MainWindow;
     }
 }

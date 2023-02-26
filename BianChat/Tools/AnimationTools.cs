@@ -15,17 +15,17 @@ namespace BianChat.Tools
         {
             lock (ui)
             {
-                DoubleAnimation animation = new DoubleAnimation
-                {
-                    Duration = new Duration(duration),
-                    From = ui.Opacity,
-                    To = opacity,
-                };
-
                 Task.Run(() =>
                 {
                     PublicValues.UIDispatcher.Invoke(() =>
                     {
+                        DoubleAnimation animation = new DoubleAnimation
+                        {
+                            Duration = new Duration(duration),
+                            From = ui.Opacity,
+                            To = opacity,
+                        };
+
                         ui.Visibility = Visibility.Visible;
                         ui.BeginAnimation(UIElement.OpacityProperty, animation);
                     });

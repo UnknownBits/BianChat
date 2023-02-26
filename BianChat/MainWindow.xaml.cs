@@ -35,9 +35,13 @@ namespace BianChat
             };
         }
 
+        /// <summary>
+        /// 初始化方法，将初始化变量。
+        /// </summary>
         private void Initialize()
         {
             PublicValues.UIDispatcher = Dispatcher;
+            PublicValues.MainWindow = this;
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -53,7 +57,14 @@ namespace BianChat
                     navigatePage = typeof(ChatPage);
                     break;
                 case "Account":
-                    navigatePage = typeof(LoginPage);
+                    if (AccountProfile.Connected == true)
+                    {
+                        navigatePage = typeof(AccountPage);
+                    }
+                    else
+                    {
+                        navigatePage = typeof(LoginPage);
+                    }
                     break;
                 case "Settings":
                     navigatePage = typeof(Settings);
@@ -65,6 +76,9 @@ namespace BianChat
         }
 
         public void NavigateToPage(Type pageType, NavigationTransitionInfo transInfo = null)
-            => RootFrame.Navigate(pageType, null, transInfo);
+        {
+            if (transInfo == null) transInfo = new DrillInNavigationTransitionInfo();
+            RootFrame.Navigate(pageType, null, transInfo);
+        }
     }
 }
