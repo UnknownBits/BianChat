@@ -262,15 +262,13 @@ namespace Server
                                     if (isLogin)
                                     {
                                         string[] message_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                                        int uid = int.Parse(message_info[0]);
+                                        string message = message_info[1];
                                         if (message_info.Length != 2) { continue; }
-                                        Console.WriteLine($"发送方：{username}, 接收方：");
-                                        lock (clients)
+                                        Console.WriteLine($"发送方：{username}, 接收方：{clients[uid].username}, 消息：{message}");
+                                        lock (clients[uid])
                                         {
-                                            foreach (var client in clients.Values)
-                                            {
-                                                try { if (client != this) { client.service.Send(new byte[1] { (int)DataType.Message }.Concat(buffer.Skip(1)).ToArray()); } }
-                                                catch { client.Disconnect(); }
-                                            }
+                                            clients[uid].service.Send(new byte[1] { (byte)DataType.Message }.Concat(Encoding.UTF8.GetBytes($"{Uid}^{message}")).ToArray());
                                         }
                                     }
                                     break;

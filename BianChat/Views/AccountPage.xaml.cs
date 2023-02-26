@@ -1,4 +1,5 @@
 ﻿using BianChat.Models;
+using BianChat.Tools;
 using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
@@ -26,22 +27,11 @@ namespace BianChat.Views
         {
             InitializeComponent();
 
-            if (AccountProfile.Connected == false)
+            Loaded += delegate
             {
-                LoginDialogPage page = new LoginDialogPage();
-                new ContentDialog
-                {
-                    Content = page,
-                    Title = "登录",
-                    PrimaryButtonText = "确定",
-                    PrimaryButtonCommand = new CommandModel(new Predicate<object>((obj) => { return true; }), (obj) =>
-                    {
-                        AccountProfile.Connect(page.Username.Text, page.Password.Password);
-                        Username.Text = AccountProfile.Current.Username;
-                    }),
-                    DefaultButton = ContentDialogButton.Primary
-                }.ShowAsync();
-            }
+                Username.Text = AccountProfile.Current.Username;
+                // TODO: 头像
+            };
         }
     }
 }

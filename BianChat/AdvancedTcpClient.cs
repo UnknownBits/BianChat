@@ -31,77 +31,73 @@ namespace BianChat
 
         private TcpClient client = new TcpClient();
         public Thread? ReceiveTask;
-        public bool Connected ;
+        public bool Connected = false;
         private bool disposedValue = false;
 
-        public AdvancedTcpClient(string ip)
+        public AdvancedTcpClient() { }
+
+        public void Connect(string ip)
         {
-            Connected= false;
-            try
+            Task.Delay(10).Wait();
+            int idx = ip.LastIndexOf(':');
+            string ip1 = ip[..idx];
+            int port = int.Parse(ip[(idx + 1)..]);
+            client.Connect(ip1, port);
+            Connected = true;
+            if (Connected)
             {
-                Task.Delay(10).Wait();
-                int idx = ip.LastIndexOf(':');
-                string ip1 = ip[..idx];
-                int port = int.Parse(ip[(idx + 1)..]);
-                client.Connect(ip1, port);
-                Connected = true;
-                if (Connected)
+                ReceiveTask = new Thread(() =>
                 {
-                    ReceiveTask = new Thread(() =>
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (true)
                     {
-                        long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                        while (true)
+                        try
                         {
-                            try
+                            // 接收
+                            int size = 0;
+                            byte[] buffer = new byte[8193];
+                            if (client.Client != null)
                             {
-                                // 接收
-                                int size = 0;
-                                byte[] buffer = new byte[8193];
-                                if (client.Client != null)
-                                {
-                                    size = client.Client.Receive(buffer);
-                                    Array.Resize(ref buffer, size);
-                                }
-                                else
-                                {
-                                    Connected = false;
-                                    break;
-                                }
-                                if (size <= 0)
-                                {
-                                    throw new SocketException(10054);
-                                }
-                                if (buffer[0] == (int)PacketType.Ping)
-                                {
-                                    client.Client.Send(new byte[1] { 0 });
-                                }
-                                else if (buffer[0] == (int)PacketType.PingBack) // Ping 包
-                                {
-                                    int ping = BitConverter.ToInt32(buffer, 1);
-                                    PingReceived(client, new PingReceivedEventArgs { Ping = ping });
-                                }
-                                else
-                                {
-                                    DataReceived(
-                                        client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
-                                }
+                                size = client.Client.Receive(buffer);
+                                Array.Resize(ref buffer, size);
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                if (Connected)
-                                {
-                                    Connected = false;
-                                    client.Close();
-                                    Disconnected(this, new DisconnectedEventArgs { Exception = ex });
-                                }
+                                Connected = false;
                                 break;
                             }
+                            if (size <= 0)
+                            {
+                                throw new SocketException(10054);
+                            }
+                            if (buffer[0] == (int)PacketType.Ping)
+                            {
+                                client.Client.Send(new byte[1] { 0 });
+                            }
+                            else if (buffer[0] == (int)PacketType.PingBack) // Ping 包
+                            {
+                                int ping = BitConverter.ToInt32(buffer, 1);
+                                PingReceived(client, new PingReceivedEventArgs { Ping = ping });
+                            }
+                            else
+                            {
+                                DataReceived(
+                                    client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
+                            }
                         }
-                    });
-                    ReceiveTask.IsBackground = true;
-                    ReceiveTask.Start();
-                }
-            } catch(Exception ex) { Dispose(ex); }
+                        catch (Exception ex)
+                        {
+                            if (Connected)
+                            {
+                                Dispose(ex);
+                            }
+                            break;
+                        }
+                    }
+                });
+                ReceiveTask.IsBackground = true;
+                ReceiveTask.Start();
+            }
         }
 
         public bool SendPacket(PacketType packetType, byte[] data)
@@ -148,7 +144,13 @@ namespace BianChat
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing, Exception exception)
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing, Exception exception = null)
         {
             if (!disposedValue)
             {
@@ -162,27 +164,6 @@ namespace BianChat
                 }
                 Connected = false;
                 client?.Dispose();
-                disposedValue = true;
-            }
-        }
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    if (Connected)
-                    {
-                        Connected = false;
-                        client?.Close();
-                        Disconnected(this, new DisconnectedEventArgs());
-                    }
-                }
                 disposedValue = true;
             }
         }

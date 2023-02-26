@@ -36,10 +36,12 @@ namespace BianChat
         public event EventHandler<MessageReceivedEventArgs> MessageReceived = delegate { };
         public event EventHandler<AdvancedTcpClient.DisconnectedEventArgs> Disconnected = delegate { };
 
-        public ChatClient(string username, string password, string ip = "127.0.0.1:911")
+        public ChatClient() { }
+
+        public void Connect(string username, string password, string ip = "127.0.0.1:911")
         {
             // 断开已有连接
-            client = new AdvancedTcpClient(ip);
+            client = new AdvancedTcpClient();
             client.PingReceived += (s, e) => { PingReceived(s, e); };
             client.DataReceived += DataReceivedCallback;
             client.Disconnected += (s, e) =>
@@ -48,7 +50,16 @@ namespace BianChat
 
                 Disconnected(s, e);
             };
-            Connected = true;
+            try
+            {
+                client.Connect(ip);
+                Connected = true;
+            }
+            catch (Exception ex)
+            {
+                Connected = false;
+                Disconnected(null, new AdvancedTcpClient.DisconnectedEventArgs { Exception = ex });
+            }
 
             // 登录
             string passwdHash = HashTools.GetSHA256(password);

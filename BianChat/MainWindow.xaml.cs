@@ -1,5 +1,7 @@
-﻿using BianChat.Views;
+﻿using BianChat.Tools;
+using BianChat.Views;
 using ModernWpf.Controls;
+using ModernWpf.Media.Animation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +28,16 @@ namespace BianChat
         public MainWindow()
         {
             InitializeComponent();
+
+            Loaded += delegate
+            {
+                Initialize();
+            };
+        }
+
+        private void Initialize()
+        {
+            PublicValues.UIDispatcher = Dispatcher;
         }
 
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -41,7 +53,7 @@ namespace BianChat
                     navigatePage = typeof(ChatPage);
                     break;
                 case "Account":
-                    navigatePage = typeof(AccountPage);
+                    navigatePage = typeof(LoginPage);
                     break;
                 case "Settings":
                     navigatePage = typeof(Settings);
@@ -49,7 +61,10 @@ namespace BianChat
                 default:
                     goto case "Home";
             }
-            RootFrame.Navigate(navigatePage, null, args.RecommendedNavigationTransitionInfo);
+            NavigateToPage(navigatePage, args.RecommendedNavigationTransitionInfo);
         }
+
+        public void NavigateToPage(Type pageType, NavigationTransitionInfo transInfo = null)
+            => RootFrame.Navigate(pageType, null, transInfo);
     }
 }

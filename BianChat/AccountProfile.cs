@@ -8,25 +8,40 @@ namespace BianChat
 {
     public class AccountProfile
     {
-        public static AccountProfile Current { get; private set; }
+        public static AccountProfile Current { get; set; }
         public static bool Connected { get; private set; } = false;
         public string Username { get; private set; }
         public string ProfilePhotoUrl { get; private set; }
         public AccountProfile[] FriendList { get; private set; }
-        public ChatClient Client { get; }
+        public ChatClient Client { get; private set; }
 
-        public AccountProfile(string username, string password)
+        public AccountProfile()
         {
             Client = new ChatClient();
-            Client.client.Disconnected += delegate
+            Client.Disconnected += delegate
             {
                 Connected = false;
             };
-            Current?.Client.Disconnect();
-            Current = new AccountProfile();
-            Current.Client.Connect(username, password);
-            Current.Username = username;
-            Connected = true;
+        }
+
+        public void Connect(string username, string password)
+        {
+            if (!Connected)
+            {
+                Connected = true;
+                Client.Connect(username, password);
+
+                Username = username;
+            }
+        }
+
+        public void Disconnect()
+        {
+            if (Connected)
+            {
+                Client.Disconnect();
+                Connected = false;
+            }
         }
     }
 }
