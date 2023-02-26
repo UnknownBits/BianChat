@@ -60,22 +60,20 @@ namespace BianChat.Views
                 string password = Password.Password;
                 Task.Run(() =>
                 {
-                    Exception? ex = null;
-                    ChatClient.LoginCompletedEventArgs.State? state = null;
-
                     AccountProfile profile = new AccountProfile();
-                    profile.Client.Disconnected += (s, e) => { ex = e.Exception; };
-                    profile.Client.LoginCompleted += (s, e) => { state = e.LoginState; };
-                    profile.Connect(username, password);
-
-                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
-                    if (ex != null)
+                    AccountProfile.Current = profile;
+                    EventHandler<AdvancedTcpClient.DisconnectedEventArgs> disconnected = (s, e) =>
                     {
-                        DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{ex.Message}");
-                    }
-                    else
+                        if (e.Exception != null)
+                        {
+                            DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{e.Exception.Message}");
+                        }
+                    };
+                    profile.Client.Disconnected += disconnected;
+                    profile.Client.LoginCompleted += (s, e) =>
                     {
-                        switch (state)
+                        profile.Client.Disconnected -= disconnected;
+                        switch (e.LoginState)
                         {
                             case ChatClient.LoginCompletedEventArgs.State.Success:
                                 DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
@@ -88,7 +86,10 @@ namespace BianChat.Views
                                 DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
                                 break;
                         }
-                    }
+                    };
+                    profile.Connect(username, password);
+
+                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
                 });
             }
         }

@@ -1,8 +1,10 @@
-﻿using BianChat.Models;
+﻿using BianChat.Controls;
+using BianChat.Models;
 using ModernWpf.Controls;
 using ModernWpf.Media.Animation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +25,8 @@ namespace BianChat.Views
     /// </summary>
     public partial class ChatPage : System.Windows.Controls.Page
     {
+        private ObservableCollection<UserListItem> userList = new ObservableCollection<UserListItem>();
+
         public ChatPage()
         {
             InitializeComponent();
@@ -48,6 +52,17 @@ namespace BianChat.Views
         }
 
         private void SendButton_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void UserListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            MessageTextBox.IsEnabled = true;
+            SendButton.IsEnabled = true;
+        }
+
+        private void AddFriendButton_Click(object sender, RoutedEventArgs e)
         {
 
         }

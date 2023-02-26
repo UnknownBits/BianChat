@@ -10,7 +10,7 @@ namespace BianChat.Tools
 {
     public static class DialogTools
     {
-        private static Queue<ContentDialog> dialogQueue = new Queue<ContentDialog>();
+        private static object queueObj = new object();
 
         /// <summary>
         /// 可确保在同一时刻只显示一个弹窗。
@@ -18,23 +18,13 @@ namespace BianChat.Tools
         /// <param name="dialog">ContentDialog 对象。</param>
         public static void ShowDialog(ContentDialog dialog)
         {
-            while (dialogQueue.Count > 0) ;
-
-            lock (dialogQueue)
+            lock (queueObj)
             {
-                dialogQueue.Enqueue(dialog);
-            }
-            dialog.Closed += delegate
-            {
-                lock (dialogQueue)
+                PublicValues.UIDispatcher.Invoke(() =>
                 {
-                    dialogQueue.Dequeue();
-                }
-            };
-            PublicValues.UIDispatcher.Invoke(() =>
-            {
-                dialog.ShowAsync();
-            });
+                    dialog.ShowAsync();
+                });
+            }
         }
 
         /// <summary>

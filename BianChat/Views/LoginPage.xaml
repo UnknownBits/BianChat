@@ -24,7 +24,7 @@
         <PasswordBox x:Name="Password" Grid.Row="3" Width="150"
                      HorizontalAlignment="Left" Margin="0 10 0 0" PasswordChar="*"/>
         <Button Grid.Row="4" Margin="0 15 0 0" Style="{DynamicResource AccentButtonStyle}"
-                Click="LoginButton_Click" VerticalAlignment="Top">登录</Button>
+                Click="LoginButton_Click" VerticalAlignment="Top" IsDefault="True">登录</Button>
         <Grid x:Name="LoadingRing" Panel.ZIndex="0" Opacity="0" Margin="-10 -10 0 0"
               Grid.RowSpan="5" Background="Gray" Visibility="Collapsed">
             <ui:ProgressRing IsActive="True" Width="80" Height="80"/>

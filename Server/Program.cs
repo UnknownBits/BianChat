@@ -113,13 +113,14 @@ namespace Server
             {
                 if (service != null)
                 {
+                    connected = true;
                     byte[] bytes = new byte[8193];
-                    Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
+                    Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count + 1);
 
                     Task.Run(async () =>
                     {
                         await Task.Delay(5000);
-                        if (username == null) { Disconnect(); }
+                        if (!isLogin) { Disconnect(); }
                     });
 
                     Task.Run(async () =>
@@ -149,9 +150,9 @@ namespace Server
                             int size = service.Receive(buffer);
                             if (size <= 0) { throw new Exception(); }
                             Array.Resize(ref buffer, size);
-                            switch (buffer[0])
+                            switch ((DataType)buffer[0])
                             {
-                                case 7: // 登录包
+                                case DataType.Login: // 登录包
                                     if (buffer[1] == 0) // 登录
                                     {
                                         string[] login_info = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
@@ -176,8 +177,8 @@ namespace Server
                                         {
                                             try
                                             {
-                                                using var mySql = new SQLite();
-                                                if (!(mySql.GetUserId(username, out Uid) && mySql.Vaild_Password(Uid, password_sha256)) && clients.ContainsKey(Uid))
+                                                using var sql = new SQLite();
+                                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && clients.ContainsKey(Uid))
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Account });
                                                     Console.WriteLine("登录失败：账号或密码错误");
@@ -222,8 +223,9 @@ namespace Server
                                                 }
                                                 username = login_info[0];
                                                 password_sha256 = login_info[1];
-                                                using var mySql = new SQLite();
-                                                if (mySql.GetUserId(username, out Uid))
+                                                if (password_sha256.Length != 64) continue;
+                                                using var sql = new SQLite();
+                                                if (sql.GetUserId(username, out Uid))
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Account });
                                                     Console.WriteLine("注册失败：用户已存在");
@@ -231,7 +233,7 @@ namespace Server
                                                     Disconnect();
                                                     break;
                                                 }
-                                                if (!mySql.AddValue(username, password_sha256, ""))
+                                                if (!sql.AddValue(username, password_sha256, ""))
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Unknown });
                                                     Console.WriteLine("注册失败：服务器内部错误");
@@ -258,22 +260,30 @@ namespace Server
                                         });
                                     }
                                     break;
-                                case 9: // 聊天信息
+                                case DataType.Message: // 聊天信息
                                     if (isLogin)
                                     {
                                         string[] message_info = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
                                         int uid = int.Parse(message_info[0]);
                                         string message = message_info[1];
-                                        if (message_info.Length != 2) { continue; }
+                                        if (message_info.Length != 2) continue;
                                         Console.WriteLine($"发送方：{username}, 接收方：{clients[uid].username}, 消息：{message}");
                                         lock (clients[uid])
                                         {
                                             clients[uid].service.Send(new byte[1] { (byte)DataType.Message }.Concat(Encoding.UTF8.GetBytes($"{Uid}^{message}")).ToArray());
                                         }
+                                        service.Send(new byte[1] { (byte)DataType.Message_Send_Success });
                                     }
                                     break;
-                                case 0: // 返回 Ping 包
+                                case DataType.PingBack: // 返回 Ping 包
                                     service.Send(new byte[1] { (int)DataType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
+                                    break;
+                                case DataType.Update_Value: // 修改账户信息
+                                    if (isLogin)
+                                    {
+                                        using SQLite sql = new SQLite();
+                                        sql.
+                                    }
                                     break;
                             }
                         }
@@ -282,7 +292,25 @@ namespace Server
                 }
             }
 
-            public void Disconnect() { if (connected) { try { lock (clients) { connected = false; clients.Remove(Uid); service.Close(); } if (isLogin) SendData($"{username} 已下线",DataType.Notice); Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}"); } catch { } } }
+            public void Disconnect()
+            {
+                if (connected)
+                {
+                    try
+                    {
+                        lock (clients)
+                        {
+                            connected = false;
+                            clients.Remove(Uid);
+                            service.Close();
+                        }
+                        if (isLogin) SendData($"{username} 已下线",DataType.Notice);
+                        Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
+                    }
+                    catch { }
+                }
+            }
+
             public enum DataType
             {
                 Ping = 0,
@@ -295,7 +323,8 @@ namespace Server
                 Login = 7,
                 Register = 8,
                 Message = 9,
-                Message_Send_Success = 10
+                Message_Send_Success = 10,
+                Update_Value = 11
             }
 
             public static void SendData(string data, DataType type)

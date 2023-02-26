@@ -29,6 +29,15 @@ namespace BianChat.Views
 
             Loaded += delegate
             {
+                AccountProfile.Current.Client.Disconnected += (s, e) =>
+                {
+                    if (e.Exception != null)
+                    {
+                        DialogTools.ShowDialogWithCloseButton("错误", $"连接异常退出：{e.Exception.Message}");
+                        PublicValues.MainWindow.NavigateToPage(typeof(LoginPage));
+                    }
+                };
+
                 Username.Text = AccountProfile.Current.Username;
                 // TODO: 头像
             };

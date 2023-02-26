@@ -6,6 +6,7 @@ namespace Server
     {
         public SQLiteConnection conn;
         private bool disposedValue;
+        private object queueObj = new object();
 
         public SQLite()
         {
@@ -27,7 +28,7 @@ namespace Server
             try
             {
                 conn.Open();
-                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"UserName\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"Email\" TEXT, \"QQ\" TEXT, Primary Key(\"Uid\"))";
+                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"FriendList\" TEXT NOT NULL, \"Email\" TEXT, \"QQ\" TEXT, Primary Key(\"Uid\"))";
                 SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }
@@ -38,87 +39,157 @@ namespace Server
             conn.Close();
         }
 
-        public bool GetUserId(string user_name, out int user_id)
+        public bool GetUserId(string username, out int user_id)
         {
-            try
+            lock (queueObj)
             {
-                string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{user_name}\"";
-                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
-                SQLiteDataReader rdr = cmd.ExecuteReader();
-                if (rdr.Read())
+                try
                 {
-                    var value = rdr[0].ToString();
-                    if (int.TryParse(value, out int number))
+                    string sql = $"SELECT UserInfo.Uid FROM UserInfo WHERE UserInfo.UserName = \"{username}\"";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    SQLiteDataReader rdr = cmd.ExecuteReader();
+                    if (rdr.Read())
                     {
-                        user_id = number;
-                        rdr.Close();
-                        return true;
+                        var value = rdr[0].ToString();
+                        if (int.TryParse(value, out int number))
+                        {
+                            user_id = number;
+                            rdr.Close();
+                            return true;
+                        }
+                        else
+                        {
+                            user_id = 0;
+                            rdr.Close();
+                            return false;
+                        }
                     }
-                    else
-                    {
-                        user_id = 0;
-                        rdr.Close();
-                        return false;
-                    }
+                    else { user_id = 0; rdr.Close(); return false; }
                 }
-                else { user_id = 0; rdr.Close(); return false; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    user_id = 0;
+                    return false;
+                }
             }
-            catch (Exception ex)
+        }
+
+        public enum ValuesType
+        {
+            Username,
+            Password,
+            FriendList,
+            Email,
+            QQ
+        }
+
+        public string GetValue(int uid, ValuesType type)
+        {
+            lock (queueObj)
             {
-                Console.WriteLine(ex);
-                user_id = 0;
-                return false;
+                try
+                {
+                    string sql = $"SELECT UserInfo.{type} FROM UserInfo WHERE UserInfo.Uid = {uid}";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    using SQLiteDataReader rdr = cmd.ExecuteReader();
+                    if (rdr.Read())
+                    {
+                        var value = rdr[0].ToString();
+                        if (value != null) return value; else return "";
+                    }
+                    else return "";
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return "";
+                }
             }
         }
 
         public bool Vaild_Password(int uid, string password_SHA256)
         {
-            try
+            lock (queueObj)
             {
-                string sql = $"SELECT UserInfo.Password FROM UserInfo WHERE UserInfo.Uid = {uid}";
-                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
-                SQLiteDataReader rdr = cmd.ExecuteReader();
-                if (rdr.Read())
+                try
                 {
-                    var value = rdr[0].ToString();
-                    if (value != null && password_SHA256 != null && value == password_SHA256) { rdr.Close(); return true; } else { rdr.Close(); return false; }
+                    string sql = $"SELECT UserInfo.Password FROM UserInfo WHERE UserInfo.Uid = {uid}";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    using SQLiteDataReader rdr = cmd.ExecuteReader();
+                    if (rdr.Read())
+                    {
+                        var value = rdr[0].ToString();
+                        if (value != null && password_SHA256 != null && value == password_SHA256) return true; else return false;
+                    }
+                    else return false;
                 }
-                else { rdr.Close(); return false; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
             }
-            catch (Exception ex) { Console.WriteLine(ex); return false; }
         }
-        public bool AddValue(string user_name, string password, string email)
+        public bool AddValue(string username, string password, string email)
         {
-            try
+            lock (queueObj)
             {
-                string sql = $"INSERT INTO UserInfo(UserName,Password,Email) VALUES ('{user_name}', '{password}', '{email}');";
-                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
+                try
+                {
+                    string sql = $"INSERT INTO UserInfo(Username,Password,FriendList,Email) VALUES ('{username}', '{password}', '', '{email}');";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
             }
         }
 
-        public bool AddValue(string user_name, string password, string email,string QQ)
+        public bool AddValue(string username, string password, string email, string QQ)
         {
-            try
+            lock (queueObj)
             {
-                string sql = $"INSERT INTO UserInfo(UserName,Password,Email,QQ) VALUES ('{user_name}', '{password}', '{email}','{QQ}');";
-                SQLiteCommand cmd = new SQLiteCommand(sql, conn);
-                cmd.ExecuteNonQuery();
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-                return false;
+                try
+                {
+                    string sql = $"INSERT INTO UserInfo(Username,Password,FriendList,Email,QQ) VALUES ('{username}', '{password}', '', '{email}','{QQ}');";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
             }
         }
-        protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) { conn.Close(); } disposedValue = true; } }
+
+        public bool UpdateValue(int uid, ValuesType type, string content)
+        {
+            lock (queueObj)
+            {
+                try
+                {
+                    string sql = $"UPDATE UserInfo SET UserInfo.{type} = '{content}' WHERE UserInfo.Uid = {uid}";
+                    SQLiteCommand cmd = new SQLiteCommand(sql, conn);
+                    cmd.ExecuteNonQuery();
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    return false;
+                }
+            }
+        }
+
+        protected virtual void Dispose(bool disposing) { if (!disposedValue) { if (disposing) conn.Close(); disposedValue = true; } }
+
         public void Dispose() { Dispose(true); GC.SuppressFinalize(this); }
     }
 }

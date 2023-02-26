@@ -77,8 +77,11 @@ namespace BianChat
 
         public void NavigateToPage(Type pageType, NavigationTransitionInfo transInfo = null)
         {
-            if (transInfo == null) transInfo = new DrillInNavigationTransitionInfo();
-            RootFrame.Navigate(pageType, null, transInfo);
+            Dispatcher.Invoke(() =>
+            {
+                if (transInfo == null) transInfo = new DrillInNavigationTransitionInfo();
+                RootFrame.Navigate(pageType, null, transInfo);
+            });
         }
     }
 }
