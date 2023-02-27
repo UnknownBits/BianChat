@@ -81,7 +81,11 @@ namespace Server
             Password,
             FriendList,
             Email,
-            QQ
+            QQ,
+            /// <summary>
+            /// 枚举最大值（等效于 QQ）
+            /// </summary>
+            MaxValue = QQ
         }
 
         public string GetValue(int uid, ValuesType type)

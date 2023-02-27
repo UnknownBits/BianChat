@@ -118,7 +118,11 @@ namespace BianChat
             Register = 8,
             Message = 9,
             Message_Send_Success = 10,
-            Update_Value = 11
+            Update_Value = 11,
+            Get_Value = 12,
+            Get_Value_Result = 13,
+            Get_Account_Info = 14,
+            Get_Account_Info_Result = 15
         }
 
         public bool SendBytes(byte[] data)

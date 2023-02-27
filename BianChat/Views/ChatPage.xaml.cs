@@ -1,5 +1,7 @@
 ﻿using BianChat.Controls;
 using BianChat.Models;
+using BianChat.Tools;
+using BianChat.Views.Dialog;
 using ModernWpf.Controls;
 using ModernWpf.Media.Animation;
 using System;
@@ -64,7 +66,21 @@ namespace BianChat.Views
 
         private void AddFriendButton_Click(object sender, RoutedEventArgs e)
         {
+            AddFriendDialog page = new AddFriendDialog();
+            ContentDialog dialog = new ContentDialog
+            {
+                Title = "添加好友",
+                Content = page,
+                PrimaryButtonText = "添加",
+                PrimaryButtonCommand = new CommandModel((obj) => { return true; }, (obj) =>
+                {
 
+                }),
+                DefaultButton = ContentDialogButton.Primary
+            };
+            DialogTools.ShowDialog(dialog);
+            List<UserInfo> friends = AccountProfile.Current.FriendList.ToList();
+            friends.Add();
         }
     }
 }

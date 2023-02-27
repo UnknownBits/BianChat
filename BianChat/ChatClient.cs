@@ -1,6 +1,7 @@
 ﻿using BianChat.Tools;
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,13 +13,13 @@ namespace BianChat
         public class MessageReceivedEventArgs : EventArgs
         {
             public string Message { get; set; }
-
             public AdvancedTcpClient.PacketType MessageType { get; set; }
         }
 
         public class LoginCompletedEventArgs : EventArgs
         {
             public State LoginState { get; set; }
+            public UserInfo UserInfo { get; set; }
 
             public enum State
             {
@@ -73,7 +74,14 @@ namespace BianChat
             {
                 // 登录成功
                 case AdvancedTcpClient.PacketType.State_Account_Success:
-                    LoginCompleted(null, new LoginCompletedEventArgs { LoginState = LoginCompletedEventArgs.State.Success });
+                    string[] account_info = Encoding.UTF8.GetString(e.ReceivedData).Split('^');
+                    int uid = int.Parse(account_info[0]);
+                    string username = account_info[1];
+                    
+                    LoginCompleted(null, new LoginCompletedEventArgs
+                    {
+                        LoginState = LoginCompletedEventArgs.State.Success
+                    });
                     break;
 
                 // 登录失败——账号或密码错误
@@ -107,8 +115,59 @@ namespace BianChat
         }
 
         public void SendMessage(string message)
+            => client.SendPacket(AdvancedTcpClient.PacketType.Message, Encoding.UTF8.GetBytes(message));
+
+        public string GetValue(int uid, ValuesType type)
         {
-            client.SendPacket(AdvancedTcpClient.PacketType.Message, Encoding.UTF8.GetBytes(message));
+            string result = null;
+            EventHandler<AdvancedTcpClient.DataReceivedEventArgs> action = (s, e) =>
+            {
+                if (e.DataType == AdvancedTcpClient.PacketType.Get_Value_Result)
+                {
+                    result = Encoding.UTF8.GetString(e.ReceivedData);
+                }
+            };
+            client.DataReceived += action;
+            client.SendPacket(AdvancedTcpClient.PacketType.Get_Value, BitConverter.GetBytes(uid));
+            while (result == null) ;
+            client.DataReceived -= action;
+            return result;
+        }
+
+        public UserInfo GetAccountInfo(int uid)
+        {
+            UserInfo userInfo = null;
+            EventHandler<AdvancedTcpClient.DataReceivedEventArgs> action = (s, e) =>
+            {
+                if (e.DataType == AdvancedTcpClient.PacketType.Get_Account_Info_Result)
+                {
+                    UserInfo info1 = new UserInfo();
+                    string[] infos = Encoding.UTF8.GetString(e.ReceivedData).Split('^');
+                    userInfo.UID = uid;
+                    userInfo.Username = infos[0];
+                    userInfo.Email = infos[1];
+                    userInfo.QQ = infos[2];
+                    userInfo = info1;
+                }
+            };
+            client.DataReceived += action;
+            client.SendPacket(AdvancedTcpClient.PacketType.Get_Account_Info, BitConverter.GetBytes(uid));
+            while (userInfo == null) ;
+            client.DataReceived -= action;
+            return userInfo;
+        }
+
+        public void ChangeProfile(ValuesType type, string value)
+            => client.SendPacket(AdvancedTcpClient.PacketType.Update_Value,
+                new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(value)).ToArray());
+
+        public enum ValuesType
+        {
+            Username,
+            Password,
+            FriendList,
+            Email,
+            QQ
         }
 
         public void Disconnect()
