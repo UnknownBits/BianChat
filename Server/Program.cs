@@ -165,7 +165,7 @@ namespace Server
                                         }
                                         username = login_info[0];
                                         password_sha256 = login_info[1];
-                                        if (password_sha256.Length != 64) break;
+                                        if (password_sha256.Length != 64) Disconnect();
                                         if (username.Contains(' ') || password_sha256.Contains(' '))
                                         {
                                             service.Send(new byte[1] { (int)DataType.Error_Account });
@@ -201,10 +201,12 @@ namespace Server
                                         {
                                             using var sql = new SQLite();
                                             string friendList = sql.GetValue(Uid, SQLite.ValuesType.FriendList);
-                                            string account_info = $"{Uid}^{username}^{friendList}";
+                                            string email = sql.GetValue(Uid, SQLite.ValuesType.Email);
+                                            string qq = sql.GetValue(Uid, SQLite.ValuesType.QQ);
+                                            string account_info = $"{Uid}|{username}|{email}|{qq}|{friendList}";
+                                            isLogin = true;
                                             service.Send(new byte[1] { (int)DataType.State_Account_Success }
                                             .Concat(Encoding.UTF8.GetBytes(account_info)).ToArray());
-                                            isLogin = true;
                                             lock (clients)
                                             {
                                                 clients.Add(Uid, this);
@@ -228,7 +230,7 @@ namespace Server
                                                 }
                                                 username = login_info[0];
                                                 password_sha256 = login_info[1];
-                                                if (password_sha256.Length != 64) break;
+                                                if (password_sha256.Length != 64) Disconnect();
                                                 using var sql = new SQLite();
                                                 if (sql.GetUserId(username, out Uid))
                                                 {
@@ -283,24 +285,19 @@ namespace Server
                                 case DataType.PingBack: // 返回 Ping 包
                                     service.Send(new byte[1] { (int)DataType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                     break;
-                                case DataType.Update_Value: // 修改账户信息
-                                    if (isLogin)
-                                    {
-                                        if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) break;
-                                        SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
-                                        string content = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2);
-                                        using SQLite sql = new SQLite();
-                                        sql.UpdateValue(Uid, type, content);
-                                    }
-                                    break;
                                 case DataType.Get_Value: // 获取账户信息（可获取其他人）
                                     if (isLogin)
                                     {
-                                        if (buffer[1] > (byte)SQLite.ValuesType.MaxValue || buffer.Length > 6) break;
+                                        if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
                                         SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
                                         int uid = BitConverter.ToInt32(buffer, 2);
                                         using SQLite sql = new SQLite();
                                         string result = sql.GetValue(uid, type);
+                                        if (username == null)
+                                        {
+                                            service.Send(new byte[1] { (byte)DataType.Get_Value_Result });
+                                            break;
+                                        }
                                         service.Send(new byte[1] { (byte)DataType.Get_Value_Result }
                                         .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
                                     }
@@ -308,15 +305,33 @@ namespace Server
                                 case DataType.Get_Account_Info: // 获取账户全部信息（可获取其他人）
                                     if (isLogin)
                                     {
-                                        if (buffer.Length > 5) break;
                                         int uid = BitConverter.ToInt32(buffer, 1);
                                         using SQLite sql = new SQLite();
                                         string username = sql.GetValue(uid, SQLite.ValuesType.Username);
+                                        if (username == null)
+                                        {
+                                            string uidStr = uid.ToString();
+                                            service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }
+                                            .Concat(Encoding.UTF8.GetBytes(uidStr)).ToArray());
+                                            break;
+                                        }
                                         string email = sql.GetValue(uid, SQLite.ValuesType.Email);
                                         string qq = sql.GetValue(uid, SQLite.ValuesType.QQ);
-                                        string result = $"{username}^{email}^{qq}";
+                                        string result = $"{uid}^{username}^{email}^{qq}";
                                         service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }
                                         .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
+                                        Console.WriteLine("Get Account Info：OK");
+                                    }
+                                    break;
+                                case DataType.Update_Value: // 修改账户信息
+                                    if (isLogin)
+                                    {
+                                        if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
+                                        SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
+                                        string content = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2);
+                                        using SQLite sql = new SQLite();
+                                        if (sql.UpdateValue(Uid, type, content)) service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 1 });
+                                        else service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
                                     }
                                     break;
                             }
@@ -358,11 +373,12 @@ namespace Server
                 Register = 8,
                 Message = 9,
                 Message_Send_Success = 10,
-                Update_Value = 11,
-                Get_Value = 12,
-                Get_Value_Result = 13,
-                Get_Account_Info = 14,
-                Get_Account_Info_Result = 15
+                Get_Value = 11,
+                Get_Value_Result = 12,
+                Get_Account_Info = 13,
+                Get_Account_Info_Result = 14,
+                Update_Value = 15,
+                Update_Value_Result = 16
             }
 
             public static void SendData(string data, DataType type)

@@ -11,7 +11,6 @@ namespace BianChat
         public static AccountProfile Current { get; set; }
         public static bool Connected { get; private set; } = false;
         public UserInfo UserInfo { get; private set; } = new UserInfo();
-        public UserInfo[] FriendList { get; private set; }
         public ChatClient Client { get; private set; }
 
         public AccountProfile()
@@ -26,6 +25,10 @@ namespace BianChat
                 if (e.LoginState == ChatClient.LoginCompletedEventArgs.State.Success)
                 {
                     UserInfo.Username = e.UserInfo.Username;
+                    UserInfo.UID = e.UserInfo.UID;
+                    UserInfo.Email = e.UserInfo.Email;
+                    UserInfo.QQ = e.UserInfo.QQ;
+                    UserInfo.FriendList = e.UserInfo.FriendList;
                 }
             };
         }
@@ -52,11 +55,12 @@ namespace BianChat
         {
             if (Connected)
             {
-                Client.GetValue();
+                return Client.GetAccountInfo(uid);
             }
+            throw new ArgumentException("未连接到服务器");
         }
 
-        public void EditFriendList(List<UserInfo> users)
+        public void EditFriendList(IEnumerable<UserInfo> users)
         {
             if (Connected)
             {

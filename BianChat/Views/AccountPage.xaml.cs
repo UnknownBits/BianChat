@@ -34,11 +34,11 @@ namespace BianChat.Views
                     if (e.Exception != null)
                     {
                         DialogTools.ShowDialogWithCloseButton("错误", $"连接异常退出：{e.Exception.Message}");
-                        PublicValues.MainWindow.NavigateToPage(typeof(LoginPage));
+                        PublicValues.MainWindow.RootNavigation.SelectedItem = PublicValues.MainWindow.RootNavigation.MenuItems[0];
                     }
                 };
 
-                Username.Text = AccountProfile.Current.Username;
+                Username.Text = AccountProfile.Current.UserInfo.Username;
                 // TODO: 头像
             };
         }

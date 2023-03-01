@@ -37,7 +37,7 @@ namespace BianChat.Views
             {
                 if (!AccountProfile.Connected)
                 {
-                    new ContentDialog
+                    ContentDialog dialog = new ContentDialog
                     {
                         Title = "提示",
                         Content = "请到账户页进行登录。",
@@ -48,8 +48,21 @@ namespace BianChat.Views
                             window.NavigateToPage(typeof(AccountPage), new SlideNavigationTransitionInfo { Effect = SlideNavigationTransitionEffect.FromRight });
                         }),
                         DefaultButton = ContentDialogButton.Primary
-                    }.ShowAsync();
+                    };
+                    DialogTools.ShowDialog(dialog);
+                    return;
                 }
+                AccountProfile.Current.Client.ProfileChanged += (s, e) =>
+                {
+                    if (e)
+                    {
+                        DialogTools.ShowDialogWithCloseButton("提示", "用户档案修改成功");
+                    }
+                    else
+                    {
+                        DialogTools.ShowDialogWithCloseButton("错误", "用户档案修改失败");
+                    }
+                };
             };
         }
 
@@ -74,13 +87,15 @@ namespace BianChat.Views
                 PrimaryButtonText = "添加",
                 PrimaryButtonCommand = new CommandModel((obj) => { return true; }, (obj) =>
                 {
-
+                    int uid = int.Parse(page.UIDTextBox.Text);
+                    UserInfo friend = AccountProfile.Current.GetUserInfo(uid);
+                    List<UserInfo> friends = AccountProfile.Current.UserInfo.FriendList.ToList();
+                    friends.Add(friend);
+                    Task.Run(() => AccountProfile.Current.EditFriendList(friends));
                 }),
                 DefaultButton = ContentDialogButton.Primary
             };
             DialogTools.ShowDialog(dialog);
-            List<UserInfo> friends = AccountProfile.Current.FriendList.ToList();
-            friends.Add();
         }
     }
 }

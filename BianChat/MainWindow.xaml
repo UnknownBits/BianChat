@@ -12,7 +12,7 @@
         mc:Ignorable="d"
         Title="BianChat" Width="800" Height="450">
     <Grid>
-        <ui:NavigationView PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
+        <ui:NavigationView x:Name="RootNavigation" PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
             <ui:NavigationView.MenuItems>
                 <ui:NavigationViewItem Content="主页" Icon="Home" Tag="Home"/>

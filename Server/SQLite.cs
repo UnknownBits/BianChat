@@ -100,14 +100,14 @@ namespace Server
                     if (rdr.Read())
                     {
                         var value = rdr[0].ToString();
-                        if (value != null) return value; else return "";
+                        if (value != null) return value; else return null;
                     }
-                    else return "";
+                    else return null;
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
-                    return "";
+                    return null;
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Server
             {
                 try
                 {
-                    string sql = $"UPDATE UserInfo SET UserInfo.{type} = '{content}' WHERE UserInfo.Uid = {uid}";
+                    string sql = $"UPDATE UserInfo SET {type} = '{content}' WHERE UserInfo.Uid = {uid}";
                     SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                     return true;

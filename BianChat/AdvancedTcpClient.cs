@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net.Sockets;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,7 +32,7 @@ namespace BianChat
         }
 
         private TcpClient client = new TcpClient();
-        public Thread? ReceiveTask;
+        public Task? ReceiveTask;
         public bool Connected = false;
         private bool disposedValue = false;
 
@@ -46,7 +48,7 @@ namespace BianChat
             Connected = true;
             if (Connected)
             {
-                ReceiveTask = new Thread(() =>
+                ReceiveTask = Task.Run(() =>
                 {
                     long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     while (true)
@@ -66,15 +68,16 @@ namespace BianChat
                                 Connected = false;
                                 break;
                             }
+                            Trace.WriteLine($"[AdvancedTcpClient] [DataReceived] 请求头：{buffer}，数据长度：{buffer.Length - 1}，字符串数据：{Encoding.UTF8.GetString(buffer, 1, size - 1)}");
                             if (size <= 0)
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == (int)PacketType.Ping)
+                            if (buffer[0] == (byte)PacketType.Ping)
                             {
                                 client.Client.Send(new byte[1] { 0 });
                             }
-                            else if (buffer[0] == (int)PacketType.PingBack) // Ping 包
+                            else if (buffer[0] == (byte)PacketType.PingBack) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);
                                 PingReceived(client, new PingReceivedEventArgs { Ping = ping });
@@ -95,8 +98,6 @@ namespace BianChat
                         }
                     }
                 });
-                ReceiveTask.IsBackground = true;
-                ReceiveTask.Start();
             }
         }
 
@@ -118,11 +119,12 @@ namespace BianChat
             Register = 8,
             Message = 9,
             Message_Send_Success = 10,
-            Update_Value = 11,
-            Get_Value = 12,
-            Get_Value_Result = 13,
-            Get_Account_Info = 14,
-            Get_Account_Info_Result = 15
+            Get_Value = 11,
+            Get_Value_Result = 12,
+            Get_Account_Info = 13,
+            Get_Account_Info_Result = 14,
+            Update_Value = 15,
+            Update_Value_Result = 16
         }
 
         public bool SendBytes(byte[] data)

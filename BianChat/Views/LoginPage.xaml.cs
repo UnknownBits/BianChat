@@ -29,6 +29,7 @@ namespace BianChat.Views
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
+            /*
             if (Username.Text == "") // 判断用户名
             {
                 DialogTools.ShowDialogWithCloseButton("提示", "用户名不可为空");
@@ -55,43 +56,43 @@ namespace BianChat.Views
             }
             else // 验证通过
             {
-                AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
-                string username = Username.Text;
-                string password = Password.Password;
-                Task.Run(() =>
-                {
-                    AccountProfile profile = new AccountProfile();
-                    AccountProfile.Current = profile;
-                    EventHandler<AdvancedTcpClient.DisconnectedEventArgs> disconnected = (s, e) =>
-                    {
-                        if (e.Exception != null)
-                        {
-                            DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{e.Exception.Message}");
-                        }
-                    };
-                    profile.Client.Disconnected += disconnected;
-                    profile.Client.LoginCompleted += (s, e) =>
-                    {
-                        profile.Client.Disconnected -= disconnected;
-                        switch (e.LoginState)
-                        {
-                            case ChatClient.LoginCompletedEventArgs.State.Success:
-                                DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
-                                PublicValues.MainWindow.NavigateToPage(typeof(AccountPage));
-                                break;
-                            case ChatClient.LoginCompletedEventArgs.State.Failed_Account:
-                                DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
-                                break;
-                            case ChatClient.LoginCompletedEventArgs.State.Failed_Unknown:
-                                DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
-                                break;
-                        }
-                    };
-                    profile.Connect(username, password);
 
-                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
-                });
             }
+            */
+            AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
+            string username = Username.Text;
+            string password = Password.Password;
+            Task.Run(() =>
+            {
+                AccountProfile profile = new AccountProfile();
+                AccountProfile.Current = profile;
+                profile.Client.Disconnected += (s, e) =>
+                {
+                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
+                    if (e.Exception != null)
+                    {
+                        DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{e.Exception.Message}");
+                    }
+                };
+                profile.Client.LoginCompleted += (s, e) =>
+                {
+                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
+                    switch (e.LoginState)
+                    {
+                        case ChatClient.LoginCompletedEventArgs.State.Success:
+                            PublicValues.MainWindow.NavigateToPage(typeof(AccountPage));
+                            DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
+                            break;
+                        case ChatClient.LoginCompletedEventArgs.State.Failed_Account:
+                            DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
+                            break;
+                        case ChatClient.LoginCompletedEventArgs.State.Failed_Unknown:
+                            DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
+                            break;
+                    }
+                };
+                profile.Connect(username, password);
+            });
         }
     }
 }
