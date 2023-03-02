@@ -169,7 +169,7 @@ namespace Server
                                         if (username.Contains(' ') || password_sha256.Contains(' '))
                                         {
                                             service.Send(new byte[1] { (int)DataType.Error_Account });
-                                            Console.WriteLine("登录失败：账号或密码错误");
+                                            Console.WriteLine("登录失败：账号或密码包含空格");
                                             Task.Delay(100).Wait();
                                             Disconnect();
                                             break;
@@ -179,10 +179,10 @@ namespace Server
                                             try
                                             {
                                                 using var sql = new SQLite();
-                                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && clients.ContainsKey(Uid))
+                                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && !clients.ContainsKey(Uid))
                                                 {
                                                     service.Send(new byte[1] { (int)DataType.Error_Account });
-                                                    Console.WriteLine("登录失败：账号或密码错误");
+                                                    Console.WriteLine("登录失败：账号或密码错误或已在线");
                                                     Task.Delay(100).Wait();
                                                     Disconnect();
                                                     break;
@@ -202,8 +202,7 @@ namespace Server
                                             using var sql = new SQLite();
                                             string friendList = sql.GetValue(Uid, SQLite.ValuesType.FriendList);
                                             string email = sql.GetValue(Uid, SQLite.ValuesType.Email);
-                                            string qq = sql.GetValue(Uid, SQLite.ValuesType.QQ);
-                                            string account_info = $"{Uid}|{username}|{email}|{qq}|{friendList}";
+                                            string account_info = $"{Uid}|{username}|{email}|{friendList}";
                                             isLogin = true;
                                             service.Send(new byte[1] { (int)DataType.State_Account_Success }
                                             .Concat(Encoding.UTF8.GetBytes(account_info)).ToArray());
@@ -275,30 +274,34 @@ namespace Server
                                         string message = message_info[1];
                                         if (message_info.Length != 2) continue;
                                         Console.WriteLine($"发送方：{username}, 接收方：{clients[uid].username}, 消息：{message}");
+                                        if (!clients.ContainsKey(uid))
+                                        {
+                                            service.Send(new byte[2] { (byte)DataType.Message_Send_Status, 1 });
+                                            break;
+                                        }
                                         lock (clients[uid])
                                         {
                                             clients[uid].service.Send(new byte[1] { (byte)DataType.Message }.Concat(Encoding.UTF8.GetBytes($"{Uid}^{message}")).ToArray());
                                         }
-                                        service.Send(new byte[1] { (byte)DataType.Message_Send_Success });
+                                        service.Send(new byte[2] { (byte)DataType.Message_Send_Status, 0 });
                                     }
                                     break;
                                 case DataType.PingBack: // 返回 Ping 包
                                     service.Send(new byte[1] { (int)DataType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                     break;
-                                case DataType.Get_Value: // 获取账户信息（可获取其他人）
+                                case DataType.Get_Value: // 获取账户信息
                                     if (isLogin)
                                     {
                                         if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
                                         SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
-                                        int uid = BitConverter.ToInt32(buffer, 2);
                                         using SQLite sql = new SQLite();
-                                        string result = sql.GetValue(uid, type);
-                                        if (username == null)
+                                        string result = sql.GetValue(Uid, type);
+                                        if (result == null)
                                         {
-                                            service.Send(new byte[1] { (byte)DataType.Get_Value_Result });
+                                            service.Send(new byte[2] { (byte)DataType.Get_Value_Result, (byte)type });
                                             break;
                                         }
-                                        service.Send(new byte[1] { (byte)DataType.Get_Value_Result }
+                                        service.Send(new byte[2] { (byte)DataType.Get_Value_Result, (byte)type }
                                         .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
                                     }
                                     break;
@@ -310,17 +313,13 @@ namespace Server
                                         string username = sql.GetValue(uid, SQLite.ValuesType.Username);
                                         if (username == null)
                                         {
-                                            string uidStr = uid.ToString();
-                                            service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }
-                                            .Concat(Encoding.UTF8.GetBytes(uidStr)).ToArray());
+                                            service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }.Concat(buffer.Skip(1)).ToArray());
                                             break;
                                         }
-                                        string email = sql.GetValue(uid, SQLite.ValuesType.Email);
-                                        string qq = sql.GetValue(uid, SQLite.ValuesType.QQ);
-                                        string result = $"{uid}^{username}^{email}^{qq}";
+                                        string result = $"{username}";
                                         service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }
+                                        .Concat(buffer.Skip(1))
                                         .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
-                                        Console.WriteLine("Get Account Info：OK");
                                     }
                                     break;
                                 case DataType.Update_Value: // 修改账户信息
@@ -330,6 +329,8 @@ namespace Server
                                         SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
                                         string content = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2);
                                         using SQLite sql = new SQLite();
+                                        if (type == SQLite.ValuesType.FriendList && content.Split('^').Contains(Uid.ToString()))
+                                            service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
                                         if (sql.UpdateValue(Uid, type, content)) service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 1 });
                                         else service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
                                     }
@@ -372,7 +373,7 @@ namespace Server
                 Login = 7,
                 Register = 8,
                 Message = 9,
-                Message_Send_Success = 10,
+                Message_Send_Status = 10,
                 Get_Value = 11,
                 Get_Value_Result = 12,
                 Get_Account_Info = 13,

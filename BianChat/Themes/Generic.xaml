@@ -8,18 +8,17 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type controls:UserListItem}">
-                    <Grid>
+                    <Grid Height="65">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <Image Width="50" Height="50"
-                               Source="{TemplateBinding ImageSource}">
+                        <Image Width="50" Height="50" Source="/Themes/test.jpg">
                             <Image.Clip>
                                 <RectangleGeometry RadiusX="25" RadiusY="25" Rect="0,0,50,50"/>
                             </Image.Clip>
                         </Image>
-                        <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0">
+                        <StackPanel Grid.Column="1" Orientation="Vertical" Margin="15 2 0 0" VerticalAlignment="Center">
                             <TextBlock FontSize="18" Text="{TemplateBinding Username}"/>
                             <TextBlock FontSize="12" Margin="0 5 0 0" Text="{TemplateBinding LastMessage}"
                                        Foreground="#999999"/>

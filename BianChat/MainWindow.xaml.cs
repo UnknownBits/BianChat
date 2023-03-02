@@ -48,7 +48,7 @@ namespace BianChat
         {
             var selectedItem = (NavigationViewItem)args.SelectedItem;
             Type navigatePage;
-            switch (selectedItem.Tag)
+            switch (selectedItem.Name)
             {
                 case "Home":
                     navigatePage = typeof(HomePage);

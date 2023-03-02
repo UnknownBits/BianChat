@@ -28,7 +28,7 @@ namespace Server
             try
             {
                 conn.Open();
-                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"FriendList\" TEXT NOT NULL, \"Email\" TEXT, \"QQ\" TEXT, Primary Key(\"Uid\"))";
+                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"ProfilePhoto\" TEXT NOT NULL, \"FriendList\" TEXT NOT NULL, \"Email\" TEXT, Primary Key(\"Uid\"))";
                 SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }
@@ -79,13 +79,13 @@ namespace Server
         {
             Username,
             Password,
+            ProfilePhoto,
             FriendList,
             Email,
-            QQ,
             /// <summary>
-            /// 枚举最大值（等效于 QQ）
+            /// 枚举最大值，等效于 Email
             /// </summary>
-            MaxValue = QQ
+            MaxValue = Email
         }
 
         public string GetValue(int uid, ValuesType type)
@@ -141,7 +141,7 @@ namespace Server
             {
                 try
                 {
-                    string sql = $"INSERT INTO UserInfo(Username,Password,FriendList,Email) VALUES ('{username}', '{password}', '', '{email}');";
+                    string sql = $"INSERT INTO UserInfo(Username,Password,ProfilePhoto,FriendList,Email) VALUES ('{username}', '{password}', '', '', '{email}');";
                     SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                     return true;
@@ -154,13 +154,13 @@ namespace Server
             }
         }
 
-        public bool AddValue(string username, string password, string email, string QQ)
+        public bool AddValue(string username, string password, string profilePhoto, string email)
         {
             lock (queueObj)
             {
                 try
                 {
-                    string sql = $"INSERT INTO UserInfo(Username,Password,FriendList,Email,QQ) VALUES ('{username}', '{password}', '', '{email}','{QQ}');";
+                    string sql = $"INSERT INTO UserInfo(Username,Password,ProfilePhoto,FriendList,Email) VALUES ('{username}', '{password}', '{profilePhoto}', '', '{email}');";
                     SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                     cmd.ExecuteNonQuery();
                     return true;

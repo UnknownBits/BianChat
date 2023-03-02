@@ -10,6 +10,7 @@ namespace BianChat
     {
         public static AccountProfile Current { get; set; }
         public static bool Connected { get; private set; } = false;
+        public static bool IsLogin { get; private set; } = false;
         public UserInfo UserInfo { get; private set; } = new UserInfo();
         public ChatClient Client { get; private set; }
 
@@ -18,17 +19,28 @@ namespace BianChat
             Client = new ChatClient();
             Client.Disconnected += delegate
             {
+                IsLogin = false;
                 Connected = false;
+            };
+            Client.ProfileChanged += delegate
+            {
+                UserInfo.Username = Client.GetValue(ChatClient.ValuesType.Username);
+                string friends = Client.GetValue(ChatClient.ValuesType.FriendList);
+                List<UserInfo> friendInfos = new List<UserInfo>();
+                foreach (string friend in friends.Split('^'))
+                {
+                    int uid = int.Parse(friend);
+                    friendInfos.Add(GetUserInfo(uid));
+                }
+                UserInfo.FriendList = friendInfos.ToArray();
+                UserInfo.Email = Client.GetValue(ChatClient.ValuesType.Email);
             };
             Client.LoginCompleted += (s, e) =>
             {
                 if (e.LoginState == ChatClient.LoginCompletedEventArgs.State.Success)
                 {
-                    UserInfo.Username = e.UserInfo.Username;
-                    UserInfo.UID = e.UserInfo.UID;
-                    UserInfo.Email = e.UserInfo.Email;
-                    UserInfo.QQ = e.UserInfo.QQ;
-                    UserInfo.FriendList = e.UserInfo.FriendList;
+                    UserInfo = e.UserInfo;
+                    IsLogin = true;
                 }
             };
         }
@@ -47,7 +59,6 @@ namespace BianChat
             if (Connected)
             {
                 Client.Disconnect();
-                Connected = false;
             }
         }
 

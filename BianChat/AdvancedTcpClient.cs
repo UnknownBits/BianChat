@@ -61,6 +61,7 @@ namespace BianChat
                             if (client.Client != null)
                             {
                                 size = client.Client.Receive(buffer);
+                                Trace.WriteLine($"[AdvancedTcpClient] 尝试接收数据");
                                 Array.Resize(ref buffer, size);
                             }
                             else
@@ -68,7 +69,6 @@ namespace BianChat
                                 Connected = false;
                                 break;
                             }
-                            Trace.WriteLine($"[AdvancedTcpClient] [DataReceived] 请求头：{buffer}，数据长度：{buffer.Length - 1}，字符串数据：{Encoding.UTF8.GetString(buffer, 1, size - 1)}");
                             if (size <= 0)
                             {
                                 throw new SocketException(10054);
@@ -80,12 +80,15 @@ namespace BianChat
                             else if (buffer[0] == (byte)PacketType.PingBack) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);
-                                PingReceived(client, new PingReceivedEventArgs { Ping = ping });
+                                Task.Run(() => PingReceived(client, new PingReceivedEventArgs { Ping = ping }));
                             }
                             else
                             {
-                                DataReceived(
-                                    client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
+                                Task.Run(() =>
+                                {
+                                    DataReceived(
+                                        client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
+                                });
                             }
                         }
                         catch (Exception ex)
@@ -118,7 +121,7 @@ namespace BianChat
             Login = 7,
             Register = 8,
             Message = 9,
-            Message_Send_Success = 10,
+            Message_Send_Status = 10,
             Get_Value = 11,
             Get_Value_Result = 12,
             Get_Account_Info = 13,

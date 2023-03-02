@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Views\test.jpg" />
+    <None Remove="Themes\test.jpg" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Views\test.jpg" />
+    <Resource Include="Themes\test.jpg" />
   </ItemGroup>
 
   <ItemGroup>

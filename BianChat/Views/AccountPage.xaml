@@ -14,7 +14,7 @@
             <ColumnDefinition Width="3*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Orientation="Vertical" Grid.Column="0" VerticalAlignment="Center">
-            <Image x:Name="ProfileImage" Width="100" Height="100" Source="/Views/test.jpg">
+            <Image x:Name="ProfileImage" Width="100" Height="100" Source="/Themes/test.jpg">
                 <Image.Clip>
                     <RectangleGeometry RadiusX="50" RadiusY="50" Rect="0,0,100,100"/>
                 </Image.Clip>

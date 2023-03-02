@@ -15,12 +15,12 @@
         <ui:NavigationView x:Name="RootNavigation" PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
             <ui:NavigationView.MenuItems>
-                <ui:NavigationViewItem Content="主页" Icon="Home" Tag="Home"/>
-                <ui:NavigationViewItem Content="聊天" Icon="LeaveChat" Tag="Chat"/>
+                <ui:NavigationViewItem x:Name="Home" Content="主页" Icon="Home"/>
+                <ui:NavigationViewItem x:Name="Chat" Content="聊天" Icon="LeaveChat"/>
             </ui:NavigationView.MenuItems>
             <ui:NavigationView.FooterMenuItems>
-                <ui:NavigationViewItem Content="账户" Icon="Contact" Tag="Account"/>
-                <ui:NavigationViewItem Content="设置" Icon="Setting" Tag="Settings"/>
+                <ui:NavigationViewItem x:Name="Account" Content="账户" Icon="Contact"/>
+                <ui:NavigationViewItem x:Name="Setting" Content="设置" Icon="Setting"/>
             </ui:NavigationView.FooterMenuItems>
             <ui:Frame x:Name="RootFrame" SourcePageType="{x:Type views:HomePage}"/>
         </ui:NavigationView>

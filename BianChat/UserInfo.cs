@@ -11,7 +11,6 @@ namespace BianChat
         public int UID { get; set; }
         public string Username { get; set; }
         public string Email { get; set; }
-        public string QQ { get; set; }
         public Uri ProfilePhotoUri { get; set; }
         public UserInfo[] FriendList { get; set; }
     }

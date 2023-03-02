@@ -35,8 +35,8 @@ namespace BianChat
         public event EventHandler<AdvancedTcpClient.PingReceivedEventArgs> PingReceived = delegate { };
         public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
         public event EventHandler<MessageReceivedEventArgs> MessageReceived = delegate { };
+        public event EventHandler<int> MessageSent = delegate { };
         public event EventHandler<bool> ProfileChanged = delegate { };
-        public event EventHandler<UserInfo> GotAccountInfo = delegate { };
         public event EventHandler<AdvancedTcpClient.DisconnectedEventArgs> Disconnected = delegate { };
 
         public ChatClient() { }
@@ -51,7 +51,10 @@ namespace BianChat
             {
                 Connected = false;
 
-                Disconnected(s, e);
+                Task.Run(() =>
+                {
+                    Disconnected(s, e);
+                });
             };
             try
             {
@@ -61,7 +64,10 @@ namespace BianChat
             catch (Exception ex)
             {
                 Connected = false;
-                Disconnected(null, new AdvancedTcpClient.DisconnectedEventArgs { Exception = ex });
+                Task.Run(() =>
+                {
+                    Disconnected(null, new AdvancedTcpClient.DisconnectedEventArgs { Exception = ex });
+                });
             }
 
             // 登录
@@ -80,8 +86,7 @@ namespace BianChat
                     int uid = int.Parse(account_info[0]);
                     string username = account_info[1];
                     string email = account_info[2];
-                    string qq = account_info[3];
-                    string[] friendsUID = account_info[4].Split('^');
+                    string[] friendsUID = account_info[3].Split('^');
                     List<UserInfo> friends = new List<UserInfo>();
 
                     // 获取好友信息
@@ -91,81 +96,97 @@ namespace BianChat
                         int friendUid = int.Parse(friend);
                         friends.Add(GetAccountInfo(friendUid));
                     }
-                    
-                    LoginCompleted(null, new LoginCompletedEventArgs
+
+                    Task.Run(() =>
                     {
-                        LoginState = LoginCompletedEventArgs.State.Success,
-                        UserInfo = new UserInfo
+                        LoginCompleted(null, new LoginCompletedEventArgs
                         {
-                            UID = uid,
-                            Username = username,
-                            Email = email,
-                            QQ = qq,
-                            FriendList = friends.ToArray()
-                        }
+                            LoginState = LoginCompletedEventArgs.State.Success,
+                            UserInfo = new UserInfo
+                            {
+                                UID = uid,
+                                Username = username,
+                                Email = email,
+                                FriendList = friends.ToArray()
+                            }
+                        });
                     });
                     break;
 
                 // 登录失败——账号或密码错误
                 case AdvancedTcpClient.PacketType.Error_Account:
-                    LoginCompleted(null, new LoginCompletedEventArgs { LoginState = LoginCompletedEventArgs.State.Failed_Account });
+                    Task.Run(() =>
+                    {
+                        LoginCompleted(null, new LoginCompletedEventArgs { LoginState = LoginCompletedEventArgs.State.Failed_Account });
+                    });
                     break;
 
                 // 登录失败——未知错误
                 case AdvancedTcpClient.PacketType.Error_Unknown:
-                    LoginCompleted(null, new LoginCompletedEventArgs { LoginState = LoginCompletedEventArgs.State.Failed_Unknown });
+                    Task.Run(() =>
+                    {
+                        LoginCompleted(null, new LoginCompletedEventArgs { LoginState = LoginCompletedEventArgs.State.Failed_Unknown });
+                    });
                     break;
 
                 // 接收到消息
                 case AdvancedTcpClient.PacketType.Message:
-                    MessageReceived(null, new MessageReceivedEventArgs
+                    Task.Run(() =>
                     {
-                        Message = Encoding.UTF8.GetString(e.ReceivedData),
-                        MessageType = AdvancedTcpClient.PacketType.Message
+                        MessageReceived(null, new MessageReceivedEventArgs
+                        {
+                            Message = Encoding.UTF8.GetString(e.ReceivedData),
+                            MessageType = AdvancedTcpClient.PacketType.Message
+                        });
                     });
                     break;
                 // 接收到公告
                 case AdvancedTcpClient.PacketType.Notice:
-                    MessageReceived(null, new MessageReceivedEventArgs
+                    Task.Run(() =>
                     {
-                        Message = Encoding.UTF8.GetString(e.ReceivedData),
-                        MessageType = AdvancedTcpClient.PacketType.Notice
+                        MessageReceived(null, new MessageReceivedEventArgs
+                        {
+                            Message = Encoding.UTF8.GetString(e.ReceivedData),
+                            MessageType = AdvancedTcpClient.PacketType.Notice
+                        });
                     });
                     break;
                 // 用户档案信息更改
                 case AdvancedTcpClient.PacketType.Update_Value_Result:
-                    ProfileChanged(null, e.ReceivedData[0] == 0 ? false : true);
+                    Task.Run(() =>
+                    {
+                        ProfileChanged(null, e.ReceivedData[0] == 0 ? false : true);
+                    });
                     break;
-                // 获取用户档案
-                case AdvancedTcpClient.PacketType.Get_Account_Info_Result:
-                    string[] infos = Encoding.UTF8.GetString(e.ReceivedData).Split('^');
-                    UserInfo info1 = new UserInfo();
-                    info1.UID = int.Parse(infos[0]);
-                    if (e.ReceivedData.Length == 1) throw new ArgumentException($"找不到 UID 为 {info1.UID} 用户");
-                    info1.Username = infos[1];
-                    info1.Email = infos[2];
-                    info1.QQ = infos[3];
-                    GotAccountInfo(null, info1);
+                // 消息发送完成
+                case AdvancedTcpClient.PacketType.Message_Send_Status:
+                    Task.Run(() =>
+                    {
+                        MessageSent(null, e.ReceivedData[0]);
+                    });
                     break;
             }
         }
 
-        public void SendMessage(string message)
-            => client.SendPacket(AdvancedTcpClient.PacketType.Message, Encoding.UTF8.GetBytes(message));
+        public void SendMessage(int uid, string message)
+            => client.SendPacket(AdvancedTcpClient.PacketType.Message, Encoding.UTF8.GetBytes($"{uid}^{message}"));
 
-        public string GetValue(int uid, ValuesType type)
+        public string GetValue(ValuesType type)
         {
             string result = null;
             client.DataReceived += (s, e) =>
             {
                 if (e.DataType == AdvancedTcpClient.PacketType.Get_Value_Result)
                 {
-                    if (e.ReceivedData.Length == 1) throw new ArgumentException($"找不到 UID 为 {uid} 的用户");
-                    result = Encoding.UTF8.GetString(e.ReceivedData);
+                    if (e.ReceivedData.Length == 1)
+                    {
+                        result = "";
+                        return;
+                    }
+                    result = Encoding.UTF8.GetString(e.ReceivedData, 1, e.ReceivedData.Length - 1);
                 }
             };
-            client.SendPacket(AdvancedTcpClient.PacketType.Get_Value, new byte[1] { (byte)type }
-            .Concat(BitConverter.GetBytes(uid)).ToArray());
+            client.SendPacket(AdvancedTcpClient.PacketType.Get_Value, new byte[1] { (byte)type });
             while (result == null) Task.Delay(10).Wait();
             return result;
         }
@@ -173,9 +194,17 @@ namespace BianChat
         public UserInfo GetAccountInfo(int uid)
         {
             UserInfo userInfo = null;
-            GotAccountInfo += (s, e) =>
+            client.DataReceived += (s, e) =>
             {
-                userInfo = e;
+                if (e.DataType == AdvancedTcpClient.PacketType.Get_Account_Info_Result)
+                {
+                    string[] infos = Encoding.UTF8.GetString(e.ReceivedData, 4, e.ReceivedData.Length - 4).Split('^');
+                    UserInfo info1 = new UserInfo();
+                    info1.UID = BitConverter.ToInt32(e.ReceivedData);
+                    if (e.ReceivedData.Length == 1) throw new ArgumentException($"找不到 UID 为 {info1.UID} 用户");
+                    info1.Username = infos[0];
+                    userInfo = info1;
+                }
             };
             bool result = client.SendPacket(AdvancedTcpClient.PacketType.Get_Account_Info, BitConverter.GetBytes(uid));
             while (userInfo == null) Task.Delay(10).Wait();
@@ -190,9 +219,9 @@ namespace BianChat
         {
             Username,
             Password,
+            ProfilePhoto,
             FriendList,
-            Email,
-            QQ
+            Email
         }
 
         public void Disconnect()

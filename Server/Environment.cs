@@ -10,6 +10,6 @@
             Maintenance // 维护模式
         }
 
-        public static string DatabaseFileName = @"Database.db";
+        public static string DatabaseFileName = $@"Database.db";
     }
 }
