@@ -36,7 +36,8 @@ namespace BianChat
         public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
         public event EventHandler<MessageReceivedEventArgs> MessageReceived = delegate { };
         public event EventHandler<int> MessageSent = delegate { };
-        public event EventHandler<bool> ProfileChanged = delegate { };
+        public event EventHandler<int> ProfileChanged = delegate { };
+        public event EventHandler<int> AddFriendCompleted = delegate { };
         public event EventHandler<AdvancedTcpClient.DisconnectedEventArgs> Disconnected = delegate { };
 
         public ChatClient() { }
@@ -155,7 +156,7 @@ namespace BianChat
                 case AdvancedTcpClient.PacketType.Update_Value_Result:
                     Task.Run(() =>
                     {
-                        ProfileChanged(null, e.ReceivedData[0] == 0 ? false : true);
+                        ProfileChanged(null, e.ReceivedData[0]);
                     });
                     break;
                 // 消息发送完成
@@ -163,6 +164,13 @@ namespace BianChat
                     Task.Run(() =>
                     {
                         MessageSent(null, e.ReceivedData[0]);
+                    });
+                    break;
+                // 添加好友完成
+                case AdvancedTcpClient.PacketType.Add_Friend_Result:
+                    Task.Run(() =>
+                    {
+                        AddFriendCompleted(null, e.ReceivedData[0]);
                     });
                     break;
             }
@@ -215,13 +223,24 @@ namespace BianChat
             => client.SendPacket(AdvancedTcpClient.PacketType.Update_Value,
                 new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(value)).ToArray());
 
+        public void AddFriend(int uid)
+            => client.SendPacket(AdvancedTcpClient.PacketType.Add_Friend,
+                BitConverter.GetBytes(uid));
+
         public enum ValuesType
         {
             Username,
             Password,
             ProfilePhoto,
             FriendList,
+            UnprocessedRequests,
             Email
+        }
+
+        public enum RequestType
+        {
+            From_Add_Friend = 0,
+            To_Add_Friend = 1
         }
 
         public void Disconnect()

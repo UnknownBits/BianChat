@@ -28,7 +28,7 @@ namespace Server
             try
             {
                 conn.Open();
-                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"ProfilePhoto\" TEXT NOT NULL, \"FriendList\" TEXT NOT NULL, \"Email\" TEXT, Primary Key(\"Uid\"))";
+                string sql = "CREATE TABLE IF NOT EXISTS UserInfo(\"Uid\" INTEGER NOT NULL, \"Username\" TEXT NOT NULL, \"Password\" TEXT NOT NULL, \"ProfilePhoto\" TEXT NOT NULL, \"FriendList\" TEXT, \"UnprocessedRequests\" TEXT, \"Email\" TEXT, Primary Key(\"Uid\"))";
                 SQLiteCommand cmd = new SQLiteCommand(sql, conn);
                 cmd.ExecuteNonQuery();
             }
@@ -81,6 +81,7 @@ namespace Server
             Password,
             ProfilePhoto,
             FriendList,
+            UnprocessedRequests,
             Email,
             /// <summary>
             /// 枚举最大值，等效于 Email

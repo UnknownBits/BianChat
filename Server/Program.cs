@@ -274,9 +274,16 @@ namespace Server
                                         string message = message_info[1];
                                         if (message_info.Length != 2) continue;
                                         Console.WriteLine($"发送方：{username}, 接收方：{clients[uid].username}, 消息：{message}");
+                                        using SQLite sql = new SQLite();
+                                        string[] friends = sql.GetValue(uid, SQLite.ValuesType.FriendList).Split('^');
                                         if (!clients.ContainsKey(uid))
                                         {
                                             service.Send(new byte[2] { (byte)DataType.Message_Send_Status, 1 });
+                                            break;
+                                        }
+                                        else if (!friends.Contains(Uid.ToString()))
+                                        {
+                                            Disconnect();
                                             break;
                                         }
                                         lock (clients[uid])
@@ -326,13 +333,29 @@ namespace Server
                                     if (isLogin)
                                     {
                                         if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
+                                        if (buffer[1] == (byte)SQLite.ValuesType.FriendList)
+                                            service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 3 });
                                         SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
                                         string content = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2);
                                         using SQLite sql = new SQLite();
                                         if (type == SQLite.ValuesType.FriendList && content.Split('^').Contains(Uid.ToString()))
-                                            service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
+                                            service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 2 });
                                         if (sql.UpdateValue(Uid, type, content)) service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 1 });
                                         else service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
+                                    }
+                                    break;
+                                case DataType.Add_Friend: // 添加好友
+                                    if (isLogin)
+                                    {
+                                        int uid = BitConverter.ToInt32(buffer, 1);
+                                        using SQLite sql = new SQLite();
+                                        List<string> processes = sql.GetValue(uid, SQLite.ValuesType.UnprocessedRequests).Split('^').ToList();
+                                        processes.Add($"{RequestType.To_Add_Friend}|{Uid}");
+                                        sql.UpdateValue(uid, SQLite.ValuesType.UnprocessedRequests, string.Join('^', processes));
+                                        processes = sql.GetValue(Uid, SQLite.ValuesType.UnprocessedRequests).Split('^').ToList();
+                                        processes.Add($"{RequestType.From_Add_Friend}|{uid}");
+                                        sql.UpdateValue(Uid, SQLite.ValuesType.UnprocessedRequests, string.Join('^', processes));
+                                        service.Send(new byte[2] { (byte)DataType.Add_Friend_Result, 0 });
                                     }
                                     break;
                             }
@@ -379,7 +402,15 @@ namespace Server
                 Get_Account_Info = 13,
                 Get_Account_Info_Result = 14,
                 Update_Value = 15,
-                Update_Value_Result = 16
+                Update_Value_Result = 16,
+                Add_Friend = 17,
+                Add_Friend_Result = 18
+            }
+
+            public enum RequestType
+            {
+                From_Add_Friend = 0,
+                To_Add_Friend = 1
             }
 
             public static void SendData(string data, DataType type)

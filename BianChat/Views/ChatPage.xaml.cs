@@ -63,13 +63,27 @@ namespace BianChat.Views
                 AccountProfile.Current.Client.ProfileChanged += (s, e) =>
                 {
                     UpdateFriendList();
-                    if (e)
+                    switch (e)
                     {
-                        DialogTools.ShowDialogWithCloseButton("提示", "用户档案修改成功");
+                        case 0: // 成功
+                            DialogTools.ShowDialogWithCloseButton("提示", "用户档案修改成功");
+                            break;
+                        case 1: // 未知错误
+                            DialogTools.ShowDialogWithCloseButton("错误", "用户档案修改失败：未知错误");
+                            break;
+                        case 2: // 已存在好友
+                            DialogTools.ShowDialogWithCloseButton("错误", "用户档案修改失败：已存在好友");
+                            break;
+                        case 3: // 拒绝访问
+                            DialogTools.ShowDialogWithCloseButton("错误", "用户档案修改失败：拒绝访问");
+                            break;
                     }
-                    else
+                };
+                AccountProfile.Current.Client.AddFriendCompleted += (s, e) =>
+                {
+                    if (e == 0) // 成功
                     {
-                        DialogTools.ShowDialogWithCloseButton("错误", "用户档案修改失败");
+                        DialogTools.ShowDialogWithCloseButton("提示", "添加好友成功，正在等待对方确认");
                     }
                 };
                 AccountProfile.Current.Client.MessageSent += (s, e) =>
@@ -77,8 +91,11 @@ namespace BianChat.Views
                     switch (e)
                     {
                         case 0: // 发送成功
-                            MessageTextBox.IsEnabled = true;
-                            SendButton.IsEnabled = true;
+                            Dispatcher.Invoke(() =>
+                            {
+                                MessageTextBox.IsEnabled = true;
+                                SendButton.IsEnabled = true;
+                            });
                             break;
                         case 1: // 对方不在线
                             DialogTools.ShowDialogWithCloseButton("提示", "对方不在线，无法发送消息");
@@ -129,10 +146,7 @@ namespace BianChat.Views
                     PrimaryButtonCommand = new CommandModel((obj) => { return true; }, (obj) =>
                     {
                         int uid = int.Parse(page.UIDTextBox.Text);
-                        UserInfo friend = AccountProfile.Current.GetUserInfo(uid);
-                        List<UserInfo> friends = AccountProfile.Current.UserInfo.FriendList.ToList();
-                        friends.Add(friend);
-                        Task.Run(() => AccountProfile.Current.EditFriendList(friends));
+                        Task.Run(() => AccountProfile.Current.AddFriend(uid));
                     }),
                     DefaultButton = ContentDialogButton.Primary
                 };

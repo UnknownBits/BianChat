@@ -61,7 +61,7 @@ namespace BianChat
                             if (client.Client != null)
                             {
                                 size = client.Client.Receive(buffer);
-                                Trace.WriteLine($"[AdvancedTcpClient] 尝试接收数据");
+                                Trace.WriteLine("[AdvancedTcpClient] 尝试接收数据");
                                 Array.Resize(ref buffer, size);
                             }
                             else
@@ -69,6 +69,7 @@ namespace BianChat
                                 Connected = false;
                                 break;
                             }
+                            Trace.WriteLine($"[AdvancedTcpClient] 接收到类型为 {(PacketType)buffer[0]} 的数据");
                             if (size <= 0)
                             {
                                 throw new SocketException(10054);
@@ -127,7 +128,9 @@ namespace BianChat
             Get_Account_Info = 13,
             Get_Account_Info_Result = 14,
             Update_Value = 15,
-            Update_Value_Result = 16
+            Update_Value_Result = 16,
+            Add_Friend = 17,
+            Add_Friend_Result = 18
         }
 
         public bool SendBytes(byte[] data)

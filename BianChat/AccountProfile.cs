@@ -71,16 +71,10 @@ namespace BianChat
             throw new ArgumentException("未连接到服务器");
         }
 
-        public void EditFriendList(IEnumerable<UserInfo> users)
+        public void AddFriend(int uid)
         {
             if (Connected)
             {
-                StringBuilder sb = new StringBuilder();
-                foreach (UserInfo user in users)
-                {
-                    sb.Append(user.UID);
-                    sb.Append('^');
-                }
                 Client.ChangeProfile(ChatClient.ValuesType.FriendList, sb.ToString().Trim('^'));
             }
         }
