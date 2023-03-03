@@ -13,12 +13,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace BianChat.Views
+namespace Client.Views
 {
     /// <summary>
     /// HomePage.xaml 的交互逻辑
     /// </summary>
-    public partial class HomePage
+    public partial class HomePage : Page
     {
         public HomePage()
         {
