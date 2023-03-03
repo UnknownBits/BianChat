@@ -6,7 +6,6 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         ui:WindowHelper.UseModernWindowStyle="True"
         ui:TitleBar.IsIconVisible="True"
-        xmlns:local="clr-namespace:BianChat"
         xmlns:views="clr-namespace:BianChat.Views"
         x:Name="Window" Icon="Resources/Icon1.ico"
         mc:Ignorable="d"
