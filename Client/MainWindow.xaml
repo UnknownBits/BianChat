@@ -21,7 +21,7 @@
 			</ui:NavigationView.MenuItems>
 			<ui:NavigationView.FooterMenuItems>
 				<ui:NavigationViewItem x:Name="Account" Content="账户" Icon="Contact"/>
-				<ui:NavigationViewItem x:Name="Setting" Content="设置" Icon="Setting"/>
+				<ui:NavigationViewItem x:Name="Settings" Content="设置" Icon="Setting"/>
 			</ui:NavigationView.FooterMenuItems>
 			<ui:Frame x:Name="RootFrame" SourcePageType="{x:Type views:HomePage}"/>
 		</ui:NavigationView>

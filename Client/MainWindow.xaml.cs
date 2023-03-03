@@ -38,6 +38,9 @@ namespace Client
                 case "Chat":
                     navigatePage = typeof(Views.ChatPage);
                     break;
+                case "Settings":
+                    navigatePage = typeof(Views.Settings);
+                    break;
                 default:
                     goto case "Home";
             }

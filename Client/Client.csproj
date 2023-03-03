@@ -27,4 +27,10 @@
     <Resource Include="Resources\Icon1.ico" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Views\Settings.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>
