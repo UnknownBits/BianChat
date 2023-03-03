@@ -11,5 +11,6 @@ namespace BianChat.Tools
     {
         public static Dispatcher UIDispatcher;
         public static MainWindow MainWindow;
+        public static ChatClient Client = new ChatClient();
     }
 }

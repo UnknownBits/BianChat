@@ -29,7 +29,7 @@ namespace BianChat.Views
 
             Loaded += delegate
             {
-                AccountProfile.Current.Client.Disconnected += (s, e) =>
+                PublicValues.Client.Disconnected += (s, e) =>
                 {
                     if (e.Exception != null)
                     {
@@ -41,7 +41,7 @@ namespace BianChat.Views
                     }
                 };
 
-                Username.Text = AccountProfile.Current.UserInfo.Username;
+                Username.Text = PublicValues.Client.UserInfo.Username;
                 // TODO: 头像
             };
         }

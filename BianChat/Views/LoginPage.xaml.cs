@@ -64,9 +64,8 @@ namespace BianChat.Views
             string password = Password.Password;
             Task.Run(() =>
             {
-                AccountProfile profile = new AccountProfile();
-                AccountProfile.Current = profile;
-                profile.Client.Disconnected += (s, e) =>
+                ChatClient client = PublicValues.Client;
+                client.Disconnected += (s, e) =>
                 {
                     AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
                     if (e.Exception != null)
@@ -74,7 +73,7 @@ namespace BianChat.Views
                         DialogTools.ShowDialogWithCloseButton("错误", $"尝试连接到服务器时出现错误：{e.Exception.Message}");
                     }
                 };
-                profile.Client.LoginCompleted += (s, e) =>
+                client.LoginCompleted += (s, e) =>
                 {
                     AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
                     switch (e.LoginState)
@@ -91,7 +90,7 @@ namespace BianChat.Views
                             break;
                     }
                 };
-                profile.Connect(username, password);
+                client.Connect(username, password);
             });
         }
     }

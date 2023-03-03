@@ -36,7 +36,8 @@ namespace BianChat.Views
             Loaded += delegate
             {
                 UserListBox.ItemsSource = userList;
-                if (!AccountProfile.IsLogin)
+                ChatClient client = PublicValues.Client;
+                if (!client.IsLogin)
                 {
                     ContentDialog dialog = new ContentDialog
                     {
@@ -52,7 +53,7 @@ namespace BianChat.Views
                     DialogTools.ShowDialog(dialog);
                     return;
                 }
-                AccountProfile.Current.Client.Disconnected += delegate
+                client.Disconnected += delegate
                 {
                     Dispatcher.Invoke(() =>
                     {
@@ -60,7 +61,7 @@ namespace BianChat.Views
                         SendButton.IsEnabled = false;
                     });
                 };
-                AccountProfile.Current.Client.ProfileChanged += (s, e) =>
+                client.ProfileChanged += (s, e) =>
                 {
                     UpdateFriendList();
                     switch (e)
@@ -79,14 +80,14 @@ namespace BianChat.Views
                             break;
                     }
                 };
-                AccountProfile.Current.Client.AddFriendCompleted += (s, e) =>
+                client.AddFriendCompleted += (s, e) =>
                 {
                     if (e == 0) // 成功
                     {
                         DialogTools.ShowDialogWithCloseButton("提示", "添加好友成功，正在等待对方确认");
                     }
                 };
-                AccountProfile.Current.Client.MessageSent += (s, e) =>
+                client.MessageSent += (s, e) =>
                 {
                     switch (e)
                     {
@@ -108,7 +109,7 @@ namespace BianChat.Views
 
         private void UpdateFriendList()
         {
-            foreach (var user in AccountProfile.Current.UserInfo.FriendList)
+            foreach (var user in PublicValues.Client.UserInfo.FriendList)
             {
                 Dispatcher.Invoke(() =>
                 {
@@ -124,7 +125,7 @@ namespace BianChat.Views
 
             UserListItem user = (UserListItem)UserListBox.SelectedItem;
             int uid = (int)user.Tag;
-            AccountProfile.Current.Client.SendMessage(uid, MessageTextBox.Text);
+            PublicValues.Client.SendMessage(uid, MessageTextBox.Text);
         }
 
         private void UserListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -135,7 +136,8 @@ namespace BianChat.Views
 
         private void AddFriendButton_Click(object sender, RoutedEventArgs e)
         {
-            if (AccountProfile.IsLogin)
+            ChatClient client = PublicValues.Client;
+            if (client.IsLogin)
             {
                 AddFriendDialog page = new AddFriendDialog();
                 ContentDialog dialog = new ContentDialog
@@ -146,7 +148,7 @@ namespace BianChat.Views
                     PrimaryButtonCommand = new CommandModel((obj) => { return true; }, (obj) =>
                     {
                         int uid = int.Parse(page.UIDTextBox.Text);
-                        Task.Run(() => AccountProfile.Current.AddFriend(uid));
+                        Task.Run(() => client.AddFriend(uid));
                     }),
                     DefaultButton = ContentDialogButton.Primary
                 };

@@ -57,7 +57,7 @@ namespace BianChat
                     navigatePage = typeof(ChatPage);
                     break;
                 case "Account":
-                    if (AccountProfile.Connected == true)
+                    if (PublicValues.Client.IsLogin == true)
                     {
                         navigatePage = typeof(AccountPage);
                     }

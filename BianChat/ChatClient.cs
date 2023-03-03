@@ -1,6 +1,7 @@
 ﻿using BianChat.Tools;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Text;
@@ -31,6 +32,8 @@ namespace BianChat
 
         public AdvancedTcpClient client;
         public bool Connected = false;
+        public bool IsLogin = false;
+        public UserInfo UserInfo;
 
         public event EventHandler<AdvancedTcpClient.PingReceivedEventArgs> PingReceived = delegate { };
         public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
@@ -50,6 +53,7 @@ namespace BianChat
             client.DataReceived += DataReceivedCallback;
             client.Disconnected += (s, e) =>
             {
+                IsLogin = false;
                 Connected = false;
 
                 Task.Run(() =>
@@ -83,6 +87,7 @@ namespace BianChat
             {
                 // 登录成功
                 case AdvancedTcpClient.PacketType.State_Account_Success:
+                    IsLogin = true;
                     string[] account_info = Encoding.UTF8.GetString(e.ReceivedData).Split('|');
                     int uid = int.Parse(account_info[0]);
                     string username = account_info[1];
@@ -97,19 +102,20 @@ namespace BianChat
                         int friendUid = int.Parse(friend);
                         friends.Add(GetAccountInfo(friendUid));
                     }
+                    UserInfo = new UserInfo
+                    {
+                        UID = uid,
+                        Username = username,
+                        Email = email,
+                        FriendList = friends.ToArray()
+                    };
 
                     Task.Run(() =>
                     {
                         LoginCompleted(null, new LoginCompletedEventArgs
                         {
                             LoginState = LoginCompletedEventArgs.State.Success,
-                            UserInfo = new UserInfo
-                            {
-                                UID = uid,
-                                Username = username,
-                                Email = email,
-                                FriendList = friends.ToArray()
-                            }
+                            UserInfo = UserInfo
                         });
                     });
                     break;
