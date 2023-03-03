@@ -14,6 +14,7 @@ namespace Server
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Bind(iep);
             server.Listen(20);
+
             Task.Run(() =>
             {
                 while (true)
@@ -24,8 +25,9 @@ namespace Server
                     newthread.Start();
                 }
             });
-            SQLite.CreateDatabase();
+            
             Console.WriteLine("欢迎使用BianChat V1.5.0 寒假特供版");
+            SQLite.CreateDatabase();
             Console.WriteLine("等待客户机进行连接......");
             while (true)
             {
@@ -298,8 +300,8 @@ namespace Server
                                     service.Send(new byte[2] { (byte)DataType.Message_Send_Status, 0 });
                                 }
                                 break;
-                            case DataType.PingBack: // 返回 Ping 包
-                                service.Send(new byte[1] { (int)DataType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
+                            case DataType.Ping_Result: // 返回 Ping 包
+                                service.Send(new byte[1] { (int)DataType.Ping_Result }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                 break;
                             case DataType.Get_Value: // 获取账户信息
                                 if (isLogin)
@@ -390,8 +392,8 @@ namespace Server
 
             public enum DataType
             {
-                Ping = 0,
-                PingBack = 1,
+                Ping = 0, // Ping包
+                Ping_Result = 1, // Ping
                 State_Account_Success = 2,
                 State_Closing = 3,
                 Error_Unknown = 4,
