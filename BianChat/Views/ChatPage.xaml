@@ -35,6 +35,8 @@
                     </Button.Clip>
                 </Button>
             </Grid>
+            <ui:ListView x:Name="MessageListView" Grid.Column="1" Grid.Row="0" Grid.ColumnSpan="2"
+                         Margin="10 0 10 0"/>
             <TextBox x:Name="MessageTextBox" Grid.Column="1" Grid.Row="1"
                      Margin="10 0 10 10" IsEnabled="False"/>
             <Button x:Name="SendButton" Grid.Column="2" Grid.Row="1" IsEnabled="False"

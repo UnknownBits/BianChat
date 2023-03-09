@@ -1,4 +1,5 @@
-﻿using BianChat.Tools;
+﻿using BianChat.DataType.Packet;
+using BianChat.Tools;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
@@ -13,6 +14,7 @@ namespace BianChat
     {
         public class MessageReceivedEventArgs : EventArgs
         {
+            public string Username { get; set; }
             public string Message { get; set; }
             public AdvancedTcpClient.PacketType MessageType { get; set; }
         }
@@ -77,12 +79,16 @@ namespace BianChat
 
             // 登录
             string passwdHash = HashTools.GetSHA256(password);
-            client.SendPacket(AdvancedTcpClient.PacketType.Login,
-                new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(username + '^' + passwdHash)).ToArray());
+            StringCustomPacket packet = new StringCustomPacket { PacketType = AdvancedTcpClient.PacketType.Login };
+            packet.DataList.Add("0");
+            packet.DataList.Add(username);
+            packet.DataList.Add(passwdHash);
+            client.SendBytes(packet.GetBytes());
         }
 
         private void DataReceivedCallback(object sender, AdvancedTcpClient.DataReceivedEventArgs e)
         {
+            StringCustomPacket pack = new StringCustomPacket();
             switch (e.DataType)
             {
                 // 登录成功
@@ -140,9 +146,11 @@ namespace BianChat
                 case AdvancedTcpClient.PacketType.Message:
                     Task.Run(() =>
                     {
+                        string[] message_info = pack.GetDatas(e.ReceivedData);
                         MessageReceived(null, new MessageReceivedEventArgs
                         {
-                            Message = Encoding.UTF8.GetString(e.ReceivedData),
+                            Username = message_info[0],
+                            Message = message_info[1],
                             MessageType = AdvancedTcpClient.PacketType.Message
                         });
                     });
@@ -183,7 +191,12 @@ namespace BianChat
         }
 
         public void SendMessage(int uid, string message)
-            => client.SendPacket(AdvancedTcpClient.PacketType.Message, Encoding.UTF8.GetBytes($"{uid}^{message}"));
+        {
+            StringCustomPacket pack = new StringCustomPacket { PacketType = AdvancedTcpClient.PacketType.Message };
+            pack.DataList.Add(uid.ToString());
+            pack.DataList.Add(message);
+            client.SendBytes(pack.GetBytes());
+        }
 
         public string GetValue(ValuesType type)
         {

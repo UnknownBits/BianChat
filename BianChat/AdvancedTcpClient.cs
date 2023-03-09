@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BianChat.DataType.Packet;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
@@ -69,11 +70,11 @@ namespace BianChat
                                 Connected = false;
                                 break;
                             }
-                            Trace.WriteLine($"[AdvancedTcpClient] 接收到类型为 {(PacketType)buffer[0]} 的数据");
                             if (size <= 0)
                             {
                                 throw new SocketException(10054);
                             }
+                            Trace.WriteLine($"[AdvancedTcpClient] 接收到类型为 {(PacketType)buffer[0]} 的数据");
                             if (buffer[0] == (byte)PacketType.Ping)
                             {
                                 client.Client.Send(new byte[1] { 0 });
@@ -106,9 +107,7 @@ namespace BianChat
         }
 
         public bool SendPacket(PacketType packetType, byte[] data)
-        {
-            return SendBytes(new byte[1] { (byte)packetType }.Concat(data).ToArray());
-        }
+            => SendBytes(new byte[1] { (byte)packetType }.Concat(data).ToArray());
 
         public enum PacketType
         {
@@ -140,6 +139,7 @@ namespace BianChat
                 try
                 {
                     client.Client.Send(data);
+                    Trace.WriteLine($"[AdvancedTcpClient] 尝试发送数据，请求头：{(PacketType)data[0]}");
                     return true;
                 }
                 catch (Exception ex)

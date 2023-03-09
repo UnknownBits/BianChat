@@ -28,6 +28,7 @@ namespace BianChat.Views
     public partial class ChatPage : System.Windows.Controls.Page
     {
         private ObservableCollection<UserListItem> userList = new ObservableCollection<UserListItem>();
+        private ObservableCollection<ModernWpf.Controls.ListViewItem> messageList = new ObservableCollection<ModernWpf.Controls.ListViewItem>();
 
         public ChatPage()
         {
@@ -36,6 +37,7 @@ namespace BianChat.Views
             Loaded += delegate
             {
                 UserListBox.ItemsSource = userList;
+                MessageListView.ItemsSource = messageList;
                 ChatClient client = PublicValues.Client;
                 if (!client.IsLogin)
                 {
@@ -87,20 +89,18 @@ namespace BianChat.Views
                         DialogTools.ShowDialogWithCloseButton("提示", "添加好友成功，正在等待对方确认");
                     }
                 };
-                client.MessageSent += (s, e) =>
+                client.MessageReceived += (s, e) =>
                 {
-                    switch (e)
+                    if (e.MessageType == AdvancedTcpClient.PacketType.Message)
                     {
-                        case 0: // 发送成功
-                            Dispatcher.Invoke(() =>
+                        Dispatcher.Invoke(() =>
+                        {
+                            messageList.Add(new ModernWpf.Controls.ListViewItem
                             {
-                                MessageTextBox.IsEnabled = true;
-                                SendButton.IsEnabled = true;
+                                HorizontalAlignment = HorizontalAlignment.Left,
+                                Content = $"{e.Username} 说：{e.Message}"
                             });
-                            break;
-                        case 1: // 对方不在线
-                            DialogTools.ShowDialogWithCloseButton("提示", "对方不在线，无法发送消息");
-                            break;
+                        });
                     }
                 };
                 UpdateFriendList();
@@ -120,18 +120,46 @@ namespace BianChat.Views
 
         private void SendButton_Click(object sender, RoutedEventArgs e)
         {
+            string message = MessageTextBox.Text;
+            PublicValues.Client.MessageSent += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    MessageTextBox.IsEnabled = true;
+                    SendButton.IsEnabled = true;
+                });
+                switch (e)
+                {
+                    case 0: // 发送成功
+                        Dispatcher.Invoke(() =>
+                        {
+                            MessageTextBox.Text = "";
+                            messageList.Add(new ModernWpf.Controls.ListViewItem
+                            {
+                                HorizontalAlignment = HorizontalAlignment.Right,
+                                Content = $"你：{message}"
+                            });
+                        });
+                        break;
+                    case 1: // 对方不在线
+                        DialogTools.ShowDialogWithCloseButton("提示", "对方不在线，无法发送消息");
+                        break;
+                }
+            };
+
             MessageTextBox.IsEnabled = false;
             SendButton.IsEnabled = false;
 
             UserListItem user = (UserListItem)UserListBox.SelectedItem;
             int uid = (int)user.Tag;
-            PublicValues.Client.SendMessage(uid, MessageTextBox.Text);
+            PublicValues.Client.SendMessage(uid, message);
         }
 
         private void UserListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             MessageTextBox.IsEnabled = true;
             SendButton.IsEnabled = true;
+            messageList.Clear();
         }
 
         private void AddFriendButton_Click(object sender, RoutedEventArgs e)
