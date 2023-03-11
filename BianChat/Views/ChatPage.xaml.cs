@@ -95,11 +95,12 @@ namespace BianChat.Views
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            messageList.Add(new ModernWpf.Controls.ListViewItem
+                            PublicValues.UserMessagePairs[e.Username].Add(new ModernWpf.Controls.ListViewItem
                             {
                                 HorizontalAlignment = HorizontalAlignment.Left,
                                 Content = $"{e.Username} 说：{e.Message}"
                             });
+                            if (UserListBox.SelectedItem != null) UpdateMessageList(e.Username);
                         });
                     }
                 };
@@ -113,9 +114,26 @@ namespace BianChat.Views
             {
                 Dispatcher.Invoke(() =>
                 {
+                    PublicValues.UserMessagePairs.Clear();
                     userList.Add(new UserListItem { Username = user.Username, LastMessage = "6", Tag = user.UID });
+                    PublicValues.UserMessagePairs.Add(user.Username, new List<ModernWpf.Controls.ListViewItem>());
                 });
             }
+        }
+
+        private void UpdateMessageList(string username)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                messageList.Clear();
+                lock (PublicValues.UserMessagePairs[username])
+                {
+                    foreach (var item in PublicValues.UserMessagePairs[username])
+                    {
+                        messageList.Add(item);
+                    }
+                }
+            });
         }
 
         private void SendButton_Click(object sender, RoutedEventArgs e)
@@ -133,12 +151,13 @@ namespace BianChat.Views
                     case 0: // 发送成功
                         Dispatcher.Invoke(() =>
                         {
-                            MessageTextBox.Text = "";
-                            messageList.Add(new ModernWpf.Controls.ListViewItem
+                            string username = ((UserListItem)UserListBox.SelectedItem).Username;
+                            PublicValues.UserMessagePairs[username].Add(new ModernWpf.Controls.ListViewItem
                             {
                                 HorizontalAlignment = HorizontalAlignment.Right,
                                 Content = $"你：{message}"
                             });
+                            UpdateMessageList(username);
                         });
                         break;
                     case 1: // 对方不在线
@@ -149,6 +168,12 @@ namespace BianChat.Views
 
             MessageTextBox.IsEnabled = false;
             SendButton.IsEnabled = false;
+            if (message == "" || string.IsNullOrWhiteSpace(message))
+            {
+                DialogTools.ShowDialogWithCloseButton("提示", "消息不能为空格或空");
+                return;
+            }
+            MessageTextBox.Text = "";
 
             UserListItem user = (UserListItem)UserListBox.SelectedItem;
             int uid = (int)user.Tag;
@@ -157,9 +182,10 @@ namespace BianChat.Views
 
         private void UserListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            object[] items = (object[])e.AddedItems;
             MessageTextBox.IsEnabled = true;
             SendButton.IsEnabled = true;
-            messageList.Clear();
+            UpdateMessageList(((UserListItem)items[0]).Username);
         }
 
         private void AddFriendButton_Click(object sender, RoutedEventArgs e)

@@ -12,5 +12,6 @@ namespace BianChat.Tools
         public static Dispatcher UIDispatcher;
         public static MainWindow MainWindow;
         public static ChatClient Client = new ChatClient();
+        public static Dictionary<string, List<ModernWpf.Controls.ListViewItem>> UserMessagePairs = new Dictionary<string, List<ModernWpf.Controls.ListViewItem>>();
     }
 }
