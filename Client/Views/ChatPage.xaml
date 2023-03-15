@@ -12,7 +12,6 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="50"/>
-
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="140"/>
@@ -40,6 +39,7 @@
                 <Label Content="+" FontWeight="UltraBold" Foreground="White"></Label>
             </Button.Content>
         </Button>
+        
         <TextBox x:Name="MessageTextBox" 
                  Grid.Column="3" Grid.Row="1"
                  Margin=" 0" Height="30"

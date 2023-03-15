@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Client.Module;
 
 namespace Client
 {
@@ -25,6 +26,8 @@ namespace Client
         public MainWindow()
         {
             InitializeComponent();
+            Module.TcpSocket tcpSocket = new Module.TcpSocket("127.0.0.1", 911);
+            NavigateToPage(typeof(Views.HomePage));
         }
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
         {
