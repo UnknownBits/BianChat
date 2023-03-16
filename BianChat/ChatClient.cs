@@ -37,7 +37,7 @@ namespace BianChat
         public bool IsLogin = false;
         public UserInfo UserInfo;
 
-        public event EventHandler<AdvancedTcpClient.PingReceivedEventArgs> PingReceived = delegate { };
+        public event EventHandler<AdvancedTcpClient.PingReceivedEventArgs> PingReceived;
         public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
         public event EventHandler<MessageReceivedEventArgs> MessageReceived = delegate { };
         public event EventHandler<int> MessageSent = delegate { };

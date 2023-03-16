@@ -10,8 +10,20 @@ using System.Windows;
 
 namespace Client.Module
 {
-    public class TcpSocket : IDisposable
+    public class TcpSocket
     {
+        public event EventHandler<PackageReceive_EventArgs> PackageReceive;
+        public class PackageReceive_EventArgs : EventArgs
+        {
+            public PacketType packetType { get; set; }
+            public byte[] data { get; set; }
+        }
+
+        public event EventHandler<PingPackageReceive_EventArgs> PingPackageReceive;
+        public class PingPackageReceive_EventArgs : EventArgs
+        {
+            public int Ping { get; set; }
+        }
         private readonly Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         private bool disposedValue;
         public Task ReceiveTask;
@@ -20,17 +32,55 @@ namespace Client.Module
 
         public TcpSocket(string server, int port)
         {
-            Connected = socket.Connected;
             try
             {
+                Connected = socket.Connected;
                 socket.Connect(server, port);
                 Connected = true;
-                socket.Send(new byte[0]);
             }
-            catch { }
-            Console.WriteLine(Connected);
-
-
+            catch(Exception ex) { }
+            if (Connected)
+            {
+                ReceiveTask = Task.Run(() =>
+                {
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (socket != null || Connected)
+                    {
+                        try
+                        {
+                            // 接收
+                            int size = 0;
+                            byte[] buffer = new byte[8193];
+                            size = socket.Receive(buffer);
+                            if (size <= 0) { throw new SocketException(10054); }
+                            Array.Resize(ref buffer, size);
+                            Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
+                            switch ((PacketType)buffer[0])
+                            {
+                                case PacketType.PingBack:
+                                    int ping = BitConverter.ToInt32(buffer, 1);
+                                    Task.Run(() => PingPackageReceive(socket, new PingPackageReceive_EventArgs { Ping = ping }));
+                                    break;
+                                default:
+                                    Task.Run(() => PackageReceive(socket, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], data = buffer.Skip(1).ToArray() }));
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (Connected)
+                            {
+                                Dispose(ex);
+                            }
+                            break;
+                        }
+                    }
+                    if (Connected)
+                    {
+                        Dispose();
+                    }
+                });
+            }
         }
 
         /// <summary>
@@ -38,16 +88,16 @@ namespace Client.Module
         /// </summary>
         public enum PacketType
         {
-            Ping = 00,
-            PingBack = 01,
-            State_Account_Success = 10,
-            State_Account_Error = 11,
-            State_Server_Closing = 12,
-            State_Server_Error = 13,
-            Message_Notice = 20,
-            Message_Login = 21,
-            Message_Register = 22,
-            Message_Messages = 23,
+            Ping,
+            PingBack,
+            State_Account_Success,
+            State_Account_Error,
+            State_Server_Closing,
+            State_Server_Error,
+            Message_Notice,
+            Message_Login,
+            Message_Register,
+            Message_Messages,
         }
 
         //断开连接

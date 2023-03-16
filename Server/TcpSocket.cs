@@ -42,7 +42,7 @@ namespace Server
 
             Task.Run(async () => {
                 await Task.Delay(200);
-                while (true) {
+                while (connected) {
                     try {
                         t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                         service.Send(new byte[1] { (byte)PacketType.Ping });
@@ -52,7 +52,7 @@ namespace Server
                 }
             });
 
-            while (true)
+            while (connected)
             {
                 try
                 {
@@ -60,9 +60,19 @@ namespace Server
                     int size = service.Receive(buffer);
                     if (size <= 0) { throw new Exception(); }
                     Array.Resize(ref buffer, size);
+                    Console.WriteLine(buffer[0]);
                     switch ((PacketType)buffer[0])
-                    { 
-                    
+                    {
+                        case PacketType.Ping:
+                            t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                            service.Send(new byte[1] { (byte)PacketType.Ping });
+                            break;
+                        case PacketType.PingBack:
+                            service.Send(new byte[1] { (int)PacketType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
+                            Console.WriteLine(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0);
+                            break;
+                        case PacketType.Message_Messages:
+                            break;
                     }
                 }
                 catch { Disconnect(); break; }
@@ -76,16 +86,16 @@ namespace Server
         /// </summary>
         public enum PacketType
         {
-            Ping = 00,
-            PingBack = 01,
-            State_Account_Success = 10,
-            State_Account_Error = 11,
-            State_Server_Closing = 12,
-            State_Server_Error = 13,
-            Message_Notice = 20,
-            Message_Login = 21,
-            Message_Register = 22,
-            Message_Messages = 23,
+            Ping,
+            PingBack,
+            State_Account_Success,
+            State_Account_Error,
+            State_Server_Closing,
+            State_Server_Error,
+            Message_Notice,
+            Message_Login,
+            Message_Register,
+            Message_Messages,
         }
 
         public static void SendPacket(string data, PacketType type) {

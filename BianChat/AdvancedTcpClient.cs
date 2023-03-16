@@ -93,7 +93,7 @@ namespace BianChat
                                 });
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex)     
                         {
                             if (Connected)
                             {
