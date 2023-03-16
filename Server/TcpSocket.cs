@@ -28,19 +28,47 @@ namespace Server
                 connected = true; //连接状态为正常
                 clients.Add(0, this);
                 byte[] bytes = new byte[8193];
-                Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count + 1);
+                Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
             }
             else Disconnect();
-            SendData(PacketType.Ping);
-            SendData(PacketType.PingBack);
-            SendData(PacketType.Message_Notice);
-            SendData(PacketType.Ping);
-            SendData(PacketType.PingBack);
-            SendData(PacketType.Message_Notice); SendData(PacketType.Ping);
-            SendData(PacketType.PingBack);
-            SendData(PacketType.Message_Notice); SendData(PacketType.Ping);
-            SendData(PacketType.PingBack);
-            SendData(PacketType.Message_Notice);
+
+            #region 登录超时模块
+            Task.Run(async () =>
+            {
+                await Task.Delay(5000);
+                if (!isLogin) { Disconnect(); }
+            });
+            #endregion
+
+            Task.Run(async () => {
+                await Task.Delay(200);
+                while (true) {
+                    try {
+                        t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                        service.Send(new byte[1] { (byte)PacketType.Ping });
+                    }
+                    catch { Disconnect(); break; }
+                    await Task.Delay(5000);
+                }
+            });
+
+            while (true)
+            {
+                try
+                {
+                    byte[] buffer = new byte[8193];
+                    int size = service.Receive(buffer);
+                    if (size <= 0) { throw new Exception(); }
+                    Array.Resize(ref buffer, size);
+                    switch ((PacketType)buffer[0])
+                    { 
+                    
+                    }
+                }
+                catch { Disconnect(); break; }
+            }
+
+            Disconnect();
         }
 
         /// <summary>
@@ -60,7 +88,7 @@ namespace Server
             Message_Messages = 23,
         }
 
-        public static void SendData(string data, PacketType type) {
+        public static void SendPacket(string data, PacketType type) {
             lock (clients) {
                 foreach (var client in clients.Values) {
                     try { client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
@@ -70,7 +98,7 @@ namespace Server
             Console.WriteLine($"{type} 包：{data}");
         }
 
-        public static void SendData(PacketType type) {
+        public static void SendPacket(PacketType type) {
             lock (clients)
             {
                 foreach (var client in clients.Values)
@@ -93,7 +121,7 @@ namespace Server
                         clients.Remove(Uid);
                         service.Close();
                     }
-                    if (isLogin) SendData($"{username} 已下线", PacketType.Message_Notice);
+                    if (isLogin) SendPacket($"{username} 已下线", PacketType.Message_Notice);
                     Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
                 }
                 catch (Exception ex) { Console.WriteLine(ex.ToString()); }
