@@ -43,8 +43,8 @@
                             <StackPanel>
                                 <Label Margin="20,20,0,0" FontSize="20" Content="节点检测"/>
                                 <Grid>
-                                    <Label Margin="20,20,0,20" FontSize="15" x:Name="Node1_Status" Content="主节点1"/>
-                                    <Label Margin="0,0,30,0" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    <Label Margin="20,20,0,20" FontSize="15" Content="主节点1"/>
+                                    <Label Margin="0,0,30,0" x:Name="Node1_Status" HorizontalAlignment="Right" VerticalAlignment="Center"/>
                                 </Grid>
                             </StackPanel>
                         </Border>

@@ -60,7 +60,7 @@ namespace Client.Module
                         Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
                         switch ((PacketType)buffer[0])
                         {
-                            case PacketType.Ping;
+                            case PacketType.Ping:
                                 SendPacket(PacketType.PingBack);
                                 break;
                             case PacketType.PingBack:
