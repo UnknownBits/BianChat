@@ -1,4 +1,5 @@
-﻿using ModernWpf;
+﻿using Client.Module;
+using ModernWpf;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,12 +22,21 @@ namespace Client.Views
     /// </summary>
     public partial class Settings : Page
     {
+        private TcpSocket tcpSocket = MainWindow.tcpSocket;
         public Settings()
         {
             InitializeComponent();
+            tcpSocket.PingPackageReceive += (s, e) =>
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    Node1_Status.Content = e.Ping;
+                });
+            };
+            tcpSocket.SendPacket(TcpSocket.PacketType.Ping);
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void ThemeSwitch_Button_Click(object sender, RoutedEventArgs e)
         {
             ClearValue(ThemeManager.RequestedThemeProperty);
 
