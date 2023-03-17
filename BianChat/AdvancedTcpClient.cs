@@ -79,7 +79,7 @@ namespace BianChat
                             {
                                 client.Client.Send(new byte[1] { 0 });
                             }
-                            else if (buffer[0] == (byte)PacketType.PingBack) // Ping 包
+                            else if (buffer[0] == (byte)PacketType.Ping_Result) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);
                                 Task.Run(() => PingReceived(client, new PingReceivedEventArgs { Ping = ping }));
@@ -111,8 +111,8 @@ namespace BianChat
 
         public enum PacketType
         {
-            Ping = 0,
-            PingBack = 1,
+            Ping = 0, // Ping包
+            Ping_Result = 1, // Ping
             State_Account_Success = 2,
             State_Closing = 3,
             Error_Unknown = 4,
@@ -122,14 +122,10 @@ namespace BianChat
             Register = 8,
             Message = 9,
             Message_Send_Status = 10,
-            Get_Value = 11,
-            Get_Value_Result = 12,
+            Get_Current_Account_Info = 11,
+            Get_Current_Account_Info_Result = 12,
             Get_Account_Info = 13,
-            Get_Account_Info_Result = 14,
-            Update_Value = 15,
-            Update_Value_Result = 16,
-            Add_Friend = 17,
-            Add_Friend_Result = 18
+            Get_Account_Info_Result = 14
         }
 
         public bool SendBytes(byte[] data)

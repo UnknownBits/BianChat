@@ -309,66 +309,32 @@ namespace BianChat_Server
                             case DataType.Ping_Result: // 返回 Ping 包
                                 service.Send(new byte[1] { (int)DataType.Ping_Result }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                                 break;
-                            case DataType.Get_Value: // 获取账户信息
+                            case DataType.Get_Current_Account_Info: // 获取当前账户信息
                                 if (isLogin)
                                 {
-                                    if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
-                                    SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
                                     using SQLite sql = new SQLite();
-                                    string result = sql.GetValue(Uid, type);
-                                    if (result == null)
-                                    {
-                                        service.Send(new byte[2] { (byte)DataType.Get_Value_Result, (byte)type });
-                                        break;
-                                    }
-                                    service.Send(new byte[2] { (byte)DataType.Get_Value_Result, (byte)type }
-                                    .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
+                                    StringCustomPacket pack1 = new StringCustomPacket();
+                                    pack1.PacketType = DataType.Get_Current_Account_Info_Result;
+                                    pack1.DataList.Add(sql.GetValue(Uid, SQLite.ValuesType.Username));
+                                    pack1.DataList.Add(sql.GetValue(Uid, SQLite.ValuesType.Email));
+                                    pack1.DataList.Add(sql.GetValue(Uid, SQLite.ValuesType.ProfilePhoto));
+                                    // TODO：好友列表，未处理请求等
+                                    service.Send(pack1.GetBytes());
                                 }
                                 break;
-                            case DataType.Get_Account_Info: // 获取账户全部信息（可获取其他人）
+                            case DataType.Get_Account_Info: // 获取他人账户信息
                                 if (isLogin)
                                 {
-                                    int uid = BitConverter.ToInt32(buffer, 1);
+                                    CustomPacket packet = new CustomPacket();
+                                    byte[][] datas = packet.GetDatas(buffer.Skip(1).ToArray());
+                                    int uid = BitConverter.ToInt32(datas[0]);
                                     using SQLite sql = new SQLite();
-                                    string username = sql.GetValue(uid, SQLite.ValuesType.Username);
-                                    if (username == null)
-                                    {
-                                        service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }.Concat(buffer.Skip(1)).ToArray());
-                                        break;
-                                    }
-                                    string result = $"{username}";
-                                    service.Send(new byte[1] { (byte)DataType.Get_Account_Info_Result }
-                                    .Concat(buffer.Skip(1))
-                                    .Concat(Encoding.UTF8.GetBytes(result)).ToArray());
-                                }
-                                break;
-                            case DataType.Update_Value: // 修改账户信息
-                                if (isLogin)
-                                {
-                                    if (buffer[1] > (byte)SQLite.ValuesType.MaxValue) Disconnect();
-                                    if (buffer[1] == (byte)SQLite.ValuesType.FriendList)
-                                        service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 3 });
-                                    SQLite.ValuesType type = (SQLite.ValuesType)buffer[1];
-                                    string content = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2);
-                                    using SQLite sql = new SQLite();
-                                    if (type == SQLite.ValuesType.FriendList && content.Split('^').Contains(Uid.ToString()))
-                                        service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 2 });
-                                    if (sql.UpdateValue(Uid, type, content)) service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 1 });
-                                    else service.Send(new byte[2] { (byte)DataType.Update_Value_Result, 0 });
-                                }
-                                break;
-                            case DataType.Add_Friend: // 添加好友
-                                if (isLogin)
-                                {
-                                    int uid = BitConverter.ToInt32(buffer, 1);
-                                    using SQLite sql = new SQLite();
-                                    List<string> processes = sql.GetValue(uid, SQLite.ValuesType.UnprocessedRequests).Split('^').ToList();
-                                    processes.Add($"{RequestType.To_Add_Friend}|{Uid}");
-                                    sql.UpdateValue(uid, SQLite.ValuesType.UnprocessedRequests, string.Join('^', processes));
-                                    processes = sql.GetValue(Uid, SQLite.ValuesType.UnprocessedRequests).Split('^').ToList();
-                                    processes.Add($"{RequestType.From_Add_Friend}|{uid}");
-                                    sql.UpdateValue(Uid, SQLite.ValuesType.UnprocessedRequests, string.Join('^', processes));
-                                    service.Send(new byte[2] { (byte)DataType.Add_Friend_Result, 0 });
+                                    StringCustomPacket pack1 = new StringCustomPacket();
+                                    pack1.PacketType = DataType.Get_Account_Info_Result;
+                                    pack1.DataList.Add(sql.GetValue(uid, SQLite.ValuesType.Username));
+                                    pack1.DataList.Add(sql.GetValue(Uid, SQLite.ValuesType.Email));
+                                    pack1.DataList.Add(sql.GetValue(uid, SQLite.ValuesType.ProfilePhoto));
+                                    service.Send(pack1.GetBytes());
                                 }
                                 break;
                         }
@@ -409,14 +375,10 @@ namespace BianChat_Server
                 Register = 8,
                 Message = 9,
                 Message_Send_Status = 10,
-                Get_Value = 11,
-                Get_Value_Result = 12,
+                Get_Current_Account_Info = 11,
+                Get_Current_Account_Info_Result = 12,
                 Get_Account_Info = 13,
-                Get_Account_Info_Result = 14,
-                Update_Value = 15,
-                Update_Value_Result = 16,
-                Add_Friend = 17,
-                Add_Friend_Result = 18
+                Get_Account_Info_Result = 14
             }
 
             public enum RequestType

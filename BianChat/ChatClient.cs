@@ -166,25 +166,11 @@ namespace BianChat
                         });
                     });
                     break;
-                // 用户档案信息更改
-                case AdvancedTcpClient.PacketType.Update_Value_Result:
-                    Task.Run(() =>
-                    {
-                        ProfileChanged(null, e.ReceivedData[0]);
-                    });
-                    break;
                 // 消息发送完成
                 case AdvancedTcpClient.PacketType.Message_Send_Status:
                     Task.Run(() =>
                     {
                         MessageSent(null, e.ReceivedData[0]);
-                    });
-                    break;
-                // 添加好友完成
-                case AdvancedTcpClient.PacketType.Add_Friend_Result:
-                    Task.Run(() =>
-                    {
-                        AddFriendCompleted(null, e.ReceivedData[0]);
                     });
                     break;
             }
@@ -198,26 +184,6 @@ namespace BianChat
             client.SendBytes(pack.GetBytes());
         }
 
-        public string GetValue(ValuesType type)
-        {
-            string result = null;
-            client.DataReceived += (s, e) =>
-            {
-                if (e.DataType == AdvancedTcpClient.PacketType.Get_Value_Result)
-                {
-                    if (e.ReceivedData.Length == 1)
-                    {
-                        result = "";
-                        return;
-                    }
-                    result = Encoding.UTF8.GetString(e.ReceivedData, 1, e.ReceivedData.Length - 1);
-                }
-            };
-            client.SendPacket(AdvancedTcpClient.PacketType.Get_Value, new byte[1] { (byte)type });
-            while (result == null) Task.Delay(10).Wait();
-            return result;
-        }
-
         public UserInfo GetAccountInfo(int uid)
         {
             UserInfo userInfo = null;
@@ -225,26 +191,21 @@ namespace BianChat
             {
                 if (e.DataType == AdvancedTcpClient.PacketType.Get_Account_Info_Result)
                 {
-                    string[] infos = Encoding.UTF8.GetString(e.ReceivedData, 4, e.ReceivedData.Length - 4).Split('^');
-                    UserInfo info1 = new UserInfo();
-                    info1.UID = BitConverter.ToInt32(e.ReceivedData);
-                    if (e.ReceivedData.Length == 1) throw new ArgumentException($"找不到 UID 为 {info1.UID} 用户");
-                    info1.Username = infos[0];
-                    userInfo = info1;
+                    StringCustomPacket pack = new StringCustomPacket();
+                    string[] infos = pack.GetDatas(e.ReceivedData);
+                    UserInfo info = new UserInfo
+                    {
+                        Username = infos[0],
+                        Email = infos[1],
+                        ProfilePhotoUri = new Uri(infos[2])
+                    };
+                    userInfo = info;
                 }
             };
             bool result = client.SendPacket(AdvancedTcpClient.PacketType.Get_Account_Info, BitConverter.GetBytes(uid));
             while (userInfo == null) Task.Delay(10).Wait();
             return userInfo;
         }
-
-        public void ChangeProfile(ValuesType type, string value)
-            => client.SendPacket(AdvancedTcpClient.PacketType.Update_Value,
-                new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(value)).ToArray());
-
-        public void AddFriend(int uid)
-            => client.SendPacket(AdvancedTcpClient.PacketType.Add_Friend,
-                BitConverter.GetBytes(uid));
 
         public enum ValuesType
         {
