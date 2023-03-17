@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,7 +18,7 @@ namespace Client.Module
         public class PackageReceive_EventArgs : EventArgs
         {
             public PacketType packetType { get; set; }
-            public byte[] data { get; set; }
+            public byte[] Data { get; set; }
         }
 
         public event EventHandler<PingPackageReceive_EventArgs> PingPackageReceive;
@@ -24,9 +26,12 @@ namespace Client.Module
         {
             public int Ping { get; set; }
         }
+        public event EventHandler<ErrorReceive_EventArgs> ErrorReceive;
+        public class ErrorReceive_EventArgs : EventArgs
+        {
+            public Exception exception { get; set; }
+        }
         private readonly Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-        private bool disposedValue;
-        public Task ReceiveTask;
         public bool Connected;
         public bool IsLogin = false;
 
@@ -38,49 +43,43 @@ namespace Client.Module
                 socket.Connect(server, port);
                 Connected = true;
             }
-            catch(Exception ex) { }
-            if (Connected)
+            catch (Exception ex) { Dispose(ex); }
+            Task ReceiveTask = Task.Run(() =>
             {
-                ReceiveTask = Task.Run(() =>
+                long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                while (socket != null && Connected)
                 {
-                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                    while (socket != null || Connected)
+                    try
                     {
-                        try
+                        // 接收
+                        int size = 0;
+                        byte[] buffer = new byte[8193];
+                        size = socket.Receive(buffer);
+                        if (size <= 0) { throw new SocketException(10054); }
+                        Array.Resize(ref buffer, size);
+                        Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
+                        switch ((PacketType)buffer[0])
                         {
-                            // 接收
-                            int size = 0;
-                            byte[] buffer = new byte[8193];
-                            size = socket.Receive(buffer);
-                            if (size <= 0) { throw new SocketException(10054); }
-                            Array.Resize(ref buffer, size);
-                            Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
-                            switch ((PacketType)buffer[0])
-                            {
-                                case PacketType.PingBack:
-                                    int ping = BitConverter.ToInt32(buffer, 1);
-                                    Task.Run(() => PingPackageReceive(socket, new PingPackageReceive_EventArgs { Ping = ping }));
-                                    break;
-                                default:
-                                    Task.Run(() => PackageReceive(socket, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], data = buffer.Skip(1).ToArray() }));
-                                    break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            if (Connected)
-                            {
-                                Dispose(ex);
-                            }
-                            break;
+                            case PacketType.PingBack:
+                                int ping = BitConverter.ToInt32(buffer, 1);
+                                Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
+                                break;
+                            default:
+                                Task.Run(() => PackageReceive(this, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], Data = buffer.Skip(1).ToArray() }));
+                                break;
                         }
                     }
-                    if (Connected)
+                    catch (Exception ex)
                     {
-                        Dispose();
+                        if (Connected)
+                        {
+                            Dispose(ex);
+                        }
+                        break;
                     }
-                });
-            }
+                }
+                Dispose(new Exception("断开连接"));
+            });
         }
 
         /// <summary>
@@ -100,52 +99,37 @@ namespace Client.Module
             Message_Messages,
         }
 
+
+        public void SendPacket(PacketType type)
+        {
+            try { socket.Send(new byte[1] { (byte)type }); }
+            catch (Exception ex) { Dispose(ex); }
+            Trace.WriteLine($"发送 {type} 包");
+        }
+
+        public void SendPacket(string data, PacketType type)
+        {
+            try { socket.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
+            catch(Exception ex) { Dispose(ex); }
+            Console.WriteLine($"{type} 包：{data}");
+        }
+
         //断开连接
         public void Dispose(Exception exception)
         {
-            Dispose(disposing: true, exception);
-            GC.SuppressFinalize(this);
-        }
-
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing, Exception exception)
-        {
-            if (!disposedValue)
+            try
             {
-                if (disposing)
+                if (Connected)
                 {
-                    if (Connected)
-                    {
-                        socket.Close();
-                    }
+                    Connected = false;
+                    IsLogin = false;
+                    socket.Close();
                 }
-                socket.Dispose();
-                IsLogin = false;
-                Connected = false;
-                disposedValue = true;
+                Trace.WriteLine($"客户端已断开连接");
+                Task.Run(() => ErrorReceive(this, new ErrorReceive_EventArgs { exception = exception }));
+                
             }
-        }
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
-            {
-                if (disposing)
-                {
-                    if (Connected)
-                    {
-                        socket.Close();
-                    }
-                }
-                socket.Dispose();
-                IsLogin = false;
-                Connected = false;
-                disposedValue = true;
-            }
+            catch (Exception ex) { Dispose(ex); }
         }
     }
 }

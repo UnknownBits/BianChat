@@ -1,20 +1,7 @@
 ﻿using ModernWpf.Controls;
 using ModernWpf.Media.Animation;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using Client.Module;
 
 namespace Client
 {
@@ -23,10 +10,13 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        internal static Module.TcpSocket tcpSocket;
+        internal static MainWindow mainWindow;
         public MainWindow()
         {
             InitializeComponent();
-            Module.TcpSocket tcpSocket = new Module.TcpSocket("127.0.0.1", 911);
+            mainWindow = this;
+            tcpSocket = new Module.TcpSocket("127.0.0.1", 911);
             NavigateToPage(typeof(Views.HomePage));
         }
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
