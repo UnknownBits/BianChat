@@ -40,18 +40,6 @@ namespace Server
             });
             #endregion
 
-            Task.Run(async () => {
-                await Task.Delay(200);
-                while (connected) {
-                    try {
-                        t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                        service.Send(new byte[1] { (byte)PacketType.Ping });
-                    }
-                    catch { Disconnect(); break; }
-                    await Task.Delay(5000);
-                }
-            });
-
             while (connected)
             {
                 try
@@ -71,7 +59,41 @@ namespace Server
                             service.Send(new byte[1] { (int)PacketType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                             Console.WriteLine(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0);
                             break;
+                        case PacketType.Message_Login:
+                            string[] loginInfo = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
+                            if (loginInfo.Length > 2) {
+                                service.Send(new byte[1] { (int)PacketType.State_Server_Error });
+                                // 登录失败：账号或密码错误
+                                Task.Delay(100).Wait();
+                                Disconnect();
+                            }
+                            else if (loginInfo[1].Length != 64) Disconnect();
+                            username = loginInfo[0];
+                            password_sha256 = loginInfo[1];
+
+                            try
+                            {
+                                using var sql = new SQLite();
+                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && !clients.ContainsKey(Uid))
+                                {
+                                    service.Send(new byte[1] { (int)PacketType.State_Account_Error });
+                                    // 登录失败：账号或密码错误或已在线
+                                    Task.Delay(100).Wait();
+                                    Disconnect();
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+                                service.Send(new byte[1] { (int)PacketType.State_Server_Error });
+                                // 登录失败 未知错误
+                                Task.Delay(100).Wait();
+                                Disconnect();
+                                break;
+                            }
+                            break;
                         case PacketType.Message_Messages:
+
                             break;
                     }
                 }
