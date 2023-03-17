@@ -8,8 +8,6 @@
        xmlns:s="clr-namespace:System.Collections;assembly=mscorlib"
       xmlns:p="clr-namespace:System;assembly=mscorlib"
       mc:Ignorable="d"     
-      Background="{DynamicResource SystemControlPageBackgroundAltHighBrush}"
-      Foreground="{DynamicResource SystemControlPageTextBaseHighBrush}"
       d:DesignHeight="450" d:DesignWidth="800">
 
     <ScrollViewer Grid.Column="1">
@@ -18,23 +16,23 @@
                 <TabItem.Header>
                     <Label HorizontalAlignment="Center">基础设置</Label>
                 </TabItem.Header>
-
-                <StackPanel Margin="10,0,20,0" ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                    <Border Margin="5" BorderThickness="2" CornerRadius="15" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}">
-                        <StackPanel>
-                            <Label Margin="20,20,0,0" FontSize="20" Content="深色模式切换"></Label>
-                            <Grid>
-                                <Label Margin="20,20,0,20" FontSize="15" Content="测试中" Foreground="Gray" ></Label>
-                                <Button Margin="0,0,20,0" Background="Transparent" HorizontalAlignment="Right" Click="Button_Click">
-                                    <Border BorderThickness="1" CornerRadius="5" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}" Focusable="True">
-                                        <Label Content="  切换  "></Label>
-                                    </Border>
-                                </Button>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                <StackPanel Margin="20">
+                    <StackPanel ScrollViewer.VerticalScrollBarVisibility="Disabled">
+                        <Border Margin="0" BorderThickness="2" CornerRadius="15" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}">
+                            <StackPanel>
+                                <Label Margin="20,20,0,0" FontSize="20" Content="深色模式切换"></Label>
+                                <Grid>
+                                    <Label Margin="20,20,0,20" FontSize="15" Content="测试中" Foreground="Gray" ></Label>
+                                    <Button Margin="0,0,20,0" Background="Transparent" HorizontalAlignment="Right" Click="Button_Click">
+                                        <Border BorderThickness="1" CornerRadius="5" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}" Focusable="True">
+                                            <Label Content="  切换  "></Label>
+                                        </Border>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
-
             </TabItem>
             <TabItem>
                 <TabItem.Header>
