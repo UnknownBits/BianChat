@@ -14,19 +14,19 @@ namespace Client.Module
 {
     public class TcpSocket
     {
-        public event EventHandler<PackageReceive_EventArgs> PackageReceive;
+        public event EventHandler<PackageReceive_EventArgs> PackageReceive = delegate { };
         public class PackageReceive_EventArgs : EventArgs
         {
             public PacketType packetType { get; set; }
             public byte[] Data { get; set; }
         }
 
-        public event EventHandler<PingPackageReceive_EventArgs> PingPackageReceive;
+        public event EventHandler<PingPackageReceive_EventArgs> PingPackageReceive = delegate { };
         public class PingPackageReceive_EventArgs : EventArgs
         {
             public int Ping { get; set; }
         }
-        public event EventHandler<ErrorReceive_EventArgs> ErrorReceive;
+        public event EventHandler<ErrorReceive_EventArgs> ErrorReceive = delegate { };
         public class ErrorReceive_EventArgs : EventArgs
         {
             public Exception exception { get; set; }
