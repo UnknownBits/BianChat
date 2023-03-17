@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BianChat.DataType.Packet;
+using System;
+using System.Diagnostics;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Client_Ava
+namespace BianChat
 {
     public class AdvancedTcpClient : IDisposable
     {
@@ -14,7 +16,8 @@ namespace Client_Ava
         public event EventHandler<DataReceivedEventArgs> DataReceived = delegate { };
         public class DataReceivedEventArgs : EventArgs
         {
-            public byte[] ?ReceivedData { get; set; }
+            public byte[] ReceivedData { get; set; }
+            public PacketType DataType { get; set; }
         }
 
         public event EventHandler<PingReceivedEventArgs> PingReceived = delegate { };
@@ -26,30 +29,27 @@ namespace Client_Ava
         public event EventHandler<DisconnectedEventArgs> Disconnected = delegate { };
         public class DisconnectedEventArgs : EventArgs
         {
-            public Exception ?Exception { get; init; }
+            public Exception? Exception { get; init; }
         }
 
         private TcpClient client = new TcpClient();
-        public Thread ?ReceiveTask;
+        public Task? ReceiveTask;
         public bool Connected = false;
-        private bool disposedValue;
+        private bool disposedValue = false;
+
+        public AdvancedTcpClient() { }
+
         public void Connect(string ip)
         {
-            client?.Close();
             Task.Delay(10).Wait();
-            client = new TcpClient();
             int idx = ip.LastIndexOf(':');
             string ip1 = ip[..idx];
             int port = int.Parse(ip[(idx + 1)..]);
             client.Connect(ip1, port);
             Connected = true;
-        }
-
-        public void BeginReceive()
-        {
             if (Connected)
             {
-                ReceiveTask = new Thread(() =>
+                ReceiveTask = Task.Run(() =>
                 {
                     long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     while (true)
@@ -62,6 +62,7 @@ namespace Client_Ava
                             if (client.Client != null)
                             {
                                 size = client.Client.Receive(buffer);
+                                Trace.WriteLine("[AdvancedTcpClient] 尝试接收数据");
                                 Array.Resize(ref buffer, size);
                             }
                             else
@@ -73,41 +74,58 @@ namespace Client_Ava
                             {
                                 throw new SocketException(10054);
                             }
-                            if (buffer[0] == 0)
+                            Trace.WriteLine($"[AdvancedTcpClient] 接收到类型为 {(PacketType)buffer[0]} 的数据");
+                            if (buffer[0] == (byte)PacketType.Ping)
                             {
                                 client.Client.Send(new byte[1] { 0 });
                             }
-                            else if (buffer[0] == 1) // Ping 包
+                            else if (buffer[0] == (byte)PacketType.Ping_Result) // Ping 包
                             {
                                 int ping = BitConverter.ToInt32(buffer, 1);
-                                PingReceived(client, new PingReceivedEventArgs { Ping = ping });
+                                Task.Run(() => PingReceived(client, new PingReceivedEventArgs { Ping = ping }));
                             }
                             else
                             {
-                                DataReceived(
-                                    client, new DataReceivedEventArgs { ReceivedData = buffer });
+                                Task.Run(() =>
+                                {
+                                    DataReceived(
+                                        client, new DataReceivedEventArgs { ReceivedData = buffer.Skip(1).ToArray(), DataType = (PacketType)buffer[0] });
+                                });
                             }
                         }
-                        catch (Exception ex)
+                        catch (Exception ex)     
                         {
                             if (Connected)
                             {
-                                Connected = false;
-                                client.Close();
-                                Disconnected(this, new DisconnectedEventArgs { Exception = ex });
+                                Dispose(ex);
                             }
                             break;
                         }
                     }
                 });
-                ReceiveTask.IsBackground = true;
-                ReceiveTask.Start();
             }
         }
 
-        public bool Send(string message)
+        public bool SendPacket(PacketType packetType, byte[] data)
+            => SendBytes(new byte[1] { (byte)packetType }.Concat(data).ToArray());
+
+        public enum PacketType
         {
-            return SendBytes(new byte[1] { 9 }.Concat(Encoding.UTF8.GetBytes(message)).ToArray());
+            Ping = 0, // Ping包
+            Ping_Result = 1, // Ping
+            State_Account_Success = 2,
+            State_Closing = 3,
+            Error_Unknown = 4,
+            Error_Account = 5,
+            Notice = 6,
+            Login = 7,
+            Register = 8,
+            Message = 9,
+            Message_Send_Status = 10,
+            Get_Current_Account_Info = 11,
+            Get_Current_Account_Info_Result = 12,
+            Get_Account_Info = 13,
+            Get_Account_Info_Result = 14
         }
 
         public bool SendBytes(byte[] data)
@@ -117,43 +135,46 @@ namespace Client_Ava
                 try
                 {
                     client.Client.Send(data);
+                    Trace.WriteLine($"[AdvancedTcpClient] 尝试发送数据，请求头：{(PacketType)data[0]}");
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
-                    Connected = false;
+                    Dispose(ex);
                     return false;
                 }
             }
-
             return false;
         }
 
-        public void Disconnect()
+        public void Dispose(Exception exception)
         {
-            if (Connected)
-            {
-                Connected = false;
-                client?.Close();
-                Disconnected(this, new DisconnectedEventArgs());
-            }
+            Dispose(disposing: true, exception);
+            GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing, Exception exception = null)
         {
             if (!disposedValue)
             {
                 if (disposing)
                 {
-                    Disconnect();
+                    if (Connected)
+                    {
+                        client?.Close();
+                        Disconnected(this, new DisconnectedEventArgs { Exception = exception });
+                    }
                 }
+                Connected = false;
+                client?.Dispose();
                 disposedValue = true;
             }
-        }
-        public void Dispose()
-        {
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
         }
     }
 }

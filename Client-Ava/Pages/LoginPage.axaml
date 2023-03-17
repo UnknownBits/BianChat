@@ -2,33 +2,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 xmlns:ui="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720" FontFamily="方正朝歌圆 简"
              x:Class="Client_Ava.Pages.LoginPage">
-	<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"
-				Orientation="Vertical">
-		<TextBlock FontWeight="Bold" FontSize="35"
-				   HorizontalAlignment="Center" VerticalAlignment="Center">BianChat</TextBlock>
-		<StackPanel Orientation="Vertical" Margin="0 20 0 0" Width="170">
-			<TextBlock FontSize="20">用户名</TextBlock>
-			<TextBox x:Name="Username" FontSize="20" Margin="0 10 0 0"
-					 FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+	<Grid>
+		<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Orientation="Vertical">
+			<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center"
+					   Text="BianChat" FontWeight="Bold" FontSize="40"/>
+			<StackPanel Orientation="Vertical" Margin="0 20 0 0" Width="170">
 
-			<TextBlock FontSize="20" Margin="0 10 0 0">密码</TextBlock>
-			<TextBox x:Name="Password" FontSize="20" Margin="0 10 0 0" PasswordChar="*"
-					 FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+				<TextBlock FontSize="20" Margin="0 10 0 0"
+						   Text="账户"/>
+				<TextBox x:Name="Username" FontSize="20" Margin="0 10 0 0"/>
 
-			<TextBlock FontSize="20" Margin="0 10 0 0">服务器</TextBlock>
-			<ui:ComboBox Margin="0 10 0 0" SelectedIndex="1" x:Name="ServerSelectionComboBox"
-						 VerticalContentAlignment="Center">
-				<ui:ComboBox.Items>
-					<ui:ComboBoxItem Content="本地服" Tag="127.0.0.1:911"/>
-					<ui:ComboBoxItem Content="测试服" IsSelected="True"
-								  Tag="test.biannetwork.top:911"/>
-				</ui:ComboBox.Items>
-			</ui:ComboBox>
-			<ui:Button Margin="0 20 0 0" HorizontalAlignment="Right"
-					   Content="连接" Classes="accent" Click="ConnectButton_Clicked"/>
+				<TextBlock FontSize="20" Margin="0 10 0 0">密码</TextBlock>
+				<TextBox x:Name="Password" FontSize="20" Margin="0 10 0 0" PasswordChar="*"/>
+				
+				<TextBlock FontSize="20" Margin="0 10 0 0">服务器</TextBlock>
+				<ComboBox x:Name="ServerSelectionComboBox" Margin="0 10 0 0" SelectedIndex="0" 
+						  VerticalContentAlignment="Center">
+					<ComboBox.Items>
+						<ComboBoxItem Content="测试服" Tag="test.biannetwork.top:911"/>
+						<ComboBoxItem Content="本地服" Tag="127.0.0.1:911"/>
+					</ComboBox.Items>
+				</ComboBox>
+				<StackPanel Orientation="Horizontal" Margin="0 20 0 0" HorizontalAlignment="Right">
+					<Button Content="注册" Classes="accent" Margin="0 0 10 0" Click="RegisterButton_Clicked"/>
+					<Button Content="登录" Classes="accent" Click="ConnectButton_Clicked"/>
+				</StackPanel>
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="测试账户" Margin="0 20 0 0"/>
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Text="test test@123456" Margin="0 20 0 0"/>
+			</StackPanel>
 		</StackPanel>
-	</StackPanel>
+		<Button HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 20" FontFamily="方正朝歌圆 简"
+				Content="关于" Background="Transparent" BorderThickness="0"/>
+	</Grid>
 </UserControl>

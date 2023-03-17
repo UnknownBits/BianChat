@@ -4,32 +4,30 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		xmlns:ui="using:FluentAvalonia.UI.Controls"
 		xmlns:pages="clr-namespace:Client_Ava.Pages"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-		Width="800" Height="450"
-        x:Class="Client_Ava.MainWindow"
-        Title="Client_Ava" CanResize="False">
-	<SplitView DisplayMode="Inline" IsPaneOpen="True"
-			   OpenPaneLength="250">
+        mc:Ignorable="d" Width="1280" Height="720"
+		MinWidth="700" MinHeight="600"
+        x:Class="Client_Ava.MainWindow" Title="Client_Ava">
+	<SplitView DisplayMode="Inline" IsPaneOpen="True">
 		<SplitView.Pane>
-			<ui:Frame x:Name="Login" SourcePageType="{x:Type pages:LoginPage}"/>
+			<ui:Frame x:Name="Login"/>
 		</SplitView.Pane>
 		<SplitView.Content>
-			<StackPanel HorizontalAlignment="Left"
-						VerticalAlignment="Bottom">
-				<ListBox x:Name="ChatListBox" Margin="0 0 0 5" Height="400" VirtualizationMode="None">
+			<Grid ColumnDefinitions="13*,150" RowDefinitions="*,35" Margin="0 0 0 20">
+				<ListBox x:Name="ChatListBox" Margin="0 0 0 20" VirtualizationMode="None"
+						 Grid.ColumnSpan="2" Grid.Row="0" Grid.Column="0">
 					<ListBox.ItemsPanel>
 						<ItemsPanelTemplate>
 							<VirtualizingStackPanel VerticalAlignment="Bottom"/>
 						</ItemsPanelTemplate>
 					</ListBox.ItemsPanel>
 				</ListBox>
-				<StackPanel Orientation="Horizontal">
-					<TextBox x:Name="SendTextBox" Margin="10 0 0 10" Width="460"
-							 IsEnabled="False" FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
-					<ui:Button x:Name="SendButton" Margin="15 0 0 10" Classes="accent"
-							IsEnabled="False" Click="SendButton_Clicked" IsDefault="True">发送</ui:Button>
-				</StackPanel>
-			</StackPanel>
+				<TextBox x:Name="SendTextBox" Grid.Row="1" Grid.Column="0" 
+				IsEnabled="False" FontFamily="Microsoft YaHei,Simsun,苹方-简,宋体-简"/>
+				<ui:Button x:Name="SendButton" Grid.Row="1" Grid.Column="1"
+				HorizontalAlignment="Center" VerticalAlignment="Center" 
+				Classes="accent" Height="35" Width="100" FontSize="15"
+				IsEnabled="False" Click="SendButton_Clicked" IsDefault="True">发送</ui:Button>
+			</Grid>
 		</SplitView.Content>
 	</SplitView>
 </Window>

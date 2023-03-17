@@ -1,0 +1,27 @@
+﻿<Window x:Class="BianChat.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.modernwpf.com/2019"
+        ui:WindowHelper.UseModernWindowStyle="True"
+        ui:TitleBar.IsIconVisible="True"
+        xmlns:views="clr-namespace:BianChat.Views"
+        x:Name="Window" Icon="Resources/Icon1.ico"
+        mc:Ignorable="d"
+        Title="BianChat" Width="800" Height="450">
+    <Grid>
+        <ui:NavigationView x:Name="RootNavigation" PaneDisplayMode="Top" SelectionChanged="NavigationView_SelectionChanged"
+                           IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
+            <ui:NavigationView.MenuItems>
+                <ui:NavigationViewItem x:Name="Home" Content="主页" Icon="Home"/>
+                <ui:NavigationViewItem x:Name="Chat" Content="聊天" Icon="LeaveChat"/>
+            </ui:NavigationView.MenuItems>
+            <ui:NavigationView.FooterMenuItems>
+                <ui:NavigationViewItem x:Name="Account" Content="账户" Icon="Contact"/>
+                <ui:NavigationViewItem x:Name="Settings" Content="设置" Icon="Setting"/>
+            </ui:NavigationView.FooterMenuItems>
+            <ui:Frame x:Name="RootFrame" SourcePageType="{x:Type views:HomePage}"/>
+        </ui:NavigationView>
+    </Grid>
+</Window>

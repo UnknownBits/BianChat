@@ -21,23 +21,30 @@ namespace Client_Ava
     {
         private ObservableCollection<ListBoxItem> ChatList = new ObservableCollection<ListBoxItem>();
         private AdvancedTcpClient Client = new AdvancedTcpClient();
-        private bool ShowError = true;
+        private UserControl PanePage;
+        private PageType PanePageType;
         private LoginPage LoginPage;
         private InfoPage InfoPage = new InfoPage();
+        private RegisterPage RegisterPage = new RegisterPage();
 
         public MainWindow()
         {
             InitializeComponent();
 
-            LoginPage = (LoginPage)Login.Content;
+            LoginPage = new LoginPage();
             LoginPage.MainWindow = this;
             InfoPage.MainWindow = this;
+            RegisterPage.MainWindow = this;
+            PanePage = LoginPage;
+            PanePageType = PageType.LoginPage;
+            Login.Content = PanePage;
+
             Client.DataReceived += DataReceivedCallback;
             Client.Disconnected += (s, e) =>
             {
                 Task.Run(() =>
                 {
-                    if (e.Exception != null && ShowError)
+                    if (e.Exception != null)
                     {
                         Dispatcher.UIThread.InvokeAsync(() =>
                         {
@@ -52,23 +59,13 @@ namespace Client_Ava
                         });
                         Task.Delay(200).Wait();
                     }
-                    ShowError = false;
                     Dispatcher.UIThread.InvokeAsync(() =>
                     {
                         SendTextBox.IsEnabled = false;
                         SendButton.IsEnabled = false;
                         ChatList.Clear();
-                        Login.IsHitTestVisible = false;
-                        OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
                     });
-                    Task.Delay(300).Wait();
-
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        Login.Content = LoginPage;
-                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                        Login.IsHitTestVisible = true;
-                    });
+                    SwitchPage(PageType.LoginPage);
                 });
             };
             Client.PingReceived += (s, e) =>
@@ -80,41 +77,63 @@ namespace Client_Ava
             };
         }
 
-        private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
+        public void SwitchPage(PageType type)
         {
-            Animation animation = new Animation
+            Task.Run(() =>
             {
-                Duration = duration,
-                PlaybackDirection = PlaybackDirection.Normal,
-                FillMode = FillMode.Both
-            };
-            var kf = new KeyFrame
-            {
-                Cue = new Cue(1.0)
-            };
-            kf.Setters.Add(new Setter
-            {
-                Property = OpacityProperty,
-                Value = opacity
+                PanePageType = type;
+                switch (type)
+                {
+                    case PageType.LoginPage:
+                        PanePage = LoginPage;
+                        break;
+                    case PageType.InfoPage:
+                        PanePage = InfoPage;
+                        break;
+                    case PageType.RegisterPage:
+                        PanePage = RegisterPage;
+                        break;
+                }
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Login.IsHitTestVisible = false;
+                    OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                });
+                Task.Delay(300).Wait();
+
+                Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Login.Content = PanePage;
+                    OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
+                    Login.IsHitTestVisible = true;
+                });
             });
-            animation.Children.Add(kf);
-            animation.RunAsync(Login, null);
+        }
+
+        public enum PageType
+        {
+            LoginPage,
+            InfoPage,
+            RegisterPage
         }
 
         private void DataReceivedCallback(object? sender, AdvancedTcpClient.DataReceivedEventArgs args)
         {
-            Dispatcher.UIThread.InvokeAsync(() =>
+            switch (args?.ReceivedData?[0])
             {
-                switch (args.ReceivedData[0])
-                {
-                    // 公告
-                    case 9:
+                // 公告
+                case 6:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string notice = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         InfoPage.Notices.Add(new ListBoxItem { FontSize = 20, Content = notice, IsHitTestVisible = false });
-                        break;
+                    });
+                    break;
 
-                    // 消息
-                    case 1:
+                // 消息
+                case 9:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
                         string message = Encoding.UTF8.GetString(args.ReceivedData, 1, args.ReceivedData.Length - 1);
                         ChatList.Add(new ListBoxItem
                         {
@@ -122,51 +141,98 @@ namespace Client_Ava
                             Content = new TextBlock { Text = message, TextWrapping = Avalonia.Media.TextWrapping.Wrap },
                             IsHitTestVisible = false
                         });
-                        break;
-
-                    // 连接错误
-                    case 255:
-                        switch (args.ReceivedData[1])
+                    });
+                    break;
+                // 登录/注册 成功
+                case 2:
+                    if (PanePageType == PageType.LoginPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            // 用户名或密码错误
-                            case 0:
-                                ShowError = false;
-                                ContentDialog dialog = new ContentDialog
-                                {
-                                    Content = "连接失败：用户名或密码错误",
-                                    Title = "连接失败",
-                                    CloseButtonText = "确定",
-                                    DefaultButton = ContentDialogButton.Close
-                                };
-                                dialog.ShowAsync();
-                                break;
+                            SendTextBox.IsEnabled = true;
+                            SendButton.IsEnabled = true;
+                        }).Wait();
 
-                            // 服务器内部错误
-                            case 255:
-                                ShowError = false;
-                                ContentDialog dialog1 = new ContentDialog
-                                {
-                                    Content = "连接失败：服务器内部错误",
-                                    Title = "连接失败",
-                                    CloseButtonText = "确定",
-                                    DefaultButton = ContentDialogButton.Close
-                                };
-                                dialog1.ShowAsync();
-                                break;
-                        }
-                        break;  
-                }
-            });
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
+                            var selectedItem = LoginPage.ServerSelectionComboBox.SelectedItem as Avalonia.Controls.ComboBoxItem;
+                            InfoPage.ServerName.Text = $"服务器：{selectedItem?.Content}";
+                        }).Wait();
+
+                        SwitchPage(PageType.InfoPage);
+                    }
+                    else if (PanePageType == PageType.RegisterPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            new ContentDialog
+                            {
+                                Content = "注册成功",
+                                Title = "提示",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    break;
+                // 服务器内部错误
+                case 4:
+                    Dispatcher.UIThread.InvokeAsync(() =>
+                    {
+                        new ContentDialog
+                        {
+                            Content = "连接失败：服务器内部错误",
+                            Title = "错误",
+                            CloseButtonText = "确定",
+                            DefaultButton = ContentDialogButton.Close
+                        }.ShowAsync();
+                    });
+                    Client.Disconnect();
+                    break;
+                // 用户名或密码错误
+                case 5:
+                    if (PanePageType == PageType.LoginPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            new ContentDialog
+                            {
+                                Content = "连接失败：用户名或密码错误",
+                                Title = "错误",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    else if (PanePageType == PageType.RegisterPage)
+                    {
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            new ContentDialog
+                            {
+                                Content = "注册失败：用户已存在",
+                                Title = "错误",
+                                CloseButtonText = "确定",
+                                DefaultButton = ContentDialogButton.Close
+                            }.ShowAsync();
+                        });
+                        Client.Disconnect();
+                    }
+                    break;
+            }
         }
 
-        public void Connect(string username, string ip)
+        public void Connect(string username,string password, string ip)
         {
-            if (string.IsNullOrEmpty(username) || username.Length >= 12)
+            if (string.IsNullOrEmpty(username) || username.Length < 1 || username.Length > 12  || username.Contains('￥') || username.Contains(' ') || username.Contains('^'))
             {
                 ContentDialog dialog = new ContentDialog
                 {
                     Title = "提示",
-                    Content = "用户名不可为空或大于 12 字符",
+                    Content = "用户名不可为空、小于1字符或大于 12 字符、或包含特殊符号（A-Z a-z 0-9 _）",
                     CloseButtonText = "确认",
                     DefaultButton = ContentDialogButton.Close
                 };
@@ -174,64 +240,98 @@ namespace Client_Ava
             }
             else
             {
-                Login.IsHitTestVisible = false;
-                OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
-                Task.Run(() =>
+                if (string.IsNullOrEmpty(password) || password.Length < 6 || password.Length > 15)
                 {
-                    Task.Delay(500).Wait();
-
-                    try
+                    ContentDialog dialog = new ContentDialog
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            ChatList.Clear();
-                            ChatListBox.Items = ChatList;
-                            InfoPage.Notices.Clear();
-                        }).Wait();
-
-                        Client.Connect(ip);
-                        Client.BeginReceive();
-                        string passwd_sha256 = GetSHA256(LoginPage.Password.Text);
-                        Client.SendBytes(new byte[1] { 0 }.Concat(Encoding.UTF8.GetBytes(LoginPage.Username.Text + '^' + passwd_sha256)).ToArray());
-
-                        Dispatcher.UIThread.InvokeAsync(() =>
-                        {
-                            SendTextBox.IsEnabled = true;
-                            SendButton.IsEnabled = true;
-                        }).Wait();
-                    }
-                    catch
+                        Title = "提示",
+                        Content = "密码不可为空、小于6字符或大于15字符",
+                        CloseButtonText = "确认",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    dialog.ShowAsync();
+                }
+                else
+                {
+                    Login.IsHitTestVisible = false;
+                    OpacityAnimation(Login, 0, TimeSpan.FromMilliseconds(300));
+                    Task.Run(() =>
                     {
-                        Dispatcher.UIThread.InvokeAsync(() =>
+                        try
                         {
-                            ContentDialog dialog = new ContentDialog
+                            Dispatcher.UIThread.InvokeAsync(() =>
                             {
-                                CloseButtonText = "确定",
-                                DefaultButton = ContentDialogButton.Close,
-                                Content = "无法连接到服务器",
-                                Title = "错误"
-                            };
-                            dialog.ShowAsync();
+                                ChatList.Clear();
+                                ChatListBox.Items = ChatList;
+                                InfoPage.Notices.Clear();
+                            }).Wait();
 
-                            SendTextBox.IsEnabled = false;
-                            SendButton.IsEnabled = false;
-                            OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                            Login.IsHitTestVisible = true;
-                        });
-                        return;
-                    }
+                            Client.Connect(ip);
+                            Client.BeginReceive();
+                            string passwd_sha256 = GetSHA256(password);
+                            Client.SendBytes(new byte[2] { 7, 0 }.Concat(Encoding.UTF8.GetBytes(username + '^' + passwd_sha256)).ToArray());
+                        }
+                        catch (Exception ex)
+                        {
+                            Dispatcher.UIThread.InvokeAsync(() =>
+                            {
+                                ContentDialog dialog = new ContentDialog
+                                {
+                                    CloseButtonText = "确定",
+                                    DefaultButton = ContentDialogButton.Close,
+                                    Content = $"无法连接到服务器：{ex.Message}",
+                                    Title = "错误"
+                                };
+                                dialog.ShowAsync();
 
-                    Dispatcher.UIThread.InvokeAsync(() =>
-                    {
-                        InfoPage.Username.Text = $"用户名：{LoginPage.Username.Text}";
-                        var selectedItem = (FluentAvalonia.UI.Controls.ComboBoxItem)LoginPage.ServerSelectionComboBox.SelectedItem;
-                        InfoPage.ServerName.Text = $"服务器：{selectedItem.Content}";
-                        Login.Content = InfoPage;
+                                SendTextBox.IsEnabled = false;
+                                SendButton.IsEnabled = false;
+                            }).Wait();
+                            Client.Disconnect();
 
-                        OpacityAnimation(Login, 1, TimeSpan.FromMilliseconds(300));
-                        Login.IsHitTestVisible = true;
+                            SwitchPage(PageType.LoginPage);
+                            return;
+                        }
                     });
-                });
+                }
+            }
+        }
+
+        public void Register(string username, string password, string ip)
+        {
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password) || username.Contains('^'))
+            {
+                new ContentDialog
+                {
+                    Title = "错误",
+                    Content = $"无法注册账户：用户名或密码不可为空或用户名不可包含 \'^\'",
+                    CloseButtonText = "确定",
+                    DefaultButton = ContentDialogButton.Close
+                }.ShowAsync();
+
+                SwitchPage(PageType.LoginPage);
+            }
+            else
+            {
+                try
+                {
+                    string sha256 = GetSHA256(password);
+                    byte[] regInfo = new byte[2] { 7, 1 }.Concat(Encoding.UTF8.GetBytes(username + '^' + sha256)).ToArray();
+                    Client.Connect(ip);
+                    Client.BeginReceive();
+                    Client.SendBytes(regInfo);
+                }
+                catch (Exception ex)
+                {
+                    new ContentDialog
+                    {
+                        Title = "错误",
+                        Content = $"无法注册账户：{ex.Message}",
+                        CloseButtonText = "确定",
+                        DefaultButton = ContentDialogButton.Close
+                    }.ShowAsync();
+                    SwitchPage(PageType.LoginPage);
+                }
             }
         }
 
@@ -271,6 +371,11 @@ namespace Client_Ava
             }
         }
 
+        private void RegisterButton_Clicked(object sender, RoutedEventArgs e)
+        {
+            SwitchPage(PageType.RegisterPage);
+        }
+
         private string GetSHA256(string content)
         {
             using (SHA256 sha256 = SHA256.Create())
@@ -284,7 +389,25 @@ namespace Client_Ava
                 return sb.ToString();
             }
         }
+        private void OpacityAnimation(Animatable control, double opacity, TimeSpan duration)
+        {
+            Animation animation = new Animation
+            {
+                Duration = duration,
+                PlaybackDirection = PlaybackDirection.Normal,
+                FillMode = FillMode.Both
+            };
+            var kf = new KeyFrame
+            {
+                Cue = new Cue(1.0)
+            };
+            kf.Setters.Add(new Setter
+            {
+                Property = OpacityProperty,
+                Value = opacity
+            });
+            animation.Children.Add(kf);
+            animation.RunAsync(Login, null);
+        }
     }
-
-    
 }
