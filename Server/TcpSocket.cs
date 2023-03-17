@@ -71,11 +71,9 @@ namespace Server
                             username = loginInfo[0];
                             password_sha256 = loginInfo[1];
 
-                            try
-                            {
+                            try {
                                 using var sql = new SQLite();
-                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && !clients.ContainsKey(Uid))
-                                {
+                                if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && !clients.ContainsKey(Uid)) {
                                     service.Send(new byte[1] { (int)PacketType.State_Account_Error });
                                     // 登录失败：账号或密码错误或已在线
                                     Task.Delay(100).Wait();
@@ -83,8 +81,7 @@ namespace Server
                                     break;
                                 }
                             }
-                            catch
-                            {
+                            catch {
                                 service.Send(new byte[1] { (int)PacketType.State_Server_Error });
                                 // 登录失败 未知错误
                                 Task.Delay(100).Wait();
