@@ -10,13 +10,11 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
-        internal static Module.TcpSocket tcpSocket;
-        internal static MainWindow mainWindow;
         public MainWindow()
         {
             InitializeComponent();
-            mainWindow = this;
-            tcpSocket = new Module.TcpSocket("127.0.0.1", 911);
+            PublicValues.MainWindow = this;
+            PublicValues.TcpSocket = new Module.TcpSocket("127.0.0.1", 911);
             NavigateToPage(typeof(Views.HomePage));
         }
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)

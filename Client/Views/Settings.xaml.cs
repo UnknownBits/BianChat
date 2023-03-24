@@ -22,7 +22,7 @@ namespace Client.Views
     /// </summary>
     public partial class Settings : Page
     {
-        private TcpSocket tcpSocket = MainWindow.tcpSocket;
+        private TcpSocket tcpSocket = PublicValues.TcpSocket;
         public Settings()
         {
             InitializeComponent();
