@@ -23,14 +23,15 @@ namespace Server
 
         public void MessageService()
         {
+            #region 初始化连接
             if (service != null)
             {
                 connected = true; //连接状态为正常
-                clients.Add(0, this);
                 byte[] bytes = new byte[8193];
                 Console.WriteLine("新客户连接建立：{0} 个连接数", clients.Count);
             }
             else Disconnect();
+            #endregion
 
             #region 登录超时模块
             Task.Run(async () =>
@@ -48,55 +49,59 @@ namespace Server
                     int size = service.Receive(buffer);
                     if (size <= 0) { throw new Exception(); }
                     Array.Resize(ref buffer, size);
-                    Console.WriteLine(buffer[0]);
                     switch ((PacketType)buffer[0])
                     {
                         case PacketType.Ping:
                             t0 = DateTimeOffset.Now.ToUnixTimeMilliseconds();
-                            service.Send(new byte[1] { (byte)PacketType.Ping });
+                            SendPacket(PacketType.Ping);
                             break;
+
                         case PacketType.PingBack:
                             service.Send(new byte[1] { (int)PacketType.PingBack }.Concat(BitConverter.GetBytes(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0)).ToArray());
                             Console.WriteLine(DateTimeOffset.Now.ToUnixTimeMilliseconds() - t0);
                             break;
+
                         case PacketType.Message_Login:
-                            string[] loginInfo = Encoding.UTF8.GetString(buffer, 2, buffer.Length - 2).Split('^');
-                            if (loginInfo.Length > 2) {
-                                service.Send(new byte[1] { (int)PacketType.State_Server_Error });
-                                // 登录失败：账号或密码错误
+                            string[] loginInfo = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                            if (loginInfo.Length < 2) {
+                                SendPacket(PacketType.State_Account_Error); // 登录失败：不规范的登录包
                                 Task.Delay(100).Wait();
                                 Disconnect();
                             }
                             else if (loginInfo[1].Length != 64) Disconnect();
                             username = loginInfo[0];
                             password_sha256 = loginInfo[1];
-
                             try {
                                 using var sql = new SQLite();
                                 if (!(sql.GetUserId(username, out Uid) && sql.Vaild_Password(Uid, password_sha256)) && !clients.ContainsKey(Uid)) {
-                                    service.Send(new byte[1] { (int)PacketType.State_Account_Error });
-                                    // 登录失败：账号或密码错误或已在线
+                                    SendPacket(PacketType.State_Account_Error); // 登录失败：账号或密码错误或已在线
                                     Task.Delay(100).Wait();
                                     Disconnect();
-                                    break;
                                 }
                             }
                             catch {
-                                service.Send(new byte[1] { (int)PacketType.State_Server_Error });
-                                // 登录失败 未知错误
+                                SendPacket(PacketType.State_Server_Error); // 登录失败 未知错误
                                 Task.Delay(100).Wait();
                                 Disconnect();
                                 break;
                             }
-                            break;
-                        case PacketType.Message_Messages:
 
+                            Task.Run(async () =>
+                            {
+                                SendPacket(PacketType.State_Account_Success);
+                                isLogin = true;
+                                lock (clients) { clients.Add(Uid, this); }
+                                await Task.Delay(100);
+                                SendPacket(PacketType.Message_Notice, $"{username} 已上线");
+                            });
+                            break;
+
+                        case PacketType.Message_Messages:
                             break;
                     }
                 }
                 catch { Disconnect(); break; }
             }
-
             Disconnect();
         }
 
@@ -117,7 +122,7 @@ namespace Server
             Message_Messages,
         }
 
-        public static void SendPacket(string data, PacketType type) {
+        public static void SendPacket(PacketType type,string data) {
             lock (clients) {
                 foreach (var client in clients.Values) {
                     try { client.service.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
@@ -128,15 +133,10 @@ namespace Server
         }
 
         public static void SendPacket(PacketType type) {
-            lock (clients)
-            {
-                foreach (var client in clients.Values)
-                {
+            lock (clients) {
+                foreach (var client in clients.Values) {
                     try { client.service.Send(new byte[1] { (byte)type }); }
-                    catch
-                    {
-                        client.Disconnect();
-                    }
+                    catch { client.Disconnect(); }
                 }
             }
             Console.WriteLine($"发送 {type} 包");
@@ -150,12 +150,11 @@ namespace Server
                         clients.Remove(Uid);
                         service.Close();
                     }
-                    if (isLogin) SendPacket($"{username} 已下线", PacketType.Message_Notice);
+                    if (isLogin) SendPacket(PacketType.Message_Notice, $"{username} 已下线");
                     Console.WriteLine($"客户端已断开连接，当前连接数 {clients.Count}");
                 }
                 catch (Exception ex) { Console.WriteLine(ex.ToString()); }
             }
         }
-
     }
 }

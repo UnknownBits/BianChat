@@ -5,8 +5,9 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Client.Views"
       xmlns:ui="http://schemas.modernwpf.com/2019"
-       xmlns:s="clr-namespace:System.Collections;assembly=mscorlib"
+      xmlns:s="clr-namespace:System.Collections;assembly=mscorlib"
       xmlns:p="clr-namespace:System;assembly=mscorlib"
+      Loaded="Page_Loaded"
       mc:Ignorable="d" d:DesignHeight="450" d:DesignWidth="800">
 
     <ScrollViewer Grid.Column="1">

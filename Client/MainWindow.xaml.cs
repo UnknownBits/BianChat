@@ -1,7 +1,8 @@
-﻿using ModernWpf.Controls;
-using ModernWpf.Media.Animation;
-using System;
+﻿using System;
+using Client.Module;
 using System.Windows;
+using ModernWpf.Controls;
+using ModernWpf.Media.Animation;
 
 namespace Client
 {
@@ -10,19 +11,22 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
-        internal static Module.TcpSocket? tcpSocket;
-        internal static MainWindow mainWindow;
         public MainWindow()
         {
             InitializeComponent();
-            mainWindow = this;
-            NavigateToPage(typeof(Views.HomePage));
+            Values.MainWindow = this;
         }
-        private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+
+        private void RootNavigation_Loaded(object sender, RoutedEventArgs e)
         {
-            var selectedItem = (NavigationViewItem)args.SelectedItem;
+            Values.UIDispatcher = Dispatcher;
+            RootNavigation.SelectedItem = RootNavigation.MenuItems[0];
+        }
+
+        private void RootNavigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+        {
             Type navigatePage;
-            switch (selectedItem.Name)
+            switch (((NavigationViewItem)args.SelectedItem).Name)
             {
                 case "Home":
                     navigatePage = typeof(Views.HomePage);
@@ -31,14 +35,8 @@ namespace Client
                     navigatePage = typeof(Views.ChatPage);
                     break;
                 case "Account":
-                    if (tcpSocket != null && tcpSocket.IsLogin)
-                    {
-                        navigatePage = typeof(Views.AccountPage);
-                    }
-                    else
-                    {
-                        navigatePage = typeof(Views.LoginPage);
-                    }
+                    if (Values.TcpSocket != null && Values.TcpSocket.IsLogin) navigatePage = typeof(Views.AccountPage);
+                    else navigatePage = typeof(Views.LoginPage);
                     break;
                 case "Settings":
                     navigatePage = typeof(Views.Settings);
@@ -46,16 +44,7 @@ namespace Client
                 default:
                     goto case "Home";
             }
-            NavigateToPage(navigatePage, args.RecommendedNavigationTransitionInfo);
-        }
-
-        public void NavigateToPage(Type pageType, NavigationTransitionInfo transInfo = null)
-        {
-            Dispatcher.Invoke(() =>
-            {
-                if (transInfo == null) transInfo = new DrillInNavigationTransitionInfo();
-                RootFrame.Navigate(pageType, null, transInfo);
-            });
+            RootFrame.SourcePageType = navigatePage;
         }
     }
 }

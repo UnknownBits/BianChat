@@ -31,58 +31,85 @@ namespace Client.Module
         {
             public Exception exception { get; set; }
         }
+
+        public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
+        public class LoginCompletedEventArgs : EventArgs
+        {
+            public State LoginState { get; set; }
+            public enum State
+            {
+                Success,
+                Failed_Account,
+                Failed_Unknown
+            }
+        }
+
+
         private readonly Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         public bool Connected;
         public bool IsLogin = false;
 
-        public TcpSocket(string server, int port)
+        public TcpSocket(string server, int port,string username,string passwordHash)
         {
             try
             {
                 Connected = socket.Connected;
                 socket.Connect(server, port);
                 Connected = true;
+
+                Task ReceiveTask = Task.Run(() =>
+                {
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (socket != null && Connected)
+                    {
+                        try
+                        {
+                            // 接收
+                            int size = 0;
+                            byte[] buffer = new byte[8193];
+                            size = socket.Receive(buffer);
+                            if (size <= 0) { throw new SocketException(10054); }
+                            Array.Resize(ref buffer, size);
+                            Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
+                            switch ((PacketType)buffer[0])
+                            {
+                                case PacketType.Ping:
+                                    SendPacket(PacketType.PingBack);
+                                    break;
+                                case PacketType.PingBack:
+                                    int ping = BitConverter.ToInt32(buffer, 1);
+                                    Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
+                                    break;
+                                case PacketType.State_Account_Success:
+                                    IsLogin = true;
+                                    Task.Run(() =>
+                                    {
+                                        LoginCompleted(this, new LoginCompletedEventArgs
+                                        {
+                                            LoginState = LoginCompletedEventArgs.State.Success
+                                        });
+                                    });
+                                    break;
+                                default:
+                                    Task.Run(() => PackageReceive(this, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], Data = buffer.Skip(1).ToArray() }));
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (Connected)
+                            {
+                                Dispose(ex);
+                            }
+                            break;
+                        }
+                    }
+                    Dispose(new Exception("断开连接"));
+                });
+
+                SendPacket(PacketType.Message_Login,$"{username}^{passwordHash}");
             }
             catch (Exception ex) { Dispose(ex); }
-            Task ReceiveTask = Task.Run(() =>
-            {
-                long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-                while (socket != null && Connected)
-                {
-                    try
-                    {
-                        // 接收
-                        int size = 0;
-                        byte[] buffer = new byte[8193];
-                        size = socket.Receive(buffer);
-                        if (size <= 0) { throw new SocketException(10054); }
-                        Array.Resize(ref buffer, size);
-                        Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
-                        switch ((PacketType)buffer[0])
-                        {
-                            case PacketType.Ping:
-                                SendPacket(PacketType.PingBack);
-                                break;
-                            case PacketType.PingBack:
-                                int ping = BitConverter.ToInt32(buffer, 1);
-                                Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
-                                break;
-                            default:
-                                Task.Run(() => PackageReceive(this, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], Data = buffer.Skip(1).ToArray() }));
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        if (Connected)
-                        {
-                            Dispose(ex);
-                        }
-                        break;
-                    }
-                }
-                Dispose(new Exception("断开连接"));
-            });
         }
 
         /// <summary>
@@ -110,7 +137,7 @@ namespace Client.Module
             Trace.WriteLine($"发送 {type} 包");
         }
 
-        public void SendPacket(string data, PacketType type)
+        public void SendPacket(PacketType type,string data)
         {
             try { socket.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
             catch(Exception ex) { Dispose(ex); }
