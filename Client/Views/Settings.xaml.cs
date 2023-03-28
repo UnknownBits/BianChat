@@ -22,18 +22,9 @@ namespace Client.Views
     /// </summary>
     public partial class Settings : Page
     {
-        private TcpSocket tcpSocket = PublicValues.TcpSocket;
         public Settings()
         {
             InitializeComponent();
-            tcpSocket.PingPackageReceive += (s, e) =>
-            {
-                Dispatcher.Invoke(() =>
-                {
-                    Node1_Status.Content = e.Ping;
-                });
-            };
-            tcpSocket.SendPacket(TcpSocket.PacketType.Ping);
         }
 
         private void ThemeSwitch_Button_Click(object sender, RoutedEventArgs e)

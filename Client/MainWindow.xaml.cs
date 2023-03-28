@@ -10,11 +10,12 @@ namespace Client
     /// </summary>
     public partial class MainWindow : Window
     {
+        internal static Module.TcpSocket? tcpSocket;
+        internal static MainWindow mainWindow;
         public MainWindow()
         {
             InitializeComponent();
-            PublicValues.MainWindow = this;
-            PublicValues.TcpSocket = new Module.TcpSocket("127.0.0.1", 911);
+            mainWindow = this;
             NavigateToPage(typeof(Views.HomePage));
         }
         private void NavigationView_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -28,6 +29,16 @@ namespace Client
                     break;
                 case "Chat":
                     navigatePage = typeof(Views.ChatPage);
+                    break;
+                case "Account":
+                    if (tcpSocket != null && tcpSocket.IsLogin)
+                    {
+                        navigatePage = typeof(Views.AccountPage);
+                    }
+                    else
+                    {
+                        navigatePage = typeof(Views.LoginPage);
+                    }
                     break;
                 case "Settings":
                     navigatePage = typeof(Views.Settings);

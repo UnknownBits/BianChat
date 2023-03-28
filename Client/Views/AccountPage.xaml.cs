@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,18 +16,13 @@ using System.Windows.Shapes;
 namespace Client.Views
 {
     /// <summary>
-    /// LoginPage.xaml 的交互逻辑
+    /// AccountPage.xaml 的交互逻辑
     /// </summary>
-    public partial class LoginPage : Page
+    public partial class AccountPage : Page
     {
-        public LoginPage()
+        public AccountPage()
         {
             InitializeComponent();
-        }
-
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
-        {
-
         }
     }
 }
