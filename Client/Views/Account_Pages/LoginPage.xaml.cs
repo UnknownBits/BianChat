@@ -31,8 +31,6 @@ namespace Client.Views.Account_Pages
             AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
             string username = Username.Text;
             string password = Password.Password;
-
-
             Task.Run(() =>
             {
                 Values.TcpSocket = new TcpSocket("127.0.0.1", 911, username, HashTools.GetSHA256(password));
