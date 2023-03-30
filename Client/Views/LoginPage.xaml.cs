@@ -38,7 +38,6 @@ namespace Client.Views
                             {
                                 Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
                             });
-                            Values.MessagesList.Clear();
                             Values.TcpSocket.PackageReceive += (s, e) =>
                             {
                                 if (e.packetType == TcpSocket.PacketType.Message_Messages)

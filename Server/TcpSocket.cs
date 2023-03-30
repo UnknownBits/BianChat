@@ -55,7 +55,7 @@ namespace Server
                 socket.Close();
             });
 
-            while (connected) 
+            while (connected)
                 try {
                     byte[] buffer = new byte[8193];
                     int size = socket.Receive(buffer);
