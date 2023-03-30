@@ -17,40 +17,6 @@ namespace Client
         {
             InitializeComponent();
             Values.MainWindow = this;
-
-            // 初始化
-            Values.TcpSocket.PackageReceive += (s, e) =>
-            {
-                if (e.packetType == TcpSocket.PacketType.Message_Messages)
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        Values.MessagesList.Add(Encoding.UTF8.GetString(e.Data));
-                    });
-                }
-            };
-            Values.TcpSocket.LoginCompleted += (s, e) =>
-            {
-                if (Values.MainWindow.RootFrame.SourcePageType == typeof(LoginPage))
-                {
-                    switch (e.LoginState)
-                    {
-                        case TcpSocket.PacketType.State_Account_Success:
-                            Dispatcher.Invoke(() =>
-                            {
-                                Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
-                            });
-                            DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
-                            break;
-                        case TcpSocket.PacketType.State_Account_Error:
-                            DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
-                            break;
-                        case TcpSocket.PacketType.State_Server_Error:
-                            DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
-                            break;
-                    }
-                }
-            };
         }
 
         private void RootNavigation_Loaded(object sender, RoutedEventArgs e)
