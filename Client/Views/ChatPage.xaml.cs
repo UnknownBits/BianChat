@@ -31,6 +31,11 @@ namespace Client.Views
                 dialog.Closing += delegate { Values.MainWindow.RootNavigation.SelectedItem = Values.MainWindow.Account; };
                 DialogTools.ShowDialog(dialog);
             }
+            else
+            {
+                SendButton.IsEnabled = true;
+                MessageTextBox.IsEnabled = true;
+            }
         }
 
         /// <summary>
