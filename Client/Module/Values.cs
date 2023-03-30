@@ -14,5 +14,6 @@ namespace Client.Module
         internal static MainWindow MainWindow;
         internal static Dispatcher UIDispatcher;
         internal static ObservableCollection<string> MessagesList = new ObservableCollection<string>();
+        internal static event EventHandler SocketInitialized = delegate { };
     }
 }
