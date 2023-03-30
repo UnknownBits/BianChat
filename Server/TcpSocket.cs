@@ -108,6 +108,11 @@ namespace Server
                         case PacketType.Message_Register:
 
                         case PacketType.Message_Messages:
+                            if (isLogin)
+                            {
+                                string content = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
+                                BroadcastPacket(PacketType.Message_Messages, $"{username} 说：{content}");
+                            }
                             break;
                     }
                 }
