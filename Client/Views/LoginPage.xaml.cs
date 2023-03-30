@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Client.Module;
 using System.Windows.Controls;
 using ModernWpf.Media.Animation;
+using System.Text;
 
 namespace Client.Views
 {
@@ -37,6 +38,14 @@ namespace Client.Views
                             {
                                 Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
                             });
+                            Values.MessagesList.Clear();
+                            Values.TcpSocket.PackageReceive += (s, e) =>
+                            {
+                                if (e.packetType == TcpSocket.PacketType.Message_Messages)
+                                {
+                                    Values.MessagesList.Add(Encoding.UTF8.GetString(e.Data));
+                                }
+                            };
                             DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
                             break;
                         case TcpSocket.PacketType.State_Account_Error:

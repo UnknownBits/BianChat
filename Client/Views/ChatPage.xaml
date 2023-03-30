@@ -14,40 +14,23 @@
             <RowDefinition Height="50"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="140"/>
-            <ColumnDefinition Width="50"/>
-            <ColumnDefinition Width="10"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="100"/>
         </Grid.ColumnDefinitions>
-        
-        <ui:ListView x:Name="UserListBox" 
-                     Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" Grid.RowSpan="3"
+
+        <ui:ListView x:Name="MessageListBox" Grid.ColumnSpan="2"
+                     Grid.Column="0" Grid.Row="0" IsHitTestVisible="False"
                      ItemsSource="{Binding userList}"
                      SelectionChanged="UserListBox_SelectionChanged"/>
 
-        <Button x:Name="AddFriendButton" 
-                Grid.Column="1" Grid.Row="1"
-                Margin="0 0" VerticalAlignment="Center" HorizontalAlignment="Center"
-                Width="30" Height="30"
-                Click="AddFriendButton_Click"
-                Style="{DynamicResource AccentButtonStyle}">
-            <Button.Clip>
-                <RectangleGeometry RadiusX="15" RadiusY="15" Rect="0,0,30,30"/>
-            </Button.Clip>
-            <Button.Content>
-                <Label Content="+" FontWeight="UltraBold" Foreground="White"></Label>
-            </Button.Content>
-        </Button>
-        
         <TextBox x:Name="MessageTextBox" 
-                 Grid.Column="3" Grid.Row="1"
-                 Margin=" 0" Height="30"
+                 Grid.Column="0" Grid.Row="1"
+                 Margin="10 0 0 0" Height="30"
                  VerticalAlignment="Center"
                  IsEnabled="False"/>
         
         <Button x:Name="SendButton" 
-                Grid.Column="4" Grid.Row="1" 
+                Grid.Column="1" Grid.Row="1" 
                 Width="80" Height="30"
                 HorizontalAlignment="Center" VerticalAlignment="Center"
                 IsEnabled="False"

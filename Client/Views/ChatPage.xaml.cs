@@ -12,8 +12,6 @@ namespace Client.Views
     /// </summary>
     public partial class ChatPage : System.Windows.Controls.Page
     {
-        private ObservableCollection<UserListItem> userList = new ObservableCollection<UserListItem>();
-
         public ChatPage()
         {
             InitializeComponent();
@@ -21,6 +19,7 @@ namespace Client.Views
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            MessageListBox.ItemsSource = Values.MessagesList;
             if (Values.TcpSocket == null || !Values.TcpSocket.IsLogin) {
                 ContentDialog dialog = new ContentDialog
                 {
@@ -34,25 +33,6 @@ namespace Client.Views
             }
         }
 
-        /// <summary>
-        /// UserListBox 选中处理
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void UserListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            MessageTextBox.IsEnabled = true;
-            SendButton.IsEnabled = true;
-        }
-        /// <summary>
-        /// 新增好友按键处理
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void AddFriendButton_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
         /// <summary>
         /// 发送按钮处理
         /// </summary>
