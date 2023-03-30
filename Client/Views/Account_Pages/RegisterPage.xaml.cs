@@ -1,5 +1,4 @@
-﻿using Client.Module;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -14,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace Client.Views
+namespace Client.Views.Account_Pages
 {
     /// <summary>
-    /// AccountPage.xaml 的交互逻辑
+    /// RegisterPage.xaml 的交互逻辑
     /// </summary>
-    public partial class AccountPage : Page
+    public partial class RegisterPage : Page
     {
-        public AccountPage()
+        public RegisterPage()
         {
             InitializeComponent();
         }

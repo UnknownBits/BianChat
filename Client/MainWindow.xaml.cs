@@ -37,8 +37,7 @@ namespace Client
                     navigatePage = typeof(Views.ChatPage);
                     break;
                 case "Account":
-                    if (Values.TcpSocket != null && Values.TcpSocket.IsLogin) navigatePage = typeof(Views.AccountPage);
-                    else navigatePage = typeof(Views.LoginPage);
+                    navigatePage = typeof(Views.AccountPage);
                     break;
                 case "Settings":
                     navigatePage = typeof(Views.Settings);

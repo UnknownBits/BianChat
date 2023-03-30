@@ -4,11 +4,23 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Client.Views"
+      xmlns:ui="http://schemas.modernwpf.com/2019" FontFamily="方正朝歌圆 简"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
       Title="AccountPage">
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         
+        <Image Grid.Column="1" Width="300" HorizontalAlignment="Center" VerticalAlignment="Center"
+               Source="/Client;component/Resources/Icon.png"/>
+
+        <ui:Frame x:Name="Account_Frame" Source="/Views/Account_Pages/LoginPage.xaml"/>
     </Grid>
 </Page>
