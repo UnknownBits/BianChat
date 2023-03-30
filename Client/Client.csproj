@@ -17,7 +17,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Resources\ChatPage.xaml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="Resources\Icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Page Remove="Resources\ChatPage.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Resources\ChatPage.xaml" />
+    <None Include="Resources\ChatPage.xaml.cs" />
   </ItemGroup>
 
   <ItemGroup>
