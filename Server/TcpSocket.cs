@@ -13,6 +13,7 @@ namespace Server
 
         public string? username;
         public string? password_sha256;
+        public string? email;
 
         public int UID;
         private long UnixTime;
@@ -73,19 +74,18 @@ namespace Server
 
                         case PacketType.Message_Login:
                             string[] loginInfo = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
-                            if (loginInfo.Length < 2) 
+                            if (loginInfo.Length != 2 | loginInfo[1].Length != 64)
                             {
-                                SendPacket(PacketType.State_Account_Error, this); // 登录失败：不规范的登录包
+                                SendPacket(PacketType.State_Server_Error, this); // 登录失败：不规范的登录包
                                 Task.Delay(100).Wait();
                                 Disconnect();
                             }
-                            else if (loginInfo[1].Length != 64) Disconnect();
                             username = loginInfo[0];
                             password_sha256 = loginInfo[1];
                             try 
                             {
                                 using var sql = new SQLite();
-                                if (!(sql.GetUserId(username, out UID) && sql.Vaild_Password(UID, password_sha256)) && !clients.ContainsKey(UID)) 
+                                if (!(sql.GetUserId(username, out UID) && sql.GetValue(UID,SQLite.ValuesType.Email,out email) && sql.Vaild_Password(UID, password_sha256) && clients.ContainsKey(UID))) 
                                 {
                                     SendPacket(PacketType.State_Account_Error, this); // 登录失败：账号或密码错误或已在线
                                     Task.Delay(100).Wait();
@@ -111,10 +111,49 @@ namespace Server
                             });
                             break;
                         case PacketType.Message_Register:
-
-                        case PacketType.Message_Messages:
-                            if (isLogin)
+                            string[] registerInfo = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1).Split('^');
+                            if (registerInfo.Length != 3 | registerInfo[1].Length != 64)
                             {
+                                SendPacket(PacketType.State_Server_Error, this); // 注册失败：不规范的注册包
+                                Task.Delay(100).Wait();
+                                Disconnect();
+                            }
+
+                            username = registerInfo[0];
+                            password_sha256 = registerInfo[1];
+                            email= registerInfo[2];
+
+                            try
+                            {
+                                using var sql = new SQLite();
+                                if (!(sql.AddValue(username,password_sha256,email,out UID) && clients.ContainsKey(UID)))
+                                {
+                                    SendPacket(PacketType.State_Account_Error, this); // 注册失败：账号已在线
+                                    Task.Delay(100).Wait();
+                                    Disconnect();
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+                                SendPacket(PacketType.State_Server_Error, this); // 登录失败 未知错误
+                                Task.Delay(100).Wait();
+                                Disconnect();
+                                break;
+                            }
+
+                            Task.Run(async () =>
+                            {
+                                isLogin = true;
+                                SendPacket(PacketType.State_Account_Success, this);
+                                lock (clients) { clients.Add(UID, this); }
+                                await Task.Delay(100);
+                                SendPacket(PacketType.Message_Notice, this, $"{username} 已上线");
+                            });
+
+                            break;
+                        case PacketType.Message_Messages:
+                            if (isLogin) {
                                 string content = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
                                 BroadcastPacket(PacketType.Message_Messages, $"{username} 说：{content}");
                             }
