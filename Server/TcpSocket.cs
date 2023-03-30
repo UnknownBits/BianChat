@@ -48,7 +48,12 @@ namespace Server
             connected = true; //连接状态为正常
             Console.WriteLine("新客户连接建立");
 
-
+            // 登录超时
+            Task.Run(async () =>
+            {
+                await Task.Delay(10000);
+                socket.Close();
+            });
 
             while (connected) 
                 try {

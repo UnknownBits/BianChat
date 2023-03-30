@@ -48,6 +48,7 @@ namespace Client.Views
             SendButton.IsEnabled = false;
             MessageTextBox.IsEnabled = false;
 
+            Values.MessagesList.Add($"你说：{MessageTextBox.Text}");
             Values.TcpSocket.SendPacket(TcpSocket.PacketType.Message_Messages, MessageTextBox.Text);
 
             SendButton.IsEnabled = true;
