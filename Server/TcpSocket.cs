@@ -48,9 +48,9 @@ namespace Server
             connected = true; //连接状态为正常
             Console.WriteLine("新客户连接建立");
 
+            
 
-
-            while (connected) 
+            while (connected)
                 try {
                     byte[] buffer = new byte[8193];
                     int size = socket.Receive(buffer);

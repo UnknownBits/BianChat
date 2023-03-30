@@ -8,7 +8,7 @@ namespace Client.Views
     /// <summary>
     /// Settings.xaml 的交互逻辑
     /// </summary>
-    public partial class Settings : Page
+    public partial class Settings : System.Windows.Controls.Page
     {
         public Settings()
         {
@@ -17,17 +17,7 @@ namespace Client.Views
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            if (Values.TcpSocket != null && Values.TcpSocket.IsLogin)
-            {
-                Values.TcpSocket.PingPackageReceive += (s, e) => 
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        Node1_Status.Content = e.Ping;
-                    });
-                };
-                Values.TcpSocket.SendPacket(TcpSocket.PacketType.Ping);
-            }
+
         }
 
         private void ThemeSwitch_Button_Click(object sender, RoutedEventArgs e)
@@ -35,6 +25,32 @@ namespace Client.Views
             var tm = ThemeManager.Current;
             if (tm.ActualApplicationTheme == ApplicationTheme.Dark) tm.ApplicationTheme = ApplicationTheme.Light;
             else tm.ApplicationTheme = ApplicationTheme.Dark;
+        }
+
+        private void Border_Loaded(object sender, RoutedEventArgs e)
+        {
+            if ((string)((TabItem)RootTab.SelectedItem).Tag == "NetworkSettings")
+            {
+                if (Values.TcpSocket != null && Values.TcpSocket.IsLogin)
+                {
+                    Values.TcpSocket.PingPackageReceive += (s, e) =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            Node1_Status.Content = e.Ping;
+                        });
+                    };
+                    Values.TcpSocket.SendPacket(TcpSocket.PacketType.Ping);
+                }
+                else
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Node1_Status.Content = "Error";
+                    });
+                    DialogTools.ShowDialogWithCloseButton("警告", "未连接到服务器");
+                }
+            }
         }
     }
 }
