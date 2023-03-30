@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Newtonsoft.Json.Linq;
+using System.Net;
 using System.Net.Sockets;
 
 namespace Server
@@ -9,19 +10,16 @@ namespace Server
 
         static void Main(string[] args)
         {
-            Console.WriteLine("欢迎使用Bian Chat 急急国王版 v2.0");
             SQLite.CreateDatabase();
+            Console.WriteLine("欢迎使用Bian Chat 急急国王版 v2.0");
             Console.Write("输入监听端口号:");
-            string? command = Console.ReadLine();
-            if (!string.IsNullOrEmpty(command)) 
-            {
-                IPEndPoint iep = new IPEndPoint(IPAddress.Any, int.Parse(command));
+            if (int.TryParse(Console.ReadLine(), out int port)) {
+                IPEndPoint iep = new IPEndPoint(IPAddress.Any,port);
                 server.Bind(iep);
                 server.Listen();
 
                 Task.Run(() => { //消息线程
-                    while (true)
-                    {
+                    while (true) {
                         Socket client = server.Accept();
                         TcpSocket newclient = new TcpSocket(client);
                         Thread newthread = new Thread(new ThreadStart(newclient.MessageService));

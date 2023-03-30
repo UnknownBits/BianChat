@@ -5,29 +5,26 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Client.Views"
       xmlns:ui="http://schemas.modernwpf.com/2019"
-      mc:Ignorable="d" 
+      mc:Ignorable="d" FontFamily="方正朝歌圆 简"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="LoginPage">
 
-    <Grid Margin="10 0 0 10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <TextBlock FontSize="40" FontWeight="Bold" Grid.Row="0">用户名</TextBlock>
-        <TextBox x:Name="Username" Grid.Row="1" Width="150"
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
+        <Image Width="300" Source="/Client;component/Resources/Icon.png" Margin="0,0,90,0"/>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" >
+            <TextBlock FontSize="20" FontWeight="Bold" Grid.Row="0">用户名</TextBlock>
+            <TextBox x:Name="Username" Grid.Row="1" Width="150"
                  HorizontalAlignment="Left" Margin="0 10 0 0"/>
-        <TextBlock FontSize="40" FontWeight="Bold" Grid.Row="2" Margin="0 10 0 0">密码</TextBlock>
-        <PasswordBox x:Name="Password" Grid.Row="3" Width="150"
+            <TextBlock FontSize="20" FontWeight="Bold" Grid.Row="2" Margin="0 10 0 0">密码</TextBlock>
+            <PasswordBox x:Name="Password" Grid.Row="3" Width="150"
                      HorizontalAlignment="Left" Margin="0 10 0 0" PasswordChar="*"/>
-        <Button Grid.Row="4" Margin="0 15 0 0" Style="{DynamicResource AccentButtonStyle}"
+            <Button Grid.Row="4" Margin="0 15 0 0" Style="{DynamicResource AccentButtonStyle}"
                 Click="LoginButton_Click" VerticalAlignment="Top" IsDefault="True">登录</Button>
-        <Grid x:Name="LoadingRing" Panel.ZIndex="0" Opacity="0" Margin="-10 -10 0 0"
+            <Grid x:Name="LoadingRing" Panel.ZIndex="0" Opacity="0" Margin="-10 -10 0 0"
               Grid.RowSpan="5" Background="Gray" Visibility="Collapsed">
-            <ui:ProgressRing IsActive="True" Width="80" Height="80"/>
-        </Grid>
-    </Grid>
+                <ui:ProgressRing IsActive="True" Width="80" Height="80"/>
+            </Grid>
+        </StackPanel>
+
+    </StackPanel>
 </Page>

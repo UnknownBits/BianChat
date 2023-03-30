@@ -1,26 +1,16 @@
 ﻿using Client.Controls;
-using System;
-using System.Collections.Generic;
+using Client.Module;
+using ModernWpf.Controls;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace Client.Views
 {
     /// <summary>
     /// ChatPage.xaml 的交互逻辑
     /// </summary>
-    public partial class ChatPage : Page
+    public partial class ChatPage : System.Windows.Controls.Page
     {
         private ObservableCollection<UserListItem> userList = new ObservableCollection<UserListItem>();
 
@@ -28,6 +18,22 @@ namespace Client.Views
         {
             InitializeComponent();
         }
+
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (Values.TcpSocket == null || !Values.TcpSocket.IsLogin) {
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "提示",
+                    Content = "请到登录页进行登录。",
+                    PrimaryButtonText = "跳转至登录页",
+                    DefaultButton = ContentDialogButton.Primary
+                };
+                dialog.Closing += delegate { Values.MainWindow.RootNavigation.SelectedItem = Values.MainWindow.Account; };
+                DialogTools.ShowDialog(dialog);
+            }
+        }
+
         /// <summary>
         /// UserListBox 选中处理
         /// </summary>

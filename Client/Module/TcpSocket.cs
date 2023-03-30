@@ -35,13 +35,7 @@ namespace Client.Module
         public event EventHandler<LoginCompletedEventArgs> LoginCompleted = delegate { };
         public class LoginCompletedEventArgs : EventArgs
         {
-            public State LoginState { get; set; }
-            public enum State
-            {
-                Success,
-                Failed_Account,
-                Failed_Unknown
-            }
+            public PacketType LoginState { get; set; }
         }
 
 
@@ -81,14 +75,9 @@ namespace Client.Module
                                     Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
                                     break;
                                 case PacketType.State_Account_Success:
+                                case PacketType.State_Account_Error:
                                     IsLogin = true;
-                                    Task.Run(() =>
-                                    {
-                                        LoginCompleted(this, new LoginCompletedEventArgs
-                                        {
-                                            LoginState = LoginCompletedEventArgs.State.Success
-                                        });
-                                    });
+                                    Task.Run(() => { LoginCompleted(this, new LoginCompletedEventArgs { LoginState = (PacketType)buffer[0] }); });
                                     break;
                                 default:
                                     Task.Run(() => PackageReceive(this, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], Data = buffer.Skip(1).ToArray() }));
@@ -112,6 +101,7 @@ namespace Client.Module
             catch (Exception ex) { Dispose(ex); }
         }
 
+        #region PacketType 数据包类型
         /// <summary>
         /// 数据包类型
         /// </summary>
@@ -128,6 +118,7 @@ namespace Client.Module
             Message_Register,
             Message_Messages,
         }
+        #endregion
 
 
         public void SendPacket(PacketType type)

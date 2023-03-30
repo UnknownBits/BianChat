@@ -106,7 +106,9 @@ namespace Server
                     if (rdr.Read())
                     {
                         var value = rdr[0].ToString();
-                        if (value != null && password_SHA256 != null && value == password_SHA256) return true; else return false;
+                        if (value != null && password_SHA256 != null && value == password_SHA256) 
+                            return true; 
+                        else return false;
                     }
                     else return false;
                 }

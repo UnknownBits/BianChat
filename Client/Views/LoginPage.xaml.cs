@@ -3,6 +3,7 @@ using System.Windows;
 using System.Threading.Tasks;
 using Client.Module;
 using System.Windows.Controls;
+using ModernWpf.Media.Animation;
 
 namespace Client.Views
 {
@@ -31,14 +32,17 @@ namespace Client.Views
                     AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
                     switch (e.LoginState)
                     {
-                        case TcpSocket.LoginCompletedEventArgs.State.Success:
-                            Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
+                        case TcpSocket.PacketType.State_Account_Success:
+                            Dispatcher.Invoke(() =>
+                            {
+                                Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
+                            });
                             DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
                             break;
-                        case TcpSocket.LoginCompletedEventArgs.State.Failed_Account:
+                        case TcpSocket.PacketType.State_Account_Error:
                             DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
                             break;
-                        case TcpSocket.LoginCompletedEventArgs.State.Failed_Unknown:
+                        case TcpSocket.PacketType.State_Server_Error:
                             DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
                             break;
                     }

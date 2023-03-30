@@ -10,7 +10,7 @@
 		
 		ui:WindowHelper.UseModernWindowStyle="True" ui:TitleBar.IsIconVisible="True"
 		
-		x:Name="MWindow" Icon="Resources/Icon1.ico" Title="BianChat" Height="450" Width="800">
+		x:Name="MWindow" Icon="Resources\favicon.ico" Title="BianChat" Height="450" Width="800">
 	<Grid>
 		<ui:NavigationView x:Name="RootNavigation" PaneDisplayMode="Top"
 						   SelectionChanged="RootNavigation_SelectionChanged"

@@ -5,6 +5,7 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>Resources\favicon.ico</ApplicationIcon>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -16,16 +17,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Resources\Icon1.ico" />
+    <None Remove="Resources\Icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\Icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\favicon.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="BianCore" Version="1.1.1.1" />
     <PackageReference Include="ModernWpfUI" Version="0.9.6" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Resources\Icon1.ico" />
   </ItemGroup>
 
   <ItemGroup>
