@@ -52,8 +52,8 @@ namespace Server
             // 登录超时
             Task.Run(async () =>
             {
-                await Task.Delay(10000);
-                socket.Close();
+                await Task.Delay(10800);
+                if (!isLogin) Disconnect();
             });
 
             while (connected)
@@ -85,7 +85,7 @@ namespace Server
                             try 
                             {
                                 using var sql = new SQLite();
-                                if (!(sql.GetUserId(username, out UID) && sql.GetValue(UID,SQLite.ValuesType.Email,out email) && sql.Vaild_Password(UID, password_sha256) && clients.ContainsKey(UID))) 
+                                if (!(sql.GetUserId(username, out UID) && sql.GetValue(UID,SQLite.ValuesType.Email,out email) && sql.Vaild_Password(UID, password_sha256)) && clients.ContainsKey(UID)) 
                                 {
                                     SendPacket(PacketType.State_Account_Error, this); // 登录失败：账号或密码错误或已在线
                                     Task.Delay(100).Wait();
@@ -126,7 +126,7 @@ namespace Server
                             try
                             {
                                 using var sql = new SQLite();
-                                if (!(sql.AddValue(username,password_sha256,email,out UID) && clients.ContainsKey(UID)))
+                                if (!sql.AddValue(username,password_sha256,email,out UID) && clients.ContainsKey(UID))
                                 {
                                     SendPacket(PacketType.State_Account_Error, this); // 注册失败：账号已在线
                                     Task.Delay(100).Wait();
@@ -155,7 +155,7 @@ namespace Server
                         case PacketType.Message_Messages:
                             if (isLogin) {
                                 string content = Encoding.UTF8.GetString(buffer, 1, buffer.Length - 1);
-                                BroadcastPacket(PacketType.Message_Messages, $"{username} 说：{content}");
+                                BroadcastPacket(PacketType.Message_Messages, $"{username} 说：{content}",this.UID);
                             }
                             break;
                     }
@@ -187,6 +187,16 @@ namespace Server
                 foreach (var client in clients.Values)
                     try { client.socket.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
                     catch { client.Disconnect(); }
+            Console.WriteLine($"广播{type} 包：{data}");
+        }
+
+        public static void BroadcastPacket(PacketType type, string data, int UID)
+        {
+            lock (clients)
+                foreach (var client in clients.Values)
+                    if (client.UID != UID)
+                        try { client.socket.Send(new byte[1] { (byte)type }.Concat(Encoding.UTF8.GetBytes(data)).ToArray()); }
+                        catch { client.Disconnect(); }
             Console.WriteLine($"广播{type} 包：{data}");
         }
 

@@ -4,14 +4,14 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Client.Views"
-      mc:Ignorable="d" 
+      mc:Ignorable="d" xmlns:ui="http://schemas.modernwpf.com/2019" FontFamily="方正朝歌圆 简"
       d:DesignHeight="450" d:DesignWidth="800"
       Title="HomePage">
 
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="50"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+        <Image Grid.Column="1" Width="300" HorizontalAlignment="Center" VerticalAlignment="Center"
+               Source="/Client;component/Resources/Icon.png"/>
+        <Label Content="Alpha 2.0" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+        <Label Content="BianStudio 出品 制作人: 李子桐" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
     </Grid>
 </Page>

@@ -19,8 +19,9 @@
         </Grid.ColumnDefinitions>
 
         <ui:ListView x:Name="MessageListBox" Grid.ColumnSpan="2"
-                     Grid.Column="0" Grid.Row="0" IsHitTestVisible="False"
-                     ItemsSource="{Binding userList}"/>
+                     Grid.Column="0" Grid.Row="0"
+                     ItemsSource="{Binding userList}" IsTextSearchEnabled="False">
+        </ui:ListView>
 
         <TextBox x:Name="MessageTextBox" 
                  Grid.Column="0" Grid.Row="1"

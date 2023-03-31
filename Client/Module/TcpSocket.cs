@@ -43,6 +43,8 @@ namespace Client.Module
         public bool Connected;
         public bool IsLogin = false;
 
+        public string username;
+
         public TcpSocket(string server, int port,string username,string passwordHash)
         {
             try
@@ -50,6 +52,7 @@ namespace Client.Module
                 Connected = socket.Connected;
                 socket.Connect(server, port);
                 Connected = true;
+                this.username = username;
 
                 Task ReceiveTask = Task.Run(() =>
                 {
@@ -74,6 +77,13 @@ namespace Client.Module
                                     int ping = BitConverter.ToInt32(buffer, 1);
                                     Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
                                     break;
+                                case PacketType.Message_Notice:
+                                case PacketType.Message_Messages:
+                                    Values.UIDispatcher.Invoke(() =>
+                                    {
+                                        Values.MessagesList.Add(Encoding.UTF8.GetString(buffer.Skip(1).ToArray()));
+                                    });
+                                    break;
                                 case PacketType.State_Account_Success:
                                 case PacketType.State_Account_Error:
                                     IsLogin = true;
@@ -97,6 +107,72 @@ namespace Client.Module
                 });
 
                 SendPacket(PacketType.Message_Login,$"{username}^{passwordHash}");
+            }
+            catch (Exception ex) { Dispose(ex); }
+        }
+
+        public TcpSocket(string server, int port, string username, string passwordHash,string email)
+        {
+            try
+            {
+                Connected = socket.Connected;
+                socket.Connect(server, port);
+                Connected = true;
+                this.username = username;
+
+                Task ReceiveTask = Task.Run(() =>
+                {
+                    long timediff = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    while (socket != null && Connected)
+                    {
+                        try
+                        {
+                             // 接收
+                            int size = 0;
+                            byte[] buffer = new byte[8193];
+                            size = socket.Receive(buffer);
+                            if (size <= 0) { throw new SocketException(10054); }
+                            Array.Resize(ref buffer, size);
+                            Trace.WriteLine($"[TcpSocket] 接收到类型为 {(PacketType)buffer[0]} 的数据");
+                            switch ((PacketType)buffer[0])
+                            {
+                                case PacketType.Ping:
+                                    SendPacket(PacketType.PingBack);
+                                    break;
+                                case PacketType.PingBack:
+                                    int ping = BitConverter.ToInt32(buffer, 1);
+                                    Task.Run(() => PingPackageReceive(this, new PingPackageReceive_EventArgs { Ping = ping }));
+                                    break;
+                                case PacketType.Message_Notice:
+                                case PacketType.Message_Messages:
+                                    Values.UIDispatcher.Invoke(() =>
+                                    {
+                                        Values.MessagesList.Add(Encoding.UTF8.GetString(buffer.Skip(1).ToArray()));
+                                    });
+                                    break;
+                                case PacketType.State_Account_Success:
+                                case PacketType.State_Account_Error:
+                                    IsLogin = true;
+                                    Task.Run(() => { LoginCompleted(this, new LoginCompletedEventArgs { LoginState = (PacketType)buffer[0] }); });
+                                    break;
+                                default:
+                                    Task.Run(() => PackageReceive(this, new PackageReceive_EventArgs { packetType = (PacketType)buffer[0], Data = buffer.Skip(1).ToArray() }));
+                                    break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            if (Connected)
+                            {
+                                Dispose(ex);
+                            }
+                            break;
+                        }
+                    }
+                    Dispose(new Exception("断开连接"));
+                });
+
+                SendPacket(PacketType.Message_Register, $"{username}^{passwordHash}^{email}");
             }
             catch (Exception ex) { Dispose(ex); }
         }

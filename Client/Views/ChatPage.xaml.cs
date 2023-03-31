@@ -48,9 +48,24 @@ namespace Client.Views
             SendButton.IsEnabled = false;
             MessageTextBox.IsEnabled = false;
 
-            Values.MessagesList.Add($"你说：{MessageTextBox.Text}");
-            Values.TcpSocket.SendPacket(TcpSocket.PacketType.Message_Messages, MessageTextBox.Text);
+            if (string.IsNullOrEmpty(MessageTextBox.Text) || MessageTextBox.Text.Length >= 2048)
+            {
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "提示",
+                    Content = "发送消息不可为空或超过 2048 个字",
+                    CloseButtonText = "确认",
+                    DefaultButton = ContentDialogButton.Close
+                };
+                DialogTools.ShowDialog(dialog);
+            }
+            else
+            {
+                Values.MessagesList.Add($"你说：{MessageTextBox.Text}");
+                Values.TcpSocket.SendPacket(TcpSocket.PacketType.Message_Messages, MessageTextBox.Text);
+            }
 
+            MessageTextBox.Text = "";
             SendButton.IsEnabled = true;
             MessageTextBox.IsEnabled = true;
         }

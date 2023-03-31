@@ -11,16 +11,23 @@
 
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <Image Grid.Column="1" Width="300" HorizontalAlignment="Center" VerticalAlignment="Center"
-               Source="/Client;component/Resources/Icon.png"/>
+
+        <Grid Grid.Column="1">
+            <Label x:Name="UserName" HorizontalAlignment="Center" VerticalAlignment="Center" Content="当前登录用户名:"></Label>
+        </Grid>
+
 
         <ui:Frame x:Name="Account_Frame" Source="/Views/Account_Pages/LoginPage.xaml"/>
+
+        <Grid x:Name="LoadingRing" Panel.ZIndex="0" Opacity="0" Margin="-10 -10 0 0"
+              Grid.ColumnSpan="2" Background="Gray" Visibility="Collapsed">
+            <ui:ProgressRing IsActive="True" Width="80" Height="80"/>
+        </Grid>
     </Grid>
 </Page>

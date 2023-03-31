@@ -1,4 +1,5 @@
 ﻿using Client.Module;
+using ModernWpf.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace Client.Views.Account_Pages
     /// <summary>
     /// LoginPage.xaml 的交互逻辑
     /// </summary>
-    public partial class LoginPage : Page
+    public partial class LoginPage : System.Windows.Controls.Page
     {
         public LoginPage()
         {
@@ -28,43 +29,65 @@ namespace Client.Views.Account_Pages
 
         private void LoginButton_Click(object sender, RoutedEventArgs e)
         {
-            AnimationTools.OpacityAnimation(LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
+            Dispatcher.Invoke(() =>
+            {
+                AnimationTools.OpacityAnimation(Values.AccountPage.LoadingRing, 0.5, new TimeSpan(0, 0, 0, 0, 300)); // 显示加载动画
+            });
+
             string username = Username.Text;
             string password = Password.Password;
-            Task.Run(() =>
-            {
-                Values.TcpSocket = new TcpSocket("127.0.0.1", 911, username, HashTools.GetSHA256(password));
-                Values.TcpSocket.LoginCompleted += (s, e) =>
-                {
-                    AnimationTools.OpacityAnimation(LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
 
-                    switch (e.LoginState)
-                    {
-                        case TcpSocket.PacketType.State_Account_Success:
-                            Dispatcher.Invoke(() =>
-                            {
-                                Values.MainWindow.RootFrame.SourcePageType = typeof(AccountPage);
-                            });
-                            Values.TcpSocket.PackageReceive += (s, e) =>
-                            {
-                                if (e.packetType == TcpSocket.PacketType.Message_Messages)
-                                {
-                                    Dispatcher.Invoke(() =>
-                                    {
-                                        Values.MessagesList.Add(Encoding.UTF8.GetString(e.Data));
-                                    });
-                                }
-                            };
-                            DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
-                            break;
-                        case TcpSocket.PacketType.State_Account_Error:
-                            DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
-                            break;
-                        case TcpSocket.PacketType.State_Server_Error:
-                            DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
-                            break;
-                    }
+            if (string.IsNullOrEmpty(username) || username.Length < 1 || username.Length > 12 || username.Contains('-') || username.Contains(' ') || username.Contains('^'))
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    AnimationTools.OpacityAnimation(Values.AccountPage.LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
+                });
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "提示",
+                    Content = "用户名不可为空、小于1字符或大于 12 字符、或包含特殊符号 提示：（A-Z a-z 0-9 _）",
+                    CloseButtonText = "确认",
+                    DefaultButton = ContentDialogButton.Close
                 };
+                DialogTools.ShowDialog(dialog);
+            }
+            else
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    AnimationTools.OpacityAnimation(Values.AccountPage.LoadingRing, 0, new TimeSpan(0, 0, 0, 0, 300)); // 隐藏加载动画
+                });
+                if (string.IsNullOrEmpty(password) || password.Length < 6 || password.Length > 15)
+                {
+                    ContentDialog dialog = new ContentDialog
+                    {
+                        Title = "提示",
+                        Content = "密码不可为空、小于6字符或大于15字符",
+                        CloseButtonText = "确认",
+                        DefaultButton = ContentDialogButton.Close
+                    };
+                    dialog.ShowAsync();
+                }
+                else
+                {
+                    Task.Run(() =>
+                    {
+                        Values.TcpSocket = new TcpSocket("127.0.0.1", 911, username, HashTools.GetSHA256(password));
+                        Values.RaiseSocketInitialized();
+	        Dispatcher.Invoke(() => {
+                            Values.AccountPage.UserName.Content = $"当前登录用户名:{username}";
+                        });
+                    });
+                }
+            }
+        }
+
+    private void RegisterButton_Click(object sender, RoutedEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Values.AccountPage.Account_Frame.SourcePageType = typeof(RegisterPage);
             });
         }
     }
