@@ -10,10 +10,11 @@
 		
 		ui:WindowHelper.UseModernWindowStyle="True" ui:TitleBar.IsIconVisible="True"
 		
-		x:Name="MWindow" Icon="Resources/Icon1.ico" Title="BianChat" Height="450" Width="800">
+		x:Name="MWindow" Icon="Resources\favicon.ico" Title="BianChat" Height="450" Width="800">
 	<Grid>
 		<ui:NavigationView x:Name="RootNavigation" PaneDisplayMode="Top"
-						   SelectionChanged="NavigationView_SelectionChanged"
+						   SelectionChanged="RootNavigation_SelectionChanged"
+                           Loaded="RootNavigation_Loaded"
                            IsSettingsVisible="False" IsBackButtonVisible="Collapsed">
 			<ui:NavigationView.MenuItems>
 				<ui:NavigationViewItem x:Name="Home" Content="主页" Icon="Home"/>
@@ -23,7 +24,17 @@
 				<ui:NavigationViewItem x:Name="Account" Content="账户" Icon="Contact"/>
 				<ui:NavigationViewItem x:Name="Settings" Content="设置" Icon="Setting"/>
 			</ui:NavigationView.FooterMenuItems>
-			<ui:Frame x:Name="RootFrame"/>
+            
+            <ui:Frame x:Name="RootFrame" Source="/Views/HomePage.xaml" >
+                <ui:Frame.ContentTransitions>
+                    <ui:TransitionCollection>
+                        <ui:NavigationThemeTransition  >
+                            <ui:DrillInNavigationTransitionInfo/>
+                        </ui:NavigationThemeTransition>
+                    </ui:TransitionCollection>
+                </ui:Frame.ContentTransitions>
+
+            </ui:Frame>
 		</ui:NavigationView>
 	</Grid>
 </Window>

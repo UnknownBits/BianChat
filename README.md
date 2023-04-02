@@ -26,7 +26,6 @@
 * 彼岸计划Bian Project开发群 全体成员
 # 引用
 - [AvaloniaUI / Avalonia](https://github.com/AvaloniaUI/Avalonia)
-
+- [Bian-Studio / BianCore](https://github.com/Bian-Studio/BianCore)
 - [Kinnara / ModernWpf ModernWpfUI](https://github.com/Kinnara/ModernWpf)
-
-
+- [amwx / FluentAvalonia FluentAvaloniaUI](https://github.com/amwx/FluentAvalonia)

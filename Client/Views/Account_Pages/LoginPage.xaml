@@ -1,0 +1,31 @@
+﻿<Page x:Class="Client.Views.Account_Pages.LoginPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:Client.Views.Account_Pages"
+      mc:Ignorable="d" 
+      xmlns:ui="http://schemas.modernwpf.com/2019" FontFamily="方正朝歌圆 简"
+      d:DesignHeight="450" d:DesignWidth="250"
+      Title="LoginPage">
+
+    <Grid>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" >
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" >
+                <TextBlock FontSize="20" FontWeight="Bold" Grid.Row="0">用户名</TextBlock>
+                <TextBox x:Name="Username" Grid.Row="1" Width="150"
+                 HorizontalAlignment="Left" Margin="0 10 0 0"/>
+                <TextBlock FontSize="20" FontWeight="Bold" Grid.Row="2" Margin="0 10 0 0">密码</TextBlock>
+                <PasswordBox x:Name="Password" Grid.Row="3" Width="150"
+                     HorizontalAlignment="Left" Margin="0 10 0 0" PasswordChar="*"/>
+                <StackPanel Orientation="Horizontal">
+                    <Button Grid.Row="4" Margin="0 15 10 0" Style="{DynamicResource AccentButtonStyle}"
+                Click="LoginButton_Click" VerticalAlignment="Top" IsDefault="True">登录</Button>
+                    <Button Grid.Row="4" Margin="0 15 10 0"
+                Click="RegisterButton_Click" VerticalAlignment="Top" IsDefault="True">注册</Button>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+
+    </Grid>
+</Page>

@@ -5,19 +5,20 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:Client.Views"
       xmlns:ui="http://schemas.modernwpf.com/2019"
-       xmlns:s="clr-namespace:System.Collections;assembly=mscorlib"
+      xmlns:s="clr-namespace:System.Collections;assembly=mscorlib"
       xmlns:p="clr-namespace:System;assembly=mscorlib"
+      Loaded="Page_Loaded"
       mc:Ignorable="d" d:DesignHeight="450" d:DesignWidth="800">
 
     <ScrollViewer Grid.Column="1">
-        <TabControl IsSynchronizedWithCurrentItem="True" TabStripPlacement="Left" ScrollViewer.CanContentScroll="True" >
-            <TabItem Tag="Basesettings">
+        <TabControl x:Name="RootTab" IsSynchronizedWithCurrentItem="True" TabStripPlacement="Left" ScrollViewer.CanContentScroll="True">
+            <TabItem Tag="BaseSettings">
                 <TabItem.Header>
                     <Label Width="60" HorizontalAlignment="Center" Content="基础设置"/>
                 </TabItem.Header>
                 <StackPanel Margin="20">
                     <StackPanel ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                        <Border Margin="0" BorderThickness="2" CornerRadius="15" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}">
+                        <Border Margin="0" Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" CornerRadius="10" BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                             <StackPanel>
                                 <Label Margin="20,20,0,0" FontSize="20" Content="深色模式切换"/>
                                 <Grid>
@@ -33,13 +34,14 @@
                     </StackPanel>
                 </StackPanel>
             </TabItem>
-            <TabItem>
+            <TabItem Tag="NetworkSettings">
                 <TabItem.Header>
                     <Label HorizontalAlignment="Center" Content="网络"/>
                 </TabItem.Header>
                 <StackPanel Margin="20">
                     <StackPanel ScrollViewer.VerticalScrollBarVisibility="Disabled">
-                        <Border Margin="0" BorderThickness="2" CornerRadius="15" BorderBrush="{DynamicResource SystemControlPageTextBaseHighBrush}">
+                        <Border Margin="0"  CornerRadius="10" Loaded="Border_Loaded"
+                                Background="{DynamicResource SystemControlBackgroundBaseLowBrush}" BorderBrush="{DynamicResource SystemControlBackgroundBaseMediumHighBrush}">
                             <StackPanel>
                                 <Label Margin="20,20,0,0" FontSize="20" Content="节点检测"/>
                                 <Grid>
