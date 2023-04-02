@@ -220,6 +220,7 @@ namespace Client.Module
                 {
                     Connected = false;
                     IsLogin = false;
+                    username = "";
                     socket.Close();
                 }
                 Trace.WriteLine($"客户端已断开连接");
