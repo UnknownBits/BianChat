@@ -76,9 +76,6 @@ namespace Client.Views.Account_Pages
                     {
                         Values.TcpSocket = new TcpSocket("127.0.0.1", 911, username, HashTools.GetSHA256(password), email);
                         Values.RaiseSocketInitialized();
-	        Dispatcher.Invoke(() => {
-                            Values.AccountPage.UserName.Content = $"当前登录用户名:{username}";
-                        });
                     });
                 }
             }

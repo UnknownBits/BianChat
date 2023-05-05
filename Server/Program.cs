@@ -10,7 +10,7 @@ namespace Server
         static void Main(string[] args)
         {
             SQLite.CreateDatabase();
-            Console.WriteLine("欢迎使用Bian Chat 急急国王版 v2.0");
+            Console.WriteLine("欢迎使用Bian Chat Server急急国王版 v2.0");
             IPEndPoint iep = new IPEndPoint(IPAddress.Any, 911);
             server.Bind(iep);
             server.Listen();

@@ -11,7 +11,6 @@ namespace Client.Views
     /// </summary>
     public partial class AccountPage : Page
     {
-        private bool _isBusy = false;
         public AccountPage()
         {
             InitializeComponent();
@@ -20,6 +19,7 @@ namespace Client.Views
             if (Values.TcpSocket != null && Values.TcpSocket.IsLogin)
             {
                 Account_Frame.IsEnabled = false;
+                loginout.IsEnabled = true;
                 Values.AccountPage.UserName.Content = $"当前登录用户名:{Values.TcpSocket.username}";
             }
         }
@@ -36,12 +36,14 @@ namespace Client.Views
                         case TcpSocket.PacketType.State_Account_Success:
                             Dispatcher.Invoke(() =>
                             {
+                                Values.AccountPage.UserName.Content = $"当前登录用户名:{Values.TcpSocket.username}";
                                 Values.MainWindow.RootNavigation.SelectedItem = Values.MainWindow.Chat;
+                                loginout.IsEnabled = true;
                             });
                             DialogTools.ShowDialogWithCloseButton("提示", "登录成功");
                             break;
                         case TcpSocket.PacketType.State_Account_Error:
-                            DialogTools.ShowDialogWithCloseButton("错误", "用户名或密码错误");
+                            DialogTools.ShowDialogWithCloseButton("错误", "用户名、密码错误或该用户已在线");
                             break;
                         case TcpSocket.PacketType.State_Server_Error:
                             DialogTools.ShowDialogWithCloseButton("错误", "服务器内部错误");
@@ -49,6 +51,16 @@ namespace Client.Views
                     }
                 };
             });
+        }
+
+        private void loginout_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Values.TcpSocket.Dispose(new Exception("主动断开"));
+            Dispatcher.Invoke(() =>
+            {
+                Values.MainWindow.RootNavigation.SelectedItem = Values.MainWindow.Home;
+            });
+            DialogTools.ShowDialogWithCloseButton("提示", "登出成功");
         }
     }
 }

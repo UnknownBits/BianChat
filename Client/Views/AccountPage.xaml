@@ -19,12 +19,12 @@
         </Grid.RowDefinitions>
 
         <Grid Grid.Column="1">
-            <Label x:Name="UserName" HorizontalAlignment="Center" VerticalAlignment="Center" Content="当前登录用户名:"></Label>
+            <Label x:Name="UserName" HorizontalAlignment="Center" VerticalAlignment="Center" Content="当前登录用户名:"/>
+            <Button x:Name="loginout" HorizontalAlignment="Center" VerticalAlignment="Center" Content="登出"  Width="50" Margin="0 60 0 0" Height="30" Click="loginout_Click" IsDefault="False" IsEnabled="False"/>
         </Grid>
 
-
         <ui:Frame x:Name="Account_Frame" Source="/Views/Account_Pages/LoginPage.xaml"/>
-
+        
         <Grid x:Name="LoadingRing" Panel.ZIndex="0" Opacity="0" Margin="-10 -10 0 0"
               Grid.ColumnSpan="2" Background="Gray" Visibility="Collapsed">
             <ui:ProgressRing IsActive="True" Width="80" Height="80"/>
